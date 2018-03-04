@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Link">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{76ecb1f3-0dac-411e-8e9b-8092407329b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{cb799684-b7ca-499d-a477-2e3cf4e7ff0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network\Components">
+      <UniqueIdentifier>{d4cef248-dee1-4691-92b8-67e19b3c8e0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Groups">
+      <UniqueIdentifier>{1672e434-70d8-492e-af74-a24f3d094359}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Provides">
+      <UniqueIdentifier>{f3ba4d29-6c6b-4e3e-9e84-3c3fc06ffe17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Variables">
+      <UniqueIdentifier>{2f5c7d84-f11e-492a-90d0-2011d126c907}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Common">
+      <UniqueIdentifier>{2b845981-8a67-4767-8f61-7221bf25edf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Network">
+      <UniqueIdentifier>{4d7ab0ff-5d13-4c08-a2ab-364956559e4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Link\Components">
+      <UniqueIdentifier>{45e18428-71ff-4488-ae1e-b4111c367e66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Link\Components\Streams">
+      <UniqueIdentifier>{a296cafe-d74d-4b28-9af4-2fe8d18b546a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Link\Components\Link">
+      <UniqueIdentifier>{37cfb5f5-66cd-4338-96e5-d87a01baef76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\HighLevelTypes">
+      <UniqueIdentifier>{2b2dfa8a-a6fe-4016-b627-7ca46a56a573}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ZUser">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Util.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Link.cpp">
+      <Filter>Link</Filter>
+    </ClCompile>
+    <ClCompile Include="Group.cpp">
+      <Filter>Groups</Filter>
+    </ClCompile>
+    <ClCompile Include="U32.cpp">
+      <Filter>Variables</Filter>
+    </ClCompile>
+    <ClCompile Include="U16.cpp">
+      <Filter>Variables</Filter>
+    </ClCompile>
+    <ClCompile Include="Text32.cpp">
+      <Filter>Variables</Filter>
+    </ClCompile>
+    <ClCompile Include="Text64.cpp">
+      <Filter>Variables</Filter>
+    </ClCompile>
+    <ClCompile Include="Network.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkManager.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableSend.cpp">
+      <Filter>Link\Components\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="UnreliableSend.cpp">
+      <Filter>Link\Components\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableNewSend.cpp">
+      <Filter>Link\Components\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableNewRecv.cpp">
+      <Filter>Link\Components\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="UnreliableRecv.cpp">
+      <Filter>Link\Components\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableRecv.cpp">
+      <Filter>Link\Components\Streams</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteServerInfo.cpp">
+      <Filter>Link\Components\Link</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkState.cpp">
+      <Filter>Link\Components\Link</Filter>
+    </ClCompile>
+    <ClCompile Include="GroupCollection.cpp">
+      <Filter>Link\Components\Link</Filter>
+    </ClCompile>
+    <ClCompile Include="NetVariable.cpp">
+      <Filter>Variables</Filter>
+    </ClCompile>
+    <ClCompile Include="PerThreadDataProvider.cpp">
+      <Filter>Provides</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform.cpp">
+      <Filter>Core\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket.cpp">
+      <Filter>Core\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketSet.cpp">
+      <Filter>Core\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Threading.cpp">
+      <Filter>Core\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Endpoint.cpp">
+      <Filter>Core\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Core\HighLevelTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory.cpp">
+      <Filter>Core\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="BinSerializer.cpp">
+      <Filter>Core\HighLevelTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="JobSystem.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MsgIdToFunctions.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MiepMiep.h">
+      <Filter>ZUser</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Link.h">
+      <Filter>Link</Filter>
+    </ClInclude>
+    <ClInclude Include="Group.h">
+      <Filter>Groups</Filter>
+    </ClInclude>
+    <ClInclude Include="Network.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkManager.h">
+      <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableSend.h">
+      <Filter>Link\Components\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableNewSend.h">
+      <Filter>Link\Components\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="UnreliableSend.h">
+      <Filter>Link\Components\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableNewRecv.h">
+      <Filter>Link\Components\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="UnreliableRecv.h">
+      <Filter>Link\Components\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableRecv.h">
+      <Filter>Link\Components\Streams</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteServerInfo.h">
+      <Filter>Link\Components\Link</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkState.h">
+      <Filter>Link\Components\Link</Filter>
+    </ClInclude>
+    <ClInclude Include="GroupCollection.h">
+      <Filter>Link\Components\Link</Filter>
+    </ClInclude>
+    <ClInclude Include="NetVariable.h">
+      <Filter>Variables</Filter>
+    </ClInclude>
+    <ClInclude Include="PerThreadDataProvider.h">
+      <Filter>Provides</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform.h">
+      <Filter>Core\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Socket.h">
+      <Filter>Core\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketSet.h">
+      <Filter>Core\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory.h">
+      <Filter>Core\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Threading.h">
+      <Filter>Core\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Endpoint.h">
+      <Filter>Core\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Core\HighLevelTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="BinSerializer.h">
+      <Filter>ZUser</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>ZUser</Filter>
+    </ClInclude>
+    <ClInclude Include="Variables.h">
+      <Filter>ZUser</Filter>
+    </ClInclude>
+    <ClInclude Include="JobSystem.h">
+      <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MsgIdToFunctions.h">
+      <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Rpc.h">
+      <Filter>ZUser</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
