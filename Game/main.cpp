@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 	Game* g = new Game;
 	g->init();
 	g->run();
-	delete g;
+	delete g; 
 
 	Network::printMemoryLeaks();
 }
