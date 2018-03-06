@@ -57,7 +57,8 @@ namespace MiepMiep
 
 	// ------------ JobSystem --------------------------------------------------------------------------------
 
-	JobSystem::JobSystem(u32 numWorkerThreads)
+	JobSystem::JobSystem(Network& network, u32 numWorkerThreads):
+		ParentNetwork(network)
 	{
 		assert( numWorkerThreads != 0 );
 		for (u32 i = 0; i < numWorkerThreads ; i++)

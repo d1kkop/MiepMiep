@@ -1,17 +1,19 @@
 #include "Group.h"
 #include "Variables.h"
+#include "GroupCollection.h"
 
 
 namespace MiepMiep
 {
-	Group::Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, u16 type):
+	Group::Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData):
 		m_GroupCollection(groupCollection),
 		m_Variables(vars),
+		m_InitData(initData),
 		m_Id(-1),
-		m_Type(type),
+		m_TypeName(typeName),
 		m_WasUngrouped(false),
 		m_Changed(false),
-		m_VarControl(EVarControl::Unowned)
+		m_VarControl(EVarControl::Full)
 	{
 		for ( auto* v : m_Variables ) 
 			v->setGroup( this );
@@ -35,4 +37,10 @@ namespace MiepMiep
 		m_WasUngrouped = true;
 		// TODO send remove group msg
 	}
+
+	class Network& Group::network() const
+	{
+		return m_GroupCollection.network();
+	}
+
 }

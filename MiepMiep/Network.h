@@ -8,12 +8,17 @@ using namespace std;
 
 namespace MiepMiep
 {
+	class Link;
+
 	enum class ENetworkError
 	{
 		Fine,
 		SerializationError,
 		LogicalError
 	};
+
+
+	// ------------ Network -----------------------------------------------
 
 
 	class Network: public ComponentCollection, public INetwork, public ITraceable
@@ -26,28 +31,58 @@ namespace MiepMiep
 		MM_TS ERegisterServerCallResult registerServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
 		MM_TS EJoinServerCallResult joinServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
 
-		MM_TS void registerRpc( u16 rpcType, const std::function<void (BinSerializer&, INetwork&, const IEndpoint*)>& cb ) override;
-		MM_TS void deregisterRpc( u16 rpcType ) override;
-		MM_TS void callRpc( u16 rpcType, const IEndpoint* specific, bool exclude, bool buffer ) override;
-
-		MM_TS void registerGroup( u16 groupType, const std::function<void (INetwork&, const IEndpoint&)>& cb ) override;
-		MM_TS void deregisterGroup( u16 groupType ) override;
-		MM_TS void createGroup( u16 groupType ) override;
+		MM_TS void createGroupInternal( const string& typeName, const BinSerializer& initData, byte channel, IDeliveryTrace* trace );
 		MM_TS void destroyGroup( u32 groupId ) override;
 
-		EListenCallResult listen( u16 port );
-		EListenCallResult listenAsMasterHost( u16 port );
+		MM_TS void createRemoteGroup( const string& typeName, u32 netId, const BinSerializer& initData, const IEndpoint& etp );
 
-
-		template <typename T, typename ...Args> 
-		MM_TS T* getOrAdd(byte idx=0, Args... args);
+		MM_TS ESendCallResult sendReliable(BinSerializer& bs, const IEndpoint* specific, 
+										   bool exclude, bool buffer, bool relay,
+										   byte channel, IDeliveryTrace* trace) override;
 
 
 		MM_TS static void clearAllStatics();
 		MM_TS MM_DECLSPEC static void printMemoryLeaks();
 
-	private:
+		// Gets, checks or adds directly in a link in the network -> linkManagerComponent.
+		MM_TS Link* getLink(const IEndpoint& etp) const;
+		template <typename T>
+		MM_TS bool hasOnLink(const IEndpoint& etp, byte idx=0) const;
+		template <typename T>
+		MM_TS T* getOnLink(const IEndpoint& etp, byte idx=0) const;
+		template <typename T>
+		MM_TS T* getOrAddOnLink(const IEndpoint& etp, byte idx=0);
+
+		// Gets or adds component to ComponentCollection.
+		template <typename T, typename ...Args>
+		MM_TS T* getOrAdd(byte idx=0, Args... args);
+
 	};
+
+
+	template <typename T>
+	MM_TS bool MiepMiep::Network::hasOnLink(const IEndpoint& etp, byte idx) const
+	{
+		Link* link = getLink(etp);
+		if ( !link ) return false;
+		return link->has<T>(idx);
+	}
+
+	template <typename T>
+	MM_TS T* MiepMiep::Network::getOnLink(const IEndpoint& etp, byte idx) const
+	{
+		Link* link = getLink(etp);
+		if ( !link ) return nullptr;
+		return link->get<T>(idx);
+	}
+
+	template <typename T>
+	MM_TS T* MiepMiep::Network::getOrAddOnLink(const IEndpoint& etp, byte idx)
+	{
+		Link* link = getLink(etp);
+		if ( !link ) return nullptr;
+		return link->getOrAdd<>T();
+	}
 
 
 	template <typename T, typename ...Args>
@@ -55,4 +90,17 @@ namespace MiepMiep
 	{
 		return getOrAddInternal<T, Network&>(idx, *this, args...);
 	}
+
+
+
+	// ------------ ParentNetwork -----------------------------------------------
+
+	class ParentNetwork
+	{
+	public:
+		ParentNetwork(Network& network):
+			m_Network(network) { }
+
+		Network& m_Network;
+	};
 }

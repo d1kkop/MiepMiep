@@ -3,7 +3,6 @@
 #include "Component.h"
 #include "Memory.h"
 #include "Link.h"
-#include "Variables.h"
 
 
 namespace MiepMiep
@@ -31,21 +30,16 @@ namespace MiepMiep
 	};
 
 
-	class LinkState: public Parent<Link>, public IComponent, public ITraceable
+	class LinkState: public ParentLink, public IComponent, public ITraceable
 	{
 	public:
 		LinkState(Link& link);
 		static EComponentType compType() { return EComponentType::LinkState; }
-		
-		static void createFromRemoteCall(INetwork& network, const IEndpoint& etp);
-		MM_NETWORK_CREATABLE()
-		{
-			createFromRemoteCall( network, etp );
-		}
 
 		bool connect();
+		void acceptConnect();
 
-		NetUint32 m_ConnectState;
+		NetUint32 m_SharedState;
 
 		EConnectState m_State;
 		EDisconnectReason m_DiscReason;

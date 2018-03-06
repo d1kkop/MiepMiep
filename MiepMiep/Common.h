@@ -12,9 +12,12 @@ using namespace std;
 #define MM_LINE		__LINE__
 #define MM_FL		MM_FUNCTION, MM_LINE
 #define MM_VARARGS	__VA_ARGS__
+#define MM_RPC_CHANNEL 0
+#define MM_VG_CHANNEL  0
 
 #define __CHECKED( expr ) if ( !(expr) ) { assert(false); return; }
 #define __CHECKEDB( expr ) if ( !(expr) ) { assert(false); return false; }
+#define __CHECKEDSR( expr ) if ( !(expr) ) { assert(false); return ESendCallResult::SerializationError; }
 
 
 namespace MiepMiep

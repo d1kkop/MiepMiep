@@ -3,6 +3,7 @@
 
 #include "Component.h"
 #include "Memory.h"
+#include "Network.h"
 #include <list>
 #include <functional>
 #include <thread>
@@ -12,6 +13,8 @@ using namespace std;
 
 namespace MiepMiep
 {
+	class Network;
+
 	struct Job
 	{
 		bool valid() const { return m_WorkFunc!=nullptr; }
@@ -33,11 +36,13 @@ namespace MiepMiep
 	};
 
 
-	class JobSystem: public IComponent, public ITraceable
+	class JobSystem: public ParentNetwork, public IComponent, public ITraceable
 	{
 	public:
-		JobSystem(u32 numWorkerThreads=3);
+		JobSystem(Network& network, u32 numWorkerThreads=3);
 		~JobSystem() override;
+		// IComponent
+		static EComponentType compType() { return EComponentType::JobSystem; }
 
 
 		void addJob( const std::function<void ()>& cb );

@@ -16,6 +16,14 @@ namespace MiepMiep
 	};
 
 
+	enum class EChangeOwnerCallResult
+	{
+		Fine,		// Change was broadcasted.
+		NotOwned,	// Can only change ownership if owning the variable.
+		Fail		// See log why.
+	};
+
+
 	/*	A piece of memory that can be used ty synchronize any type of data. 
 		There is no practical limitation on the amount of variables.
 		Internally, variables are grouped in clusters of max 16. */
@@ -28,6 +36,9 @@ namespace MiepMiep
 
 		/*	Returns the remote owner of this endpoint or nullptr if owned here. */
 		const class IEndpoint* getOwner() const;
+
+
+		EChangeOwnerCallResult changeOwner( const IEndpoint& etp );
 
 
 		/*	Specifies how this variable is controlled.

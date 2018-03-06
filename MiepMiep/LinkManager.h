@@ -9,7 +9,7 @@
 
 namespace MiepMiep
 {
-	class LinkManager: public Parent<Network>, public IComponent, public ITraceable
+	class LinkManager: public ParentNetwork, public IComponent, public ITraceable
 	{
 	public:
 		LinkManager(Network& network);
@@ -17,6 +17,7 @@ namespace MiepMiep
 		MM_TS sptr<Link> addLink( const IEndpoint& etp );
 		MM_TS sptr<Link> getLink( const IEndpoint& etp );
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb );
+		MM_TS bool forLink( const IEndpoint* specific, bool exclude, const std::function<void (Link&)>& cb );
 
 		// IComponent
 		static EComponentType compType() { return EComponentType::LinkManager; }

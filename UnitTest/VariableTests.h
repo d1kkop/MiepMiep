@@ -20,6 +20,7 @@ public:
 		m_Weight(86)
 	{
 		int k = 0;
+
 	}
 
 	MM_NETWORK_CREATABLE()
@@ -40,9 +41,8 @@ UTESTBEGIN(VariablesTest)
 {
 	sptr<INetwork> network = INetwork::create();
 
-	Person* pp = network->createType<Person, INetwork&>( *network );
 
-	sptr<Person> p = sptr<Person>(pp);
+	sptr<Person> p;// = sptr<Person>(pp);
 
 	assert( p->m_Age.getGroupId() == -1 );
 	assert( p->m_Age.getOwner() == nullptr );

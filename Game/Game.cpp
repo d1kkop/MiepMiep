@@ -21,6 +21,26 @@ namespace MyGame
 	}
 
 
+	MM_VARGROUP( myFirstVarGroup, string, bool )
+	{
+		const auto& var1 = get<0>(tp);
+		auto var2 = get<1>(tp);
+		cout << var1 << " " << var2 << endl;
+	}
+
+	template <typename ...Args>
+	struct Tuple
+	{
+		tuple<Args...> tp;
+
+		void init(Args... args, int ab)
+		{
+			tuple<Args...> _tp(args...);
+			tp = _tp;
+		}
+	};
+
+
 
 	Game::Game()
 	= default;
@@ -34,8 +54,17 @@ namespace MyGame
 		//m_Network->registerType<Apple>();
 		//m_Network->registerType<Tree>();
 
+		tuple<> tp;
+
+		Tuple<> tp2;
+		tp2.init(3);
+		
+
+		//std::make_tuple(
+
 		m_Network->callRpc<myFirstRpc, i32, i32>( 5, 10, true );
 
+		m_Network->createGroup<myFirstVarGroup, string, bool>( "hello bartje k", true, true, 6 );
 
 
 	//	m_Network->createType<Apple>();

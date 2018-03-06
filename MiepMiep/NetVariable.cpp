@@ -2,6 +2,8 @@
 #include "NetVariable.h"
 #include "Platform.h"
 #include "Group.h"
+#include "Network.h"
+#include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
 #include <cassert>
 #include <algorithm>
@@ -9,6 +11,41 @@
 
 namespace MiepMiep
 {
+	// ---- RPC ------------------------------------------------------------
+
+	MM_RPC(changeOwner, u32, string)
+	{
+		auto& nw = static_cast<Network&>(network);
+		u32 netId = get<0>(tp);
+
+		sptr<Group> g = nw.getOrAdd<GroupCollectionNetwork>()->findGroup( netId );
+		if ( !g )
+		{
+			Platform::log(ELogType::Warning, MM_FL, "Cannot find group with id %d.", netId);
+			return;
+		}
+
+		const string& ipAndPort = get<1>(tp);
+		if ( ipAndPort.empty() ) // we become owner
+		{
+			g->setOwner( nullptr );
+		}
+		else
+		{
+			i32 err;
+			sptr<IEndpoint> remoteEtp = IEndpoint::fromIpAndPort( ipAndPort, &err );
+			if ( remoteEtp && err == 0 )
+			{
+				g->setOwner( remoteEtp.get() );
+			}
+			else
+			{
+			//	g->network().setError( 
+			}
+		}
+	}
+
+
 	// ---- NetVar (accessible by user) ------------------------------------------------------------
 
 	NetVar::NetVar(void* data, u32 size):
@@ -26,6 +63,11 @@ namespace MiepMiep
 		return p->getOwner();
 	}
 
+	EChangeOwnerCallResult NetVar::changeOwner(const IEndpoint& etp)
+	{
+		return p->changeOwner( etp );
+	}
+
 	EVarControl NetVar::getVarConrol() const
 	{
 		return p->getVarControl();
@@ -33,7 +75,7 @@ namespace MiepMiep
 
 	u32 NetVar::getGroupId() const
 	{
-		return p->getGroupId();
+		return p->id();
 	}
 
 	void NetVar::markChanged()
@@ -93,14 +135,27 @@ namespace MiepMiep
 		return m_Group->getVarControl();
 	}
 
-	u32 NetVariable::getGroupId() const
+	u32 NetVariable::id() const
 	{
 		if ( !m_Group )
 			return -1;
 		return m_Group->id();
 	}
 
-	bool NetVariable::sync( BinSerializer& bs, bool write )
+	EChangeOwnerCallResult NetVariable::changeOwner(const IEndpoint& etp)
+	{
+		// Cannot change if we are the NOT owner.
+		if ( getOwner() ) return EChangeOwnerCallResult::NotOwned; 
+		if ( !m_Group ) return EChangeOwnerCallResult::NotOwned;
+
+		// TODO change to endpoint serialization
+		string ipAndPort = etp.toIpAndPort();
+
+		auto sendRes = m_Group->network().callRpc<MiepMiep::changeOwner, u32, string>( id(), ipAndPort, false, nullptr, false, false, true, MM_VG_CHANNEL, nullptr ) ;
+		return (sendRes == ESendCallResult::Fine ? EChangeOwnerCallResult::Fine : EChangeOwnerCallResult::Fail );		
+	}
+
+	bool NetVariable::sync(BinSerializer& bs, bool write)
 	{
 		byte prevData[MM_MAXMTUSIZE];
 
@@ -144,4 +199,7 @@ namespace MiepMiep
 		scoped_lock lk(m_UpdateCallbackMutex);
 		m_UpdateCallbacks.emplace_back(callback);
 	}
+
+
+
 }

@@ -17,6 +17,19 @@ namespace MiepMiep
 		reset();
 	}
 
+	BinSerializer::BinSerializer(const BinSerializer& other)
+	{
+		reset();
+		write(other.data(), other.length());
+	}
+
+	BinSerializer& BinSerializer::operator==(const BinSerializer& other)
+	{
+		reset();
+		write(other.data(), other.length());
+		return *this;
+	}
+
 	BinSerializer::~BinSerializer()
 	{
 		reset();
@@ -130,7 +143,7 @@ namespace MiepMiep
 		Platform::memCpy(ptr, len, m_DataPtr, len);
 	}
 
-	bool BinSerializer::read(byte* b, u16 buffSize)
+	bool BinSerializer::read(byte* b, u32 buffSize)
 	{
 		if ( m_ReadPos + buffSize > m_WritePos ) return false;
 		Platform::copy(b, data()+m_ReadPos, buffSize);
@@ -138,7 +151,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	bool BinSerializer::write(const byte* b, u16 buffSize)
+	bool BinSerializer::write(const byte* b, u32 buffSize)
 	{
 		growTo(m_WritePos + buffSize);
 		if ( m_WritePos + buffSize > m_MaxSize ) return false; // if data is not owned, it doenst grow

@@ -1,6 +1,7 @@
 #include "GroupCollection.h"
 #include "LinkManager.h"
 #include "ReliableSend.h"
+#include "JobSystem.h"
 #include "PerThreadDataProvider.h"
 
 
@@ -12,15 +13,17 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS Group* GroupCollection::addNewPendingGroup(vector<NetVariable*>& vars, u16 groupType)
+	MM_TS void GroupCollection::addNewPendingGroup(vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, IDeliveryTrace* trace)
 	{
-		Group* g = reserve<Group, GroupCollection&, vector<NetVariable*>&, u16>(MM_FL, *this, vars, groupType);
+		Group* g = reserve<Group, GroupCollection&, vector<NetVariable*>&, const string&, const BinSerializer&>(MM_FL, *this, vars, typeName, initData);
 		scoped_lock lk(m_GroupLock);
 		m_PendingGroups.emplace_back( g );
-		return g;
+		network().get<JobSystem>()->addJob([&]() { 
+			tryProcessPendingGroups();
+		});
 	}
 
-	void GroupCollection::tryProcessPendingGroups()
+	MM_TS void GroupCollection::tryProcessPendingGroups()
 	{
 		scoped_lock lk(m_GroupLock);
 		while ( !m_PendingGroups.empty() && !m_IdPool.empty() )
@@ -29,49 +32,48 @@ namespace MiepMiep
 			m_IdPool.pop_back();
 			sptr<Group> group = m_PendingGroups.front();
 			m_PendingGroups.pop_back();
-			// init group now that all required info is available
 			group->setId( id );
-			group->setOwner( nullptr ); // we own it
-			group->setControl( EVarControl::Full );
 			__CHECKED( m_Groups.count( id ) != 0 );
 			m_Groups[id] = group;
-			msgGroupCreate( group->typeId(), group->id(), true );
+			msgGroupCreate( group->typeName(), group->id(), group->initData() );
 		}
 	}
 
 
+	MM_TS sptr<Group> GroupCollection::findGroup(u32 netId) const
+	{
+		scoped_lock lk(m_GroupLock);
+		auto gIt = m_Groups.find( netId );
+		if ( gIt != m_Groups.end() )
+			return gIt->second;
+		return nullptr;
+	}
+
 	// ------- GroupCollectionLink ------------------------------------------------------------------------------------------
 
-	void GroupCollectionLink::msgGroupCreate( u16 typeId, u32 groupId, bool write )
+	void GroupCollectionLink::msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData )
 	{
-		auto& bs = PerThreadDataProvider::getSerializer();
-		__CHECKED( bs.readOrWrite(typeId, write) );
-		__CHECKED( bs.readOrWrite(groupId, write) );
-		if ( write )
-		{
-			//link()->getOrAdd<ReliableSend>()->
-		}
-		else
-		{
-			network().getOrAdd<GroupCollectionNetwork>()->createFromRemote( typeId, groupId );
-		}
+		// Only send group create on this link.
+		inetwork().callRpc<createGroup, string, u32, BinSerializer>
+			(
+				typeName, groupId, initData, false,
+				&link()->remoteEtp(), false, false, false, 
+				MM_VG_CHANNEL, nullptr
+			);
 	}
 
 
 	// ------- GroupCollectionNetwork ------------------------------------------------------------------------------------------
 
-	MM_TS void GroupCollectionNetwork::msgGroupCreate( u16 typeId, u32 groupId, bool write )
+	MM_TS void GroupCollectionNetwork::msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData )
 	{
-		network().getOrAdd<LinkManager>()->forEachLink( [=](Link& link)
-		{
-			link.getOrAdd<GroupCollectionLink>()->msgGroupCreate( typeId, groupId, write );
-		});
+		// Send group create to all.
+		inetwork().callRpc<createGroup, string, u32, BinSerializer>
+			(
+				typeName, groupId, initData, false, 
+				nullptr, false, true, true, 
+				MM_VG_CHANNEL, nullptr
+			);
 	}
-
-	void GroupCollectionNetwork::createFromRemote(u16 typeId, u32 groupId)
-	{
-
-	}
-
 
 }

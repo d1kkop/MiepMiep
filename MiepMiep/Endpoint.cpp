@@ -95,6 +95,8 @@ namespace MiepMiep
 
 	sptr<Endpoint> Endpoint::fromIpAndPort(const string& ipAndPort, i32* errOut)
 	{
+		if ( errOut ) *errOut = -1;
+
 		for ( u64 i=ipAndPort.length(); i!=0; i-- )
 		{
 			if ( ipAndPort[i] == ':' )

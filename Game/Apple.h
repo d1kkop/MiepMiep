@@ -11,7 +11,6 @@ namespace MyGame
 	public:
 		Apple(INetwork& network)
 		{
-			network.createGroup(typeId());
 		}
 
 		MM_NETWORK_CREATABLE()

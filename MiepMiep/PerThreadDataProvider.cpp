@@ -7,7 +7,9 @@ namespace MiepMiep
 	MM_TS BinSerializer& PerThreadDataProvider::getSerializer()
 	{
 		scoped_lock lk(m_PerThreadMapMutex);
-		return m_PerThreadDataMap[ this_thread::get_id() ].m_Serializer;
+		auto& bs = m_PerThreadDataMap[ this_thread::get_id() ].m_Serializer;
+		bs.reset();
+		return bs;
 	}
 
 	MM_TS BinSerializer& PerThreadDataProvider::beginSend()
@@ -31,7 +33,7 @@ namespace MiepMiep
 	}
 
 
-	MM_TS BinSerializer& get_thread_serializer()
+	MM_TS BinSerializer& priv_get_thread_serializer()
 	{
 		return PerThreadDataProvider::getSerializer();
 	}

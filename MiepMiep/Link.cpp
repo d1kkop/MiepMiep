@@ -7,7 +7,7 @@ namespace MiepMiep
 {
 
 	Link::Link(Network& network):
-		Parent(network)
+		ParentNetwork(network)
 	{
 	}
 
@@ -26,10 +26,10 @@ namespace MiepMiep
 		return bs;
 	}
 
-	MM_TS void Link::createGroup(u16 groupType)
+	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
 	{
 		auto& varVec = PerThreadDataProvider::getConstructedVariables();
-		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( varVec, groupType ); // makes copy
+		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( varVec, typeName, initData, nullptr ); // makes copy
 		varVec.clear();
 	}
 

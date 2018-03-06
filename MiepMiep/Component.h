@@ -14,6 +14,7 @@ namespace MiepMiep
 		RemoteServerInfo,
 		ListenInfo,
 		LinkManager,
+		JobSystem,
 		GroupCollectionLink,
 		GroupCollectionNetwork,
 		GroupCreateFunctions,
@@ -37,22 +38,11 @@ namespace MiepMiep
 	};
 
 
-	template <typename T>
-	class Parent
-	{
-	public:
-		Parent(T& parent):
-			m_Parent(parent)  { }
-
-		T& m_Parent;
-	};
-
-
 	class ComponentCollection
 	{
 	public:
 		template <typename T> MM_TS bool has(byte idx=0) const;
-		template <typename T> MM_TS T* get(byte idx=0);
+		template <typename T> MM_TS T* get(byte idx=0) const;
 
 	protected:
 		template <typename T, typename ...Args> MM_TS T* getOrAddInternal(byte idx=0, Args... args);
@@ -72,7 +62,7 @@ namespace MiepMiep
 	}
 
 	template <typename T>
-	MM_TS T* ComponentCollection::get(byte idx)
+	MM_TS T* ComponentCollection::get(byte idx) const
 	{
 		rscoped_lock lk(m_ComponentsMutex);
 		auto compIt = m_Components.find( T::compType() );

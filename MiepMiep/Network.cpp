@@ -6,6 +6,8 @@
 #include "MsgIdToFunctions.h"
 #include "PerThreadDataProvider.h"
 #include "LinkState.h"
+#include "ReliableSend.h"
+#include "JobSystem.h"
 
 
 namespace MiepMiep
@@ -30,11 +32,7 @@ namespace MiepMiep
 
 	Network::Network()
 	{
-		// groups
-		registerType<LinkState>();
-		// rpc's
-		//registerRpc<
-
+		getOrAdd<JobSystem>(0, 3); // 3 worker threads
 	}
 
 	Network::~Network()
@@ -64,42 +62,44 @@ namespace MiepMiep
 		return EJoinServerCallResult::Fine;
 	}
 
-	MM_TS void Network::registerRpc(u16 rpcType, const std::function<void(BinSerializer&, INetwork&, const IEndpoint*)>& cb)
-	{
-		getOrAdd<MsgIdToFunctions>()->registerRpc( rpcType, cb );
-	}
-
-	MM_TS void Network::deregisterRpc(u16 rpcType)
-	{
-		getOrAdd<MsgIdToFunctions>()->deregisterRpc( rpcType );
-	}
-
-	MM_TS void Network::callRpc(u16 rpcType, const IEndpoint* specific, bool exclude, bool buffer)
-	{
-		// TODO buffer
-		getOrAdd<MsgIdToFunctions>()->callRpc( rpcType, specific, exclude, buffer );
-	}
-
-	MM_TS void Network::registerGroup(u16 groupType, const std::function<void(INetwork&, const IEndpoint&)>& cb)
-	{
-		getOrAdd<MsgIdToFunctions>()->registerGroup( groupType, cb );
-	}
-
-	MM_TS void Network::deregisterGroup(u16 groupType)
-	{
-		getOrAdd<MsgIdToFunctions>()->deregisterGroup( groupType );
-	}
-
-	MM_TS void Network::createGroup(u16 groupType)
+	MM_TS void Network::createGroupInternal(const string& groupType, const BinSerializer& initData, byte channel, IDeliveryTrace* trace)
 	{
 		auto& vars = PerThreadDataProvider::getConstructedVariables();
-		getOrAdd<GroupCollectionNetwork>()->addNewPendingGroup( vars, groupType ); // makes copy
+		getOrAdd<GroupCollectionNetwork>(channel)->addNewPendingGroup( vars, groupType, initData, trace ); // makes copy
 		vars.clear();
+	}
+
+	void priv_create_group(INetwork& nw, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace)
+	{
+		Network& network = static_cast<Network&>(nw);
+		network.createGroupInternal( groupType, bs, channel, trace );
 	}
 
 	MM_TS void Network::destroyGroup(u32 groupId)
 	{
 
+	}
+
+	MM_TS void Network::createRemoteGroup(const string& typeName, u32 netId, const BinSerializer& initData, const IEndpoint& etp)
+	{
+		void* vgCreatePtr = Platform::getPtrFromName((string("deserialize_") + typeName).c_str());
+		if ( vgCreatePtr )
+		{
+			using fptr = void (*)(INetwork&, const IEndpoint&, const BinSerializer&);
+			((fptr)vgCreatePtr)( *this, etp, initData );
+		}
+	}
+
+	MM_TS ESendCallResult Network::sendReliable(BinSerializer& bs, const IEndpoint* specific,
+												bool exclude, bool buffer, bool relay,
+												byte channel, IDeliveryTrace* trace)
+	{
+		bool wasSent = getOrAdd<LinkManager>()->forLink( specific, exclude, [&](Link& link)
+		{
+			link.getOrAdd<ReliableSend>(channel)->enqueue( bs, relay, trace );
+		});
+
+		return wasSent?ESendCallResult::Fine:ESendCallResult::NotSent;
 	}
 
 	MM_TS void Network::clearAllStatics()
@@ -111,6 +111,13 @@ namespace MiepMiep
 	MM_TS void Network::printMemoryLeaks()
 	{
 		Memory::printUntracedMemory();
+	}
+
+	MM_TS Link* Network::getLink(const IEndpoint& etp) const
+	{
+		LinkManager* lm = get<LinkManager>();
+		if (!lm) return nullptr;
+		return lm->getLink(etp).get();
 	}
 
 }

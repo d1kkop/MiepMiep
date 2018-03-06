@@ -13,6 +13,8 @@ namespace MiepMiep
 	{
 	public:
 		BinSerializer();
+		BinSerializer(const BinSerializer& other);
+		BinSerializer& operator==(const BinSerializer& other);
 		~BinSerializer();
 
 		void reset();
@@ -23,8 +25,8 @@ namespace MiepMiep
 		bool setWrite(u32 w);
 		bool moveRead(u32 r);
 		bool moveWrite(u32 w);
-		bool read(byte* b, u16 buffSize);
-		bool write(const byte* b, u16 buffSize);
+		bool read(byte* b, u32 buffSize);
+		bool write(const byte* b, u32 buffSize);
 
 		// --- Getters ----
 
@@ -44,6 +46,7 @@ namespace MiepMiep
 		template <> bool write(const char& b)					{ return write8(b); }
 		template <> bool write(const i16& b)					{ return write16(b); }
 		template <> bool write(const i32& b)					{ return write32(b); }
+		template <> bool write(const BinSerializer& other)		{ return write(other.data(), other.length()); }
 //		template <> bool write(const Endpoint& b)				{ return b.write(*this); }
 		template <> bool write(const std::string& b)
 		{
@@ -61,6 +64,7 @@ namespace MiepMiep
 			}
 			return true;
 		}
+		
 
 		template <typename T> bool read(T& val)					{ return read(&val, sizeof(T)); }
 		template <> bool read(bool& b)							{ return read8((byte&)b); }
@@ -70,6 +74,7 @@ namespace MiepMiep
 		template <> bool read(char& b)							{ return read8((byte&)b); }
 		template <> bool read(i16& b)							{ return read16((u16&)b); }
 		template <> bool read(i32& b)							{ return read32((u32&)b); }
+		template <> bool read(BinSerializer& other)				{ return other.write(data(), length()); }
 //		template <> bool read(Endpoint& b)						{ return b.read(*this); }
 		template <> bool read(std::string& b) 
 		{

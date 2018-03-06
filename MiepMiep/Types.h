@@ -19,26 +19,23 @@
 #define MM_TS  /* Thread safe function. */
 
 
-#include <map>
-#include <memory>
-
-
-
 #define MM_NETWORK_CREATABLE() \
 	static u16 typeId() { return MM_COUNTER; } \
 	static void remoteCreate(INetwork& network, const IEndpoint& etp)
 
 
-namespace MiepMiep
-{
-	MM_TS MM_DECLSPEC extern class BinSerializer& get_thread_serializer();
-	MM_TS MM_DECLSPEC extern void* get_rpc_func(const std::string& name);
-}
+#include <map>
+#include <memory>
+
 
 
 namespace MiepMiep
 {
+	class INetwork;
 	class BinSerializer;
+	class IEndpoint;
+	class IDeliveryTrace;
+	enum class ESendCallResult;
 	using byte = unsigned char;
 	using i16  = short;
 	using i32  = long;
@@ -48,4 +45,12 @@ namespace MiepMiep
 	using u64  = unsigned long long;
 	using MetaData = std::map<std::string, std::string>;
 	template <typename T> using sptr = std::shared_ptr<T>;
+
+
+
+	// ---- !! FOR INTERNAL USE ONLY !! ------
+	MM_TS MM_DECLSPEC extern BinSerializer& priv_get_thread_serializer();
+	MM_TS MM_DECLSPEC extern ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& bs, const IEndpoint* specific, bool exclude, bool buffer, bool relay, byte channel, IDeliveryTrace* trace); 
+	MM_TS MM_DECLSPEC extern void priv_create_group(INetwork& nw, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace);
+	MM_TS MM_DECLSPEC extern void* priv_get_rpc_func(const std::string& name);
 }

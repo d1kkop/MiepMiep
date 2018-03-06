@@ -2,25 +2,26 @@
 #include "GroupCollection.h"
 #include "Platform.h"
 #include "LinkManager.h"
+#include "Rpc.h"
 #include "PerThreadDataProvider.h"
 
 
 namespace MiepMiep
 {
-	LinkState::LinkState(Link& link):
-		Parent(link),
-		m_State(EConnectState::Unknown)
+	// ------ Rpc --------------------------------------------------------------------------------
+
+	MM_RPC( linkStateConnect )
 	{
-		m_Parent.createGroup(typeId());
 	}
 
-	void LinkState::createFromRemoteCall(INetwork& network, const IEndpoint& etp)
+	// ------ LinkState --------------------------------------------------------------------------------
+
+	LinkState::LinkState(Link& link):
+		ParentLink(link),
+		m_State(EConnectState::Unknown)
 	{
-		sptr<Link> l = static_cast< Network& >( network ).getOrAdd<LinkManager>()->getLink( etp );
-		if ( l )
-		{
-			l->getOrAdd<LinkState>(); 
-		}
+		// TODO
+		// m_Parent.createGroup(typeId());
 	}
 
 	bool LinkState::connect()
@@ -31,11 +32,16 @@ namespace MiepMiep
 			return false;
 		}
 
-		
-		//m_Link.getOrAdd<GroupCollection>(0, m_Link)->addGroup();
 
 		m_State = EConnectState::Connecting;
+		m_SharedState = (u32)m_State;
+
 		return true;
+	}
+
+	void LinkState::acceptConnect()
+	{
+
 	}
 
 }

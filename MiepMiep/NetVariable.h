@@ -22,10 +22,12 @@ namespace MiepMiep
 		byte* data()		{ return m_Data; }	
 		u32 size() const	{ return m_Size; }
 
+		u32 id() const;
 		const IEndpoint* getOwner() const;
 		enum class EVarControl getVarControl() const;
-		u32 getGroupId() const;
+		
 
+		EChangeOwnerCallResult changeOwner( const IEndpoint& etp );
 
 		// Mark changed when variable changes data.
 		void markChanged();
