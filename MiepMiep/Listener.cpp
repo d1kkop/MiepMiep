@@ -62,20 +62,19 @@ namespace MiepMiep
 		{
 			// Remove socket from socket set
 			m_Socket.reset();
-			m_Listening = false;
+			m_Listening  = false;
 			m_ListenPort = -1;
 		}
 	}
 
 	MM_TS void Listener::setMaxConnections(u32 num)
 	{
-		scoped_spinlock lk(m_PropertiesLock);
 		m_MaxConnections = num;
 	}
 
 	MM_TS void Listener::setPassword(string& pw)
 	{
-		scoped_spinlock lk(m_PropertiesLock);
+		scoped_spinlock lk(m_PasswordLock);
 		m_Password = pw;
 	}
 

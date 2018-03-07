@@ -10,6 +10,22 @@ using namespace std;
 
 namespace MyGame
 {
+	struct MyTest
+	{
+		MyTest():
+			ptr(this)
+		{
+		}
+
+		~MyTest()
+		{
+			cout << "destructing my test"<< endl;
+		}
+
+		int age;
+		sptr<MyTest> ptr;
+	};
+
 	// Define your RPC (this is 'just' a static function)
 	// Inetwork, Iendpopint and Tuple<params...> tp are passed in always.
 	MM_RPC( myFirstRpc, i32, i32 )
@@ -36,6 +52,17 @@ namespace MyGame
 
 	bool Game::init()
 	{
+		sptr<MyTest> mt2;
+		{
+			MyTest* mt = new MyTest;
+			 cout << mt->ptr.use_count() << endl;
+			 mt2 = mt->ptr;
+			 mt2._Decref();
+			 cout << mt2->ptr.use_count() << endl;
+		}
+
+	/*	cout << mt2.use_count() << endl;
+
 		m_Network = INetwork::create();
 
 		m_Network->addConnectionListener( this );
@@ -45,7 +72,7 @@ namespace MyGame
 		auto masterEtp = IEndpoint::resolve( "localhost", 12200 );
 
 		m_Network->registerServer( *masterEtp, "myFirstGame" );
-		m_Network->joinServer( *masterEtp, "myFirstGame" );
+		m_Network->joinServer( *masterEtp, "myFirstGame" );*/
 
 		return true;
 	}

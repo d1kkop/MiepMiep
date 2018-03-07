@@ -9,7 +9,6 @@ namespace MiepMiep
 	{
 	}
 
-
 	MM_TS void NetworkListeners::pushEvent(sptr<IEvent>& event)
 	{
 		event->m_NetworkListener = this;

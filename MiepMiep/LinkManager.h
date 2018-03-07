@@ -1,7 +1,5 @@
 #pragma once
 
-#include "MiepMiep.h"
-#include "Memory.h"
 #include "Link.h"
 #include "Component.h"
 #include "Network.h"

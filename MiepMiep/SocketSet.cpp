@@ -12,7 +12,7 @@ namespace MiepMiep
 	SocketSet::~SocketSet()
 	= default;
 
-	bool SocketSet::addSocket(sptr<const ISocket>& sock, const PacketHandler& packetHandler)
+	MM_TS MM_DECLSPEC_INTERN bool SocketSet::addSocket(sptr<const ISocket>& sock, const PacketHandler& packetHandler)
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
@@ -23,13 +23,23 @@ namespace MiepMiep
 		return true;
 	}
 
-	void SocketSet::removeSocket(sptr<const ISocket>& sock)
+	MM_TS MM_DECLSPEC_INTERN void SocketSet::removeSocket(const sptr<const ISocket>& sock)
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
 		#else MM_WIN32SOCKET
 			m_Sockets.erase( static_cast<const BSDSocket&>(*sock).getSock() );
 		#endif
+	}
+
+	MM_TS MM_DECLSPEC_INTERN bool SocketSet::hasSocket(const sptr<const ISocket>& sock) const
+	{
+		scoped_lock lk(m_SetMutex);
+		#if MM_SDLSOCKET
+		#else MM_WIN32SOCKET
+			return m_Sockets.count( static_cast<const BSDSocket&>(*sock).getSock() ) != 0;
+		#endif
+		return false;
 	}
 
 	EListenOnSocketsResult SocketSet::listenOnSockets(u32 timeoutMs, i32* err)

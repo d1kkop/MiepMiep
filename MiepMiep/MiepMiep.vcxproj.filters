@@ -140,6 +140,9 @@
     <ClCompile Include="Listener.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
+    <ClCompile Include="SocketSetManager.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MiepMiep.h">
@@ -239,6 +242,9 @@
       <Filter>Network\Components</Filter>
     </ClInclude>
     <ClInclude Include="Listener.h">
+      <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketSetManager.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>

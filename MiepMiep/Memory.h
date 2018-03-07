@@ -18,7 +18,15 @@ namespace MiepMiep
 	class ITraceable
 	{
 	public:
+		ITraceable()//:
+		//	m_Ptr(this)
+		= default;
 		virtual ~ITraceable();
+
+	//	const sptr<ITraceable>& ptr() { return m_Ptr; }
+		
+	private:
+	//	sptr<ITraceable> m_Ptr;
 	};
 
 

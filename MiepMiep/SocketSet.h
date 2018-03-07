@@ -27,7 +27,8 @@ namespace MiepMiep
 
 		// Fails if max number of sockets was added. For BSD sockets the default is 64.
 		MM_TS MM_DECLSPEC_INTERN bool addSocket(sptr<const ISocket>& sock, const PacketHandler& packetHandler);
-		MM_TS MM_DECLSPEC_INTERN void removeSocket(sptr<const ISocket>& sock);
+		MM_TS MM_DECLSPEC_INTERN void removeSocket(const sptr<const ISocket>& sock);
+		MM_TS MM_DECLSPEC_INTERN bool hasSocket(const sptr<const ISocket>& sock) const;
 
 		// NOTE: Not thread safe. Should be called from a single thread to listen on sockets.
 		// Suggestion: Use a seperate thread per SocketSet.
@@ -37,7 +38,7 @@ namespace MiepMiep
 		MM_TS void rebuildSocketArrayIfNecessary();
 
 	private:
-		mutex m_SetMutex;
+		mutable mutex m_SetMutex;
 
 	#if MM_SDLSOCKET
 	#elif MM_WIN32SOCKET

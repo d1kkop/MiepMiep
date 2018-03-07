@@ -7,7 +7,6 @@ namespace MiepMiep
 	LinkManager::LinkManager(Network& network):
 		ParentNetwork(network)
 	{
-
 	}
 
 	MM_TS sptr<Link> LinkManager::addLink(const IEndpoint& etp)

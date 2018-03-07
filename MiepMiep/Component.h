@@ -14,6 +14,7 @@ namespace MiepMiep
 		RemoteServerInfo,
 		Listener,
 		LinkManager,
+		SocketSetManager,
 		JobSystem,
 		NetworkListeners,
 		GroupCollectionLink,

@@ -41,6 +41,7 @@
     <ClCompile Include="RemoteServerInfo.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="SocketSet.cpp" />
+    <ClCompile Include="SocketSetManager.cpp" />
     <ClCompile Include="Text32.cpp" />
     <ClCompile Include="Text64.cpp" />
     <ClCompile Include="Threading.cpp" />
@@ -59,6 +60,7 @@
     <ClInclude Include="NetworkListeners.h" />
     <ClInclude Include="PerThreadDataProvider.h" />
     <ClInclude Include="Rpc.h" />
+    <ClInclude Include="SocketSetManager.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="Config.h" />
@@ -90,7 +92,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{8241375E-5851-44A0-9409-C53A63558C28}</ProjectGuid>
     <RootNamespace>MiepMiep</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

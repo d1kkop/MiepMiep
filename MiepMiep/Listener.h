@@ -16,8 +16,8 @@ namespace MiepMiep
 		~Listener() override;
 		static EComponentType compType() { return EComponentType::Listener; }
 
-		bool startOrRestartListening( u16 port );
-		void stopListen();
+		MM_TS bool startOrRestartListening( u16 port );
+		MM_TS void stopListen();
 
 		MM_TS void setMaxConnections( u32 num );
 		MM_TS void setPassword( string& pw );
@@ -27,8 +27,8 @@ namespace MiepMiep
 		sptr<ISocket> m_Socket;
 		bool m_Listening;
 		u16 m_ListenPort;
-		SpinLock m_PropertiesLock;
-		u32 m_MaxConnections;
+		atomic_uint m_MaxConnections;
+		SpinLock m_PasswordLock;
 		string m_Password;
 	};
 }
