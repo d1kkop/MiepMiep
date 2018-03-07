@@ -10,9 +10,8 @@ namespace MiepMiep
 
 	ReceptionThread::ReceptionThread(SocketSetManager& manager):
 		m_Manager(manager),
-		m_SockSet(sptr<SocketSet>(reserve<SocketSet>(MM_FL)))
+		m_SockSet(reserve_sp<SocketSet>(MM_FL))
 	{
-
 	}
 
 	ReceptionThread::~ReceptionThread()
@@ -99,7 +98,7 @@ namespace MiepMiep
 			}
 		}
 
-		m_ReceptionThreads.emplace_back( sptr<ReceptionThread>( reserve<ReceptionThread, SocketSetManager&>(MM_FL, *this) ) );
+		m_ReceptionThreads.emplace_back( reserve_sp<ReceptionThread, SocketSetManager&>(MM_FL, *this) );
 		bool wasAdded = m_ReceptionThreads.back()->addSocket( sock, handler );
 		assert( wasAdded );
 

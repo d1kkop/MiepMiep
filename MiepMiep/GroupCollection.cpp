@@ -15,7 +15,7 @@ namespace MiepMiep
 
 	MM_TS void GroupCollection::addNewPendingGroup(vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, IDeliveryTrace* trace)
 	{
-		Group* g = reserve<Group, GroupCollection&, vector<NetVariable*>&, const string&, const BinSerializer&>(MM_FL, *this, vars, typeName, initData);
+		sptr<Group> g = reserve_sp<Group, GroupCollection&, vector<NetVariable*>&, const string&, const BinSerializer&>(MM_FL, *this, vars, typeName, initData);
 		scoped_lock lk(m_GroupLock);
 		m_PendingGroups.emplace_back( g );
 		network().get<JobSystem>()->addJob([&]() { 

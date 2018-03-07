@@ -54,13 +54,13 @@ namespace MiepMiep
 		template <typename T>
 		MM_TS bool hasOnLink(const IEndpoint& etp, byte idx=0) const;
 		template <typename T>
-		MM_TS T* getOnLink(const IEndpoint& etp, byte idx=0) const;
+		MM_TS sptr<T> getOnLink(const IEndpoint& etp, byte idx=0) const;
 		template <typename T>
-		MM_TS T* getOrAddOnLink(const IEndpoint& etp, byte idx=0);
+		MM_TS sptr<T> getOrAddOnLink(const IEndpoint& etp, byte idx=0);
 
 		// Gets or adds component to ComponentCollection.
 		template <typename T, typename ...Args>
-		MM_TS T* getOrAdd(byte idx=0, Args... args);
+		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
 
 	};
 
@@ -68,13 +68,13 @@ namespace MiepMiep
 	template <typename T>
 	MM_TS bool MiepMiep::Network::hasOnLink(const IEndpoint& etp, byte idx) const
 	{
-		Link* link = getLink(etp);
+		const sptr<Link>& link = getLink(etp);
 		if ( !link ) return false;
 		return link->has<T>(idx);
 	}
 
 	template <typename T>
-	MM_TS T* MiepMiep::Network::getOnLink(const IEndpoint& etp, byte idx) const
+	MM_TS sptr<T> MiepMiep::Network::getOnLink(const IEndpoint& etp, byte idx) const
 	{
 		Link* link = getLink(etp);
 		if ( !link ) return nullptr;
@@ -82,7 +82,7 @@ namespace MiepMiep
 	}
 
 	template <typename T>
-	MM_TS T* MiepMiep::Network::getOrAddOnLink(const IEndpoint& etp, byte idx)
+	MM_TS sptr<T> MiepMiep::Network::getOrAddOnLink(const IEndpoint& etp, byte idx)
 	{
 		Link* link = getLink(etp);
 		if ( !link ) return nullptr;
@@ -91,7 +91,7 @@ namespace MiepMiep
 
 
 	template <typename T, typename ...Args>
-	MM_TS T* MiepMiep::Network::getOrAdd(byte idx, Args... args)
+	MM_TS sptr<T> MiepMiep::Network::getOrAdd(byte idx, Args... args)
 	{
 		return getOrAddInternal<T, Network&>(idx, *this, args...);
 	}

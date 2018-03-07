@@ -44,14 +44,14 @@ namespace MiepMiep
 	{
 	public:
 		template <typename T> MM_TS bool has(byte idx=0) const;
-		template <typename T> MM_TS T* get(byte idx=0) const;
+		template <typename T> MM_TS sptr<T> get(byte idx=0) const;
 
 	protected:
-		template <typename T, typename ...Args> MM_TS T* getOrAddInternal(byte idx=0, Args... args);
+		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(byte idx=0, Args... args);
 
 	private:
 		mutable rmutex m_ComponentsMutex;
-		map<EComponentType, vector<uptr<IComponent>>> m_Components;
+		map<EComponentType, vector<sptr<IComponent>>> m_Components;
 	};
 
 
@@ -64,7 +64,7 @@ namespace MiepMiep
 	}
 
 	template <typename T>
-	MM_TS T* ComponentCollection::get(byte idx) const
+	MM_TS sptr<T> ComponentCollection::get(byte idx) const
 	{
 		rscoped_lock lk(m_ComponentsMutex);
 		auto compIt = m_Components.find( T::compType() );
@@ -73,24 +73,24 @@ namespace MiepMiep
 			auto& vecComp = compIt->second;
 			if ( vecComp.size() > idx )
 			{
-				return static_cast<T*>( vecComp[idx].get() );
+				return static_pointer_cast<T> ( vecComp[idx] );
 			}
 		}
 		return nullptr;
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS T* ComponentCollection::getOrAddInternal(byte idx, Args... args)
+	MM_TS sptr<T> ComponentCollection::getOrAddInternal(byte idx, Args... args)
 	{
 		rscoped_lock lk(m_ComponentsMutex);
 		if (!has<T>(idx))
 		{
-			T* comp = reserve<T, Args...>(MM_FL, args...);
+			sptr<T> comp = reserve_sp<T, Args...>(MM_FL, args...);
 			auto& vecComp = m_Components[T::compType()];
 			if ( vecComp.size() <= idx )
 				vecComp.resize( idx + 1 );
-			vecComp[idx] = uptr<IComponent>(comp);
+			vecComp[idx] = static_pointer_cast<IComponent>( comp );
 		}
-		return static_cast<T*>( m_Components[T::compType()][idx].get() );
+		return static_pointer_cast<T>( m_Components[T::compType()][idx] );
 	}
 }

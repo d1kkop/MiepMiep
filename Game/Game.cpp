@@ -61,7 +61,7 @@ namespace MyGame
 			 cout << mt2->ptr.use_count() << endl;
 		}
 
-	/*	cout << mt2.use_count() << endl;
+		cout << mt2.use_count() << endl;
 
 		m_Network = INetwork::create();
 
@@ -72,7 +72,7 @@ namespace MyGame
 		auto masterEtp = IEndpoint::resolve( "localhost", 12200 );
 
 		m_Network->registerServer( *masterEtp, "myFirstGame" );
-		m_Network->joinServer( *masterEtp, "myFirstGame" );*/
+		m_Network->joinServer( *masterEtp, "myFirstGame" );
 
 		return true;
 	}

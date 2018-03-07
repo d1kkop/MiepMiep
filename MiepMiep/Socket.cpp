@@ -19,9 +19,9 @@ namespace MiepMiep
 		if ( 0 == Platform::initialize() )
 		{
 		#if MM_SDLSOCKET
-			return sptr<ISocket>(reserve<SDLSocket>(MM_FL));
+			return reserve_sp<SDLSocket>(MM_FL);
 		#elif MM_WIN32SOCKET
-			return sptr<ISocket>(reserve<BSDSocket>(MM_FL));
+			return reserve_sp<BSDSocket>(MM_FL);
 		#endif
 		}
 		return nullptr;

@@ -1,3 +1,9 @@
-Wed Mar  7 20:12:05 2018 ------- New Session --------
-Wed Mar  7 20:12:05 2018 ----------------------------
-Wed Mar  7 20:12:05 2018 No memory leaks detected.
+Wed Mar  7 23:31:06 2018 ------- New Session --------
+Wed Mar  7 23:31:06 2018 ----------------------------
+Wed Mar  7 23:31:06 2018 Thread 13168 suspends -> loses lock.
+Wed Mar  7 23:31:06 2018 Thread 1916 locks.
+Wed Mar  7 23:31:06 2018 Thread 9968 suspends -> loses lock.
+Wed Mar  7 23:31:06 2018 Thread 4124 suspends -> loses lock.
+Wed Mar  7 23:31:06 2018 Thread 1916 unlocks.
+Wed Mar  7 23:31:06 2018 Thread 13168 suspends -> loses lock.
+Wed Mar  7 23:31:06 2018 No memory leaks detected.

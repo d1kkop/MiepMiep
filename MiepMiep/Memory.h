@@ -18,15 +18,17 @@ namespace MiepMiep
 	class ITraceable
 	{
 	public:
-		ITraceable()//:
-		//	m_Ptr(this)
-		= default;
+		ITraceable():
+			m_Ptr(this)
+		{
+		}
 		virtual ~ITraceable();
 
-	//	const sptr<ITraceable>& ptr() { return m_Ptr; }
+		template <class T>
+		sptr<T> ptr() { return static_pointer_cast<T>(m_Ptr); }
 		
 	private:
-	//	sptr<ITraceable> m_Ptr;
+		sptr<ITraceable> m_Ptr;
 	};
 
 
@@ -95,6 +97,21 @@ namespace MiepMiep
 	template <typename T>						inline T*	reserve(char* fname, u64 line)							{ return Memory::doAlloc<T>(fname, line); }
 	template <typename T>						inline T*	reserveN(char* fname, u64 line, u64 cnt)				{ return Memory::doAllocN<T>(fname, line, cnt); }
 	template <typename T, typename ...Args>		inline T*	reserve(char* fname, u64 line, Args... args)			{ return Memory::doAlloc<T, Args...>(fname, line, args...); }
+
+	template <typename T>						inline sptr<T>	reserve_sp(char* fname, u64 line)						
+	{ 
+		T* t = Memory::doAlloc<T>(fname, line);
+		sptr<T> sp = t->template ptr<T>();
+		sp._Decref(); // back to 1
+		return sp;
+	}
+	template <typename T, typename ...Args>		inline sptr<T>	reserve_sp(char* fname, u64 line, Args... args)		
+	{
+		T* t = Memory::doAlloc<T, Args...>(fname, line, args...); 
+		sptr<T> sp = t->template ptr<T>();
+		sp._Decref(); // back to 1
+		return sp;
+	}
 
 	template <typename T>	inline void release(T* p)		{ Memory::doDelete<T>(p); }
 	template <typename T>	inline void releaseN(T* p)		{ Memory::doDeleteN<T>(p); }

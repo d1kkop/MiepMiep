@@ -22,9 +22,9 @@ namespace MiepMiep
 
 	sptr<IEndpoint> Endpoint::getCopy() const
 	{
-		Endpoint* etp = reserve<Endpoint>(MM_FL);
+		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
 		memcpy((void*)etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
-		return sptr<IEndpoint>(etp);
+		return static_pointer_cast<IEndpoint>( etp );
 	}
 
 	bool IEndpoint::operator==(const IEndpoint& other) const
@@ -81,10 +81,10 @@ namespace MiepMiep
 			// try binding on the found host addresses
 			for (addrinfo* inf = addrInfo; inf != nullptr; inf = inf->ai_next)
 			{
-				Endpoint* etp = reserve<Endpoint>(MM_FL);
+				sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
 				memcpy( &etp->m_SockAddr, inf->ai_addr, inf->ai_addrlen );
 				freeaddrinfo(addrInfo);
-				return sptr<Endpoint>(etp);
+				return etp;
 			}
 
 			freeaddrinfo(addrInfo);

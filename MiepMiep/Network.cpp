@@ -18,7 +18,7 @@ namespace MiepMiep
 	{
 		if (0 == Platform::initialize())
 		{
-			return sptr<INetwork>(reserve<Network>(MM_FL));
+			return reserve_sp<Network>(MM_FL);
 		}
 		return nullptr;
 	}
@@ -54,14 +54,14 @@ namespace MiepMiep
 
 	MM_TS ERegisterServerCallResult Network::registerServer(const IEndpoint& masterEtp, const string& name, const string& pw, const MetaData& md)
 	{
-		LinkManager* lm = getOrAdd<LinkManager>();
+		sptr<LinkManager> lm = getOrAdd<LinkManager>();
 		sptr<Link> link = lm->addLink( masterEtp );
 		if ( link )
 		{
 			return ERegisterServerCallResult::AlreadyRegistered;
 		}
 		auto& bs = link->beginSend();
-		auto* ls = link->getOrAdd<LinkState>();
+		sptr<LinkState> ls = link->getOrAdd<LinkState>();
 		ls->connect();
 		return ERegisterServerCallResult::Fine;
 	}
@@ -133,7 +133,7 @@ namespace MiepMiep
 
 	MM_TS sptr<Link> Network::getLink(const IEndpoint& etp) const
 	{
-		LinkManager* lm = get<LinkManager>();
+		sptr<LinkManager> lm = get<LinkManager>();
 		if (!lm) return nullptr;
 		return lm->getLink(etp);
 	}

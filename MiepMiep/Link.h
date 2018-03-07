@@ -31,7 +31,7 @@ namespace MiepMiep
 		MM_TS void pushEvent(Args... args); 
 
 		template <typename T, typename ...Args>
-		MM_TS T* getOrAdd(byte idx=0, Args... args);
+		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
 
 	private:
 		u32 m_Id;
@@ -57,7 +57,7 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS T* Link::getOrAdd(byte idx, Args... args)
+	MM_TS sptr<T> Link::getOrAdd(byte idx, Args... args)
 	{
 		return getOrAddInternal<T, Link&>(idx, *this, args...);
 	}

@@ -13,7 +13,7 @@ namespace MiepMiep
 
 	sptr<Link> Link::create(Network& network, const IEndpoint& other)
 	{
-		auto link = sptr<Link>(reserve<Link, Network&>(MM_FL, network));
+		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
 		link->m_RemoteEtp = other.getCopy();
 		link->m_Id = rand();
 		return link;
