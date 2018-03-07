@@ -3,11 +3,11 @@
 #include "LinkManager.h"
 #include "Platform.h"
 #include "GroupCollection.h"
-#include "MsgIdToFunctions.h"
 #include "PerThreadDataProvider.h"
 #include "LinkState.h"
 #include "ReliableSend.h"
 #include "JobSystem.h"
+#include "NetworkListeners.h"
 
 
 namespace MiepMiep
@@ -37,10 +37,19 @@ namespace MiepMiep
 
 	Network::~Network()
 	{
+		if ( has<JobSystem>() )
+		{
+			get<JobSystem>()->stop();
+		}
 		if ( Platform::shutdown() ) 
 		{
 			Network::clearAllStatics();
 		}
+	}
+
+	MM_TS void Network::processEvents()
+	{
+		getOrAdd<NetworkListeners>()->processAll();
 	}
 
 	MM_TS ERegisterServerCallResult Network::registerServer(const IEndpoint& masterEtp, const string& name, const string& pw, const MetaData& md)
@@ -98,8 +107,17 @@ namespace MiepMiep
 		{
 			link.getOrAdd<ReliableSend>(channel)->enqueue( bs, relay, trace );
 		});
-
 		return wasSent?ESendCallResult::Fine:ESendCallResult::NotSent;
+	}
+
+	MM_TS void Network::addConnectionListener(IConnectionListener* listener)
+	{
+		getOrAdd<NetworkListeners>()->addListener<IConnectionListener>(listener);
+	}
+
+	MM_TS void Network::removeConnectionListener(const IConnectionListener* listener)
+	{
+		getOrAdd<NetworkListeners>()->removeListener<IConnectionListener>(listener);
 	}
 
 	MM_TS void Network::clearAllStatics()
@@ -113,11 +131,11 @@ namespace MiepMiep
 		Memory::printUntracedMemory();
 	}
 
-	MM_TS Link* Network::getLink(const IEndpoint& etp) const
+	MM_TS sptr<Link> Network::getLink(const IEndpoint& etp) const
 	{
 		LinkManager* lm = get<LinkManager>();
 		if (!lm) return nullptr;
-		return lm->getLink(etp).get();
+		return lm->getLink(etp);
 	}
 
 }

@@ -15,6 +15,7 @@ namespace MiepMiep
 		ListenInfo,
 		LinkManager,
 		JobSystem,
+		NetworkListeners,
 		GroupCollectionLink,
 		GroupCollectionNetwork,
 		GroupCreateFunctions,

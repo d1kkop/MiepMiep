@@ -51,6 +51,8 @@ namespace MyGame
 	
 		m_Network = INetwork::create();
 
+		m_Network->addConnectionListener( this );
+
 		//m_Network->registerType<Apple>();
 		//m_Network->registerType<Tree>();
 
@@ -82,6 +84,12 @@ namespace MyGame
 
 		m_Network->registerServer( *masterEtp, "myFirstGame" );
 		m_Network->joinServer( *masterEtp, "myFirstGame" );
+	}
+
+
+	void Game::onConnectResult(INetwork& network, const IEndpoint& etp, EConnectResult res)
+	{
+
 	}
 
 }

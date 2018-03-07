@@ -27,6 +27,8 @@ namespace MiepMiep
 		Network();
 		~Network() override;
 
+		void processEvents() override;
+
 		// INetwork
 		MM_TS ERegisterServerCallResult registerServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
 		MM_TS EJoinServerCallResult joinServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
@@ -40,12 +42,15 @@ namespace MiepMiep
 										   bool exclude, bool buffer, bool relay,
 										   byte channel, IDeliveryTrace* trace) override;
 
+		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
+		MM_TS void removeConnectionListener( const IConnectionListener* listener ) override;
+
 
 		MM_TS static void clearAllStatics();
 		MM_TS MM_DECLSPEC static void printMemoryLeaks();
 
 		// Gets, checks or adds directly in a link in the network -> linkManagerComponent.
-		MM_TS Link* getLink(const IEndpoint& etp) const;
+		MM_TS sptr<Link> getLink(const IEndpoint& etp) const;
 		template <typename T>
 		MM_TS bool hasOnLink(const IEndpoint& etp, byte idx=0) const;
 		template <typename T>
@@ -91,6 +96,12 @@ namespace MiepMiep
 		return getOrAddInternal<T, Network&>(idx, *this, args...);
 	}
 
+
+	template <typename T>
+	Network& toNetwork(T& t) 
+	{ 
+		return static_cast<Network&>(t);
+	}
 
 
 	// ------------ ParentNetwork -----------------------------------------------

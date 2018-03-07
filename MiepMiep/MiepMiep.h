@@ -29,6 +29,17 @@ namespace MiepMiep
 		AlreadyJoined
 	};
 
+	enum class EConnectResult
+	{
+		Succes,
+		Timedout,
+		InvalidPassword,
+		MaxConnectionsReached,
+		AlreadyConnected,
+		InvalidConnectPacket
+	};
+
+
 	enum class ESendCallResult
 	{
 		/*	The packet is, or will be sent soon. It does not mean the packet is delivered. */
@@ -46,8 +57,16 @@ namespace MiepMiep
 
 	// ---------- User Classes -------------------------------
 
+
 	class MM_DECLSPEC IDeliveryTrace
 	{
+	};
+
+
+	class MM_DECLSPEC IConnectionListener
+	{
+	public:
+		virtual void onConnectResult( INetwork& network, const IEndpoint& etp, EConnectResult res ) { }
 	};
 
 
@@ -79,6 +98,8 @@ namespace MiepMiep
 		virtual ~INetwork() = default;
 		MM_TS static  sptr<INetwork> create();
 
+		MM_TS virtual void processEvents() = 0;
+
 		MM_TS virtual ERegisterServerCallResult registerServer( const IEndpoint& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
 		MM_TS virtual EJoinServerCallResult joinServer( const IEndpoint& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
 
@@ -90,13 +111,15 @@ namespace MiepMiep
 		MM_TS void createGroup(Args... args, bool localCall=false, byte channel=0, IDeliveryTrace* trace=nullptr);
 		MM_TS virtual void destroyGroup( u32 groupId ) = 0;
 
+		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener ) = 0;
+		MM_TS virtual void removeConnectionListener( const IConnectionListener* connectionListener ) = 0;
+
 		MM_TS virtual ESendCallResult sendReliable( BinSerializer& bs, const IEndpoint* specific=nullptr, bool exclude=false, bool buffer=false, 
 													bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
 
 
 		static void setLogSettings( bool logToFile, bool logToIde );
 	};
-
 
 
 	template <typename T, typename ...Args>

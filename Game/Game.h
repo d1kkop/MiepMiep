@@ -5,7 +5,7 @@ using namespace MiepMiep;
 
 namespace MyGame
 {
-	class Game
+	class Game : IConnectionListener
 	{
 	public:
 		Game();
@@ -13,6 +13,7 @@ namespace MyGame
 		bool init();
 		void run();
 
+		void onConnectResult( INetwork& network, const IEndpoint& etp, EConnectResult res ) override;
 
 		sptr<INetwork> m_Network;
 	};

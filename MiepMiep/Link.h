@@ -16,7 +16,7 @@ namespace MiepMiep
 		Link(Network& network);
 
 		u32 id() const { return m_Id; }
-		const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
+		const sptr<const IEndpoint>& remoteEtp() const { return m_RemoteEtp; }
 
 		MM_TS static sptr<Link> create(Network& network, const IEndpoint& other);
 		MM_TS class BinSerializer& beginSend();
@@ -25,14 +25,17 @@ namespace MiepMiep
 		MM_TS void destroyGroup( u32 id );
 
 		template <typename T, typename ...Args>
-		MM_TS ESendCallResult callRpc(Args... args, bool localCall, bool relay, byte channel, IDeliveryTrace* trace);
+		MM_TS ESendCallResult callRpc(Args... args, bool localCall=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr);
+
+		template <typename T, typename ...Args>
+		MM_TS void pushEvent(Args... args); 
 
 		template <typename T, typename ...Args>
 		MM_TS T* getOrAdd(byte idx=0, Args... args);
 
 	private:
 		u32 m_Id;
-		sptr<class IEndpoint> m_RemoteEtp;
+		sptr<const class IEndpoint> m_RemoteEtp;
 		map<EComponentType, vector<uptr<IComponent>>> m_Components;
 	};
 
@@ -41,12 +44,20 @@ namespace MiepMiep
 	MM_TS ESendCallResult MiepMiep::Link::callRpc(Args... args, bool localCall, bool relay, byte channel, IDeliveryTrace* trace)
 	{
 		auto& bs = priv_get_thread_serializer();
-		T::rpc<Args...>(args..., *this, bs, localCall);
-		return priv_send_rpc( *this, T::rpcName(), bs, &remoteEtp(), false, false, relay, channel, trace );
+		T::rpc<Args...>(args..., m_Network, bs, localCall);
+		return priv_send_rpc( m_Network, T::rpcName(), bs, remoteEtp().get(), false, false, relay, channel, trace );
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS T* MiepMiep::Link::getOrAdd(byte idx, Args... args)
+	MM_TS void Link::pushEvent(Args... args)
+	{
+		sptr<T> evt = make_shared<T>(remoteEtp(), args...);
+		sptr<IEvent> evtDown = static_pointer_cast<IEvent>(evt);
+		m_Network.getOrAdd<NetworkListeners>()->pushEvent( evtDown );
+	}
+
+	template <typename T, typename ...Args>
+	MM_TS T* Link::getOrAdd(byte idx, Args... args)
 	{
 		return getOrAddInternal<T, Link&>(idx, *this, args...);
 	}

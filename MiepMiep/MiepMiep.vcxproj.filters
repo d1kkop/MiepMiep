@@ -134,7 +134,7 @@
     <ClCompile Include="JobSystem.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
-    <ClCompile Include="MsgIdToFunctions.cpp">
+    <ClCompile Include="NetworkListeners.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -229,11 +229,11 @@
     <ClInclude Include="JobSystem.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
-    <ClInclude Include="MsgIdToFunctions.h">
-      <Filter>Network\Components</Filter>
-    </ClInclude>
     <ClInclude Include="Rpc.h">
       <Filter>ZUser</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkListeners.h">
+      <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

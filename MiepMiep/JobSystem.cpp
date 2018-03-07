@@ -70,7 +70,7 @@ namespace MiepMiep
 
 	JobSystem::~JobSystem()
 	{
-
+		stop();
 	}
 
 	void JobSystem::addJob(const std::function<void()>& cb)
@@ -106,4 +106,18 @@ namespace MiepMiep
 	{
 		m_Lock.unlock();
 	}
+
+	void JobSystem::stop()
+	{
+		for ( auto& wt :  m_WorkerThreads )
+		{
+			wt->stop();
+		}
+		m_WorkerThreads.clear();
+		m_Lock.lock();
+		m_GlobalQueue.clear();
+		m_Lock.unlock();
+		m_QueueCv.notify_all();
+	}
+
 }

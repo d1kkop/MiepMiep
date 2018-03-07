@@ -46,6 +46,7 @@ namespace MiepMiep
 
 
 		void addJob( const std::function<void ()>& cb );
+		void stop();
 
 	private:
 		void lock();

@@ -3,6 +3,7 @@
 #include "Platform.h"
 #include "LinkManager.h"
 #include "Rpc.h"
+#include "NetworkListeners.h"
 #include "PerThreadDataProvider.h"
 
 
@@ -10,8 +11,28 @@ namespace MiepMiep
 {
 	// ------ Rpc --------------------------------------------------------------------------------
 
+	MM_RPC( linkStateAlreadyConnected )
+	{
+		auto& nw = toNetwork(network);
+		sptr<Link> link = nw.getLink( *etp );
+		if ( link )
+		{
+			link->pushEvent<EventConnectResult>( EConnectResult::AlreadyConnected );
+		}
+	}
+
 	MM_RPC( linkStateConnect )
 	{
+		auto& nw = toNetwork(network);
+		sptr<Link> link = nw.getLink( *etp );
+		if ( !link )
+		{
+			
+		}
+		else
+		{
+			link->callRpc<linkStateAlreadyConnected>();
+		}
 	}
 
 	// ------ LinkState --------------------------------------------------------------------------------
@@ -36,7 +57,7 @@ namespace MiepMiep
 		m_State = EConnectState::Connecting;
 		m_SharedState = (u32)m_State;
 
-		return true;
+		return m_Link.callRpc<linkStateConnect>(false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
 	}
 
 	void LinkState::acceptConnect()

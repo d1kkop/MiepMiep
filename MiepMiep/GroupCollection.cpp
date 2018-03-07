@@ -57,7 +57,7 @@ namespace MiepMiep
 		inetwork().callRpc<createGroup, string, u32, BinSerializer>
 			(
 				typeName, groupId, initData, false,
-				&link()->remoteEtp(), false, false, false, 
+				link()->remoteEtp().get(), false, false, false, 
 				MM_VG_CHANNEL, nullptr
 			);
 	}
