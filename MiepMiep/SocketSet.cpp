@@ -7,33 +7,32 @@ using namespace std;
 namespace MiepMiep
 {
 	SocketSet::SocketSet()
-	{
-
-	}
+	= default;
 
 	SocketSet::~SocketSet()
-	{
+	= default;
 
-	}
-
-	bool SocketSet::addSocket(sptr<ISocket>& sock)
+	bool SocketSet::addSocket(sptr<const ISocket>& sock, const PacketHandler& packetHandler)
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
 		#else MM_WIN32SOCKET
 			if ( m_Sockets.size() >= FD_SETSIZE ) return false;
-			m_Sockets[static_cast<BSDSocket&>(*sock).getSock()] = sock;
+			m_Sockets[static_cast<const BSDSocket&>(*sock).getSock()] = make_pair ( sock, packetHandler );
 		#endif
 		return true;
 	}
 
-	void SocketSet::removeSocket(sptr<ISocket>& sock)
+	void SocketSet::removeSocket(sptr<const ISocket>& sock)
 	{
 		scoped_lock lk(m_SetMutex);
-		m_Sockets.erase( static_cast<BSDSocket&>(*sock).getSock() );
+		#if MM_SDLSOCKET
+		#else MM_WIN32SOCKET
+			m_Sockets.erase( static_cast<const BSDSocket&>(*sock).getSock() );
+		#endif
 	}
 
-	EListenOnSocketsResult SocketSet::listenOnSockets(u32 timeoutMs, const std::function<void (sptr<ISocket>&)>& cb, i32* err)
+	EListenOnSocketsResult SocketSet::listenOnSockets(u32 timeoutMs, i32* err)
 	{
 		if ( err ) *err = 0;
 		rebuildSocketArrayIfNecessary();
@@ -68,8 +67,8 @@ namespace MiepMiep
 				auto sockIt = m_Sockets.find(s);
 				if ( sockIt != m_Sockets.end() )
 				{
-					sptr<ISocket>& sock = sockIt->second;
-					cb( sock ); // has pending read data
+					pair<sptr<const ISocket>, PacketHandler>& sockHandler = sockIt->second;
+					sockHandler.second( sockHandler.first ); // handle data
 				}
 			}
 		#endif
@@ -93,7 +92,7 @@ namespace MiepMiep
 		{
 		#if MM_SDLSOCKET
 		#elif MM_WIN32SOCKET
-			SOCKET s = static_cast<BSDSocket&>(*kvp.second).getSock();
+			SOCKET s = static_cast<const BSDSocket&>(*kvp.second.first).getSock();
 			FD_SET(s, &m_SocketSet);
 		#endif
 		}

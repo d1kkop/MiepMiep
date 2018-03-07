@@ -12,7 +12,7 @@ namespace MiepMiep
 	{
 		LinkState,
 		RemoteServerInfo,
-		ListenInfo,
+		Listener,
 		LinkManager,
 		JobSystem,
 		NetworkListeners,

@@ -86,7 +86,8 @@ namespace MiepMiep
 
 }
 
-#define LOG( msg, ... )  Platform::log( ELogType::Message, MM_FUNCTION, MM_LINE, msg, MM_VARARGS )
-#define LOGW( msg, ... ) Platform::log( ELogType::Message, MM_FUNCTION, MM_LINE, msg, MM_VARARGS )
-#define LOGC( msg, ... ) Platform::log( ELogType::Message, MM_FUNCTION, MM_LINE, msg, MM_VARARGS )
+#define LOG( msg, ... )  Platform::log( ELogType::Message, MM_FUNCTION, MM_LINE, msg, __VA_ARGS__ )
+#define LOGW( msg, ... ) Platform::log( ELogType::Message, MM_FUNCTION, MM_LINE, msg, __VA_ARGS__ )
+#define LOGC( msg, ... ) Platform::log( ELogType::Message, MM_FUNCTION, MM_LINE, msg, __VA_ARGS__ )
+
 	

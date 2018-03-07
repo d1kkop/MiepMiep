@@ -9,9 +9,11 @@ namespace MyGame
 	{
 	public:
 		Game();
+		~Game() { stop(); }
 
 		bool init();
 		void run();
+		void stop();
 
 		void onConnectResult( INetwork& network, const IEndpoint& etp, EConnectResult res ) override;
 

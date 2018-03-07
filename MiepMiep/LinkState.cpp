@@ -25,13 +25,13 @@ namespace MiepMiep
 	{
 		auto& nw = toNetwork(network);
 		sptr<Link> link = nw.getLink( *etp );
-		if ( !link )
+		if ( link )
 		{
-			
-		}
-		else
-		{
-			link->callRpc<linkStateAlreadyConnected>();
+			if ( link->has<LinkState>() )
+			{
+				link->callRpc<linkStateAlreadyConnected>();
+				return;
+			}
 		}
 	}
 

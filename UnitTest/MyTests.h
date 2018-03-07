@@ -50,7 +50,7 @@ UTESTBEGIN(SocketSetTest)
 
 	SocketSet ss2;
 	i32 err;
-	EListenOnSocketsResult res = ss2.listenOnSockets(1, [&](auto& s) { }, &err );
+	EListenOnSocketsResult res = ss2.listenOnSockets(1, &err );
 	assert( res == EListenOnSocketsResult::NoSocketsInSet );
 
 	constexpr auto kThreads=50;
@@ -67,12 +67,12 @@ UTESTBEGIN(SocketSetTest)
 				sptr<ISocket> sock = ISocket::create();
 				sock->open();
 				sock->bind(0);
-				ss[rand()%4].addSocket( sock );
-				i32 err;
-				EListenOnSocketsResult res = ss[j].listenOnSockets(1, [&]( sptr<ISocket>& rdySocket )
+				ss[rand()%4].addSocket( const_pointer_cast<const ISocket>( sock ), [](const sptr<const ISocket>& sock)
 				{
 					cout << "Socket is ready." << endl;
-				}, &err);
+				} );
+				i32 err;
+				EListenOnSocketsResult res = ss[j].listenOnSockets(1, &err);
 				assert ( res == EListenOnSocketsResult::TimeoutNoData || res == EListenOnSocketsResult::Fine || res == EListenOnSocketsResult::NoSocketsInSet );
 			}
 		});

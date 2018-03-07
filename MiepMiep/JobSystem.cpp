@@ -1,5 +1,7 @@
 #include "JobSystem.h"
+#include "Platform.h"
 #include <cassert>
+#include <sstream>
 
 
 namespace MiepMiep
@@ -10,7 +12,6 @@ namespace MiepMiep
 		m_Js(js),
 		m_Closing(false)
 	{
-
 	}
 
 	WorkerThread::~WorkerThread()
@@ -23,21 +24,20 @@ namespace MiepMiep
 		m_Thread = thread([&]
 		/* This is the thread function */
 		{
-			while (!m_Closing)
+			while ( true )
 			{
-				m_Js.lock();
+				unique_lock<mutex> lk( m_Js.getMutex() );
+				if ( m_Js.isClosing() )
+				{
+					break;
+				}
 				Job j = m_Js.peekJob();
 				if ( !j.valid() )
 				{
-					m_Js.suspend();
-					if ( m_Closing )
-					{
-						m_Js.unlock();
-						break;
-					}
+					m_Js.suspend( lk );
 					j = m_Js.peekJob();
 				}
-				m_Js.unlock();
+				lk.unlock();
 				if ( j.valid() )
 				{
 					j.m_WorkFunc();
@@ -48,7 +48,6 @@ namespace MiepMiep
 
 	void WorkerThread::stop()
 	{
-		m_Closing = true;
 		if ( m_Thread.joinable() )
 		{
 			m_Thread.join();
@@ -58,7 +57,8 @@ namespace MiepMiep
 	// ------------ JobSystem --------------------------------------------------------------------------------
 
 	JobSystem::JobSystem(Network& network, u32 numWorkerThreads):
-		ParentNetwork(network)
+		ParentNetwork(network),
+		m_Closing(false)
 	{
 		assert( numWorkerThreads != 0 );
 		for (u32 i = 0; i < numWorkerThreads ; i++)
@@ -75,15 +75,20 @@ namespace MiepMiep
 
 	void JobSystem::addJob(const std::function<void()>& cb)
 	{
-		m_Lock.lock();
+		#if MM_TRACE_JOBSYSTEM
+			stringstream ss;
+			this_thread::get_id()._To_text( ss );
+			LOG( "Thread %s locks.", ss.str().c_str() );
+		#endif
+		m_JobsMutex.lock();
 		m_GlobalQueue.push_back ( { cb } );
-		m_Lock.unlock();
+		m_JobsMutex.unlock();
+		#if MM_TRACE_JOBSYSTEM
+			stringstream ss2;
+			this_thread::get_id()._To_text( ss2 );
+			LOG( "Thread %s unlocks.", ss2.str().c_str() );
+		#endif
 		m_QueueCv.notify_one();
-	}
-
-	void JobSystem::lock()
-	{
-		m_Lock.lock();
 	}
 
 	Job JobSystem::peekJob()
@@ -97,27 +102,28 @@ namespace MiepMiep
 		return Job();
 	}
 
-	void JobSystem::suspend()
+	void JobSystem::suspend(unique_lock<mutex>& ul)
 	{
-		m_QueueCv.wait( m_Lock );
-	}
-
-	void JobSystem::unlock()
-	{
-		m_Lock.unlock();
+		#if MM_TRACE_JOBSYSTEM
+			stringstream ss;
+			this_thread::get_id()._To_text( ss );
+			LOG( "Thread %s suspends -> loses lock.", ss.str().c_str() );
+		#endif
+		m_QueueCv.wait( ul );
 	}
 
 	void JobSystem::stop()
 	{
+		m_JobsMutex.lock();
+		m_Closing = true;
+		m_QueueCv.notify_all();
+		m_JobsMutex.unlock();
 		for ( auto& wt :  m_WorkerThreads )
 		{
 			wt->stop();
 		}
 		m_WorkerThreads.clear();
-		m_Lock.lock();
 		m_GlobalQueue.clear();
-		m_Lock.unlock();
-		m_QueueCv.notify_all();
 	}
 
 }

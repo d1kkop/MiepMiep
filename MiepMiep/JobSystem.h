@@ -47,19 +47,19 @@ namespace MiepMiep
 
 		void addJob( const std::function<void ()>& cb );
 		void stop();
+		bool isClosing() const volatile { return m_Closing; }
 
 	private:
-		void lock();
 		Job peekJob();
-		void suspend();
-		void unlock();
+		mutex& getMutex() { return m_JobsMutex; }
+		void suspend(unique_lock<mutex>& ul);
 
 
 	private:
+		volatile bool m_Closing;
 		mutex m_JobsMutex;
 		list<Job> m_GlobalQueue;
 		condition_variable m_QueueCv;
-		unique_lock<mutex> m_Lock;
 		vector<uptr<WorkerThread>> m_WorkerThreads;
 
 		friend class WorkerThread;

@@ -28,18 +28,6 @@ namespace MyGame
 		cout << var1 << " " << var2 << endl;
 	}
 
-	template <typename ...Args>
-	struct Tuple
-	{
-		tuple<Args...> tp;
-
-		void init(Args... args, int ab)
-		{
-			tuple<Args...> _tp(args...);
-			tp = _tp;
-		}
-	};
-
 
 
 	Game::Game()
@@ -48,59 +36,60 @@ namespace MyGame
 
 	bool Game::init()
 	{
-	
 		m_Network = INetwork::create();
 
 		m_Network->addConnectionListener( this );
-
-		//m_Network->registerType<Apple>();
-		//m_Network->registerType<Tree>();
-
-		tuple<> tp;
-
-		Tuple<> tp2;
-		tp2.init(3);
-		
-
-		//std::make_tuple(
-
 		m_Network->callRpc<myFirstRpc, i32, i32>( 5, 10, true );
-
 		m_Network->createGroup<myFirstVarGroup, string, bool>( "hello bartje k", true, true, 6 );
 
+		auto masterEtp = IEndpoint::resolve( "localhost", 12200 );
 
-	//	m_Network->createType<Apple>();
-	//	m_Network->createType<Apple>();
-
-		Apple* apple = new Apple(*m_Network);
-		delete apple;
+		m_Network->registerServer( *masterEtp, "myFirstGame" );
+		m_Network->joinServer( *masterEtp, "myFirstGame" );
 
 		return true;
 	}
 
 	void Game::run()
 	{
-		auto masterEtp = IEndpoint::resolve( "localhost", 12200 );
 
-		m_Network->registerServer( *masterEtp, "myFirstGame" );
-		m_Network->joinServer( *masterEtp, "myFirstGame" );
 	}
 
+
+	void Game::stop()
+	{
+		if ( m_Network )
+			m_Network->removeConnectionListener( this );
+	}
 
 	void Game::onConnectResult(INetwork& network, const IEndpoint& etp, EConnectResult res)
 	{
+		switch (res)
+		{
+		case MiepMiep::EConnectResult::Succes:
+			cout << "connected to: " << etp.toIpAndPort() << endl;
+			break;
+		case MiepMiep::EConnectResult::Timedout:
+			cout << "connecting to: " << etp.toIpAndPort() << " timed out." << endl;
+			break;
+		case MiepMiep::EConnectResult::InvalidPassword:
+			cout << "connecting to: " << etp.toIpAndPort() << " invalid password." << endl;
+			break;
+		case MiepMiep::EConnectResult::MaxConnectionsReached:
+			cout << "connecting to: " << etp.toIpAndPort() << " max connections reached." << endl;
+			break;
+		case MiepMiep::EConnectResult::AlreadyConnected:
+			cout << "connecting to: " << etp.toIpAndPort() << " already connected." << endl;
+			break;
+		case MiepMiep::EConnectResult::InvalidConnectPacket:
+			cout << "connecting to: " << etp.toIpAndPort() << " invalid connection packet." << endl;
+			break;
+		default:
+			cout << "connecting to: " << etp.toIpAndPort() << " unknown result returned!" << endl;
+			break;
+		}
 
+		
 	}
 
 }
-
-//
-//template <> bool MiepMiep::GenericNetVar<i32>::sync( BinSerializer& bs, bool write )
-//{
-//	return false;
-//}
-//
-//template <> bool MiepMiep::GenericNetVar<u32>::sync( BinSerializer& bs, bool write )
-//{
-//	return false;
-//}

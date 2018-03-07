@@ -5,6 +5,7 @@
 
 
 #define MM_TRACE_MEMORY_LEAKS							(1)
+#define MM_TRACE_JOBSYSTEM								(1)
 #define MM_PRINT_ALLOCATIONS							(0)
 #define MM_SECURE_CRT									(0)
 #define MM_INCLUDE_WINHDR								(1)

@@ -137,6 +137,9 @@
     <ClCompile Include="NetworkListeners.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
+    <ClCompile Include="Listener.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MiepMiep.h">
@@ -233,6 +236,9 @@
       <Filter>ZUser</Filter>
     </ClInclude>
     <ClInclude Include="NetworkListeners.h">
+      <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Listener.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
