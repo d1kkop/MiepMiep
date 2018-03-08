@@ -3,11 +3,11 @@
 #include <cassert>
 
 
-void* operator new (size_t n)					
+void* operator new (size_t n)
 {
 	return calloc(1, n); 
 }
-void* operator new [] (size_t n)				
+void* operator new [] (size_t n)
 { 
 	return calloc(1, n); 
 }

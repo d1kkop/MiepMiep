@@ -15,6 +15,8 @@ using namespace std;
 #define MM_RPC_CHANNEL 0
 #define MM_VG_CHANNEL  0
 #define MM_SOCK_SELECT_TIMEOUT 100
+#define MM_MAX_FRAGMENTSIZE 1900
+#define MM_MAX_RECVSIZE 4096
 
 #define __CHECKED( expr ) if ( !(expr) ) { assert(false); return; }
 #define __CHECKEDB( expr ) if ( !(expr) ) { assert(false); return false; }

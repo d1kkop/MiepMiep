@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "Memory.h"
 #include "Socket.h"
+#include "PacketHandler.h"
 using namespace std;
 
 
@@ -26,7 +27,7 @@ namespace MiepMiep
 		MM_DECLSPEC_INTERN ~SocketSet() override;
 
 		// Fails if max number of sockets was added. For BSD sockets the default is 64.
-		MM_TS MM_DECLSPEC_INTERN bool addSocket(sptr<const ISocket>& sock, const PacketHandler& packetHandler);
+		MM_TS MM_DECLSPEC_INTERN bool addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler);
 		MM_TS MM_DECLSPEC_INTERN void removeSocket(const sptr<const ISocket>& sock);
 		MM_TS MM_DECLSPEC_INTERN bool hasSocket(const sptr<const ISocket>& sock) const;
 
@@ -43,7 +44,7 @@ namespace MiepMiep
 	#if MM_SDLSOCKET
 	#elif MM_WIN32SOCKET
 		// Max of 64 for BSD see FD_SETSIZE
-		map<SOCKET, pair<sptr<const ISocket>, PacketHandler>> m_Sockets;
+		map<SOCKET, pair<sptr<const ISocket>, sptr<IPacketHandler>>> m_Sockets;
 		fd_set m_SocketSet;
 	#endif
 	};

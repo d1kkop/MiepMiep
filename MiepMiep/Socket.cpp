@@ -125,7 +125,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	ESendResult SDLSocket::send( const struct EndPoint& endPoint, const i8_t* data, i32_t len )
+	ESendResult SDLSocket::send( const struct EndPoint& endPoint, const i8_t* data, i32_t len ) const
 	{
 		if ( m_Socket == nullptr )
 			return ESendResult::SocketClosed;
@@ -152,7 +152,7 @@ namespace MiepMiep
 		return ESendResult::Succes;
 	}
 
-	ERecvResult SDLSocket::recv( i8_t* buff, i32_t& rawSize, struct EndPoint& endPoint )
+	ERecvResult SDLSocket::recv( i8_t* buff, i32_t& rawSize, struct EndPoint& endPoint ) const
 	{
 		if (!m_Socket || !m_SocketSet)
 			return ERecvResult::SocketClosed;
@@ -311,7 +311,7 @@ namespace MiepMiep
 		return (this->m_Socket == b.m_Socket) && (this->m_Socket != INVALID_SOCKET);
 	}
 
-	ESendResult BSDSocket::send(const Endpoint& endPoint, const byte* data, u32 len, i32* err)
+	ESendResult BSDSocket::send(const Endpoint& endPoint, const byte* data, u32 len, i32* err) const
 	{
 		if ( err ) *err = 0;
 
@@ -332,7 +332,7 @@ namespace MiepMiep
 		return ESendResult::Succes;
 	}
 
-	ERecvResult BSDSocket::recv(byte* buff, u32& rawSize, Endpoint& endPoint, i32* err)
+	ERecvResult BSDSocket::recv(byte* buff, u32& rawSize, Endpoint& endPoint, i32* err) const
 	{
 		if (err) *err = 0;
 

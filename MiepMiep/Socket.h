@@ -46,8 +46,8 @@ namespace MiepMiep
 		virtual bool bind(u16 port, i32* err=nullptr) = 0;
 		virtual void close() = 0;
 		virtual bool equal(const ISocket& other) const = 0;
-		virtual ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err=nullptr ) = 0;
-		virtual ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endpointOut, i32* err=nullptr ) = 0; // buffSize in, received size out
+		virtual ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err=nullptr ) const = 0;
+		virtual ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endpointOut, i32* err=nullptr ) const = 0; // buffSize in, received size out
 
 		// Shared
 		bool isOpen() const  { return m_Open; }
@@ -74,8 +74,8 @@ namespace MiepMiep
 		virtual bool open(IPProto ipProto, bool reuseAddr) override;
 		virtual bool bind(u16_t port) override;
 		virtual bool close() override;
-		virtual ESendResult send( const struct EndPoint& endPoint, const i8_t* data, i32_t len) override;
-		virtual ERecvResult recv( i8_t* buff, i32_t& rawSize, struct EndPoint& endPoint ) override;
+		virtual ESendResult send( const struct EndPoint& endPoint, const i8_t* data, i32_t len) const override;
+		virtual ERecvResult recv( i8_t* buff, i32_t& rawSize, struct EndPoint& endPoint ) const override;
 
 	protected:
 		UDPsocket m_Socket;
@@ -92,8 +92,8 @@ namespace MiepMiep
 		bool bind(u16 port, i32* err) override;
 		void close() override;
 		bool equal(const ISocket& other) const override;
-		ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err) override;
-		ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endPoint, i32* err ) override;
+		ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err) const override;
+		ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endPoint, i32* err ) const override;
 
 		SOCKET getSock() const  { return m_Socket; }
 

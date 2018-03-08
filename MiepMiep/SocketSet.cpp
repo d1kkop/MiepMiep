@@ -12,7 +12,7 @@ namespace MiepMiep
 	SocketSet::~SocketSet()
 	= default;
 
-	MM_TS MM_DECLSPEC_INTERN bool SocketSet::addSocket(sptr<const ISocket>& sock, const PacketHandler& packetHandler)
+	MM_TS MM_DECLSPEC_INTERN bool SocketSet::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler)
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
@@ -77,8 +77,8 @@ namespace MiepMiep
 				auto sockIt = m_Sockets.find(s);
 				if ( sockIt != m_Sockets.end() )
 				{
-					pair<sptr<const ISocket>, PacketHandler>& sockHandler = sockIt->second;
-					sockHandler.second( sockHandler.first ); // handle data
+					pair<sptr<const ISocket>, sptr<IPacketHandler>>& sockHandler = sockIt->second;
+					sockHandler.second->handle( sockHandler.first ); // handle data
 				}
 			}
 		#endif

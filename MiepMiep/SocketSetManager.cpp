@@ -4,8 +4,6 @@
 
 namespace MiepMiep
 {
-	
-
 	// -------- ReceptionThread -------------------------------------------------------------------------------------
 
 	ReceptionThread::ReceptionThread(SocketSetManager& manager):
@@ -19,7 +17,7 @@ namespace MiepMiep
 		stop();
 	}
 
-	bool ReceptionThread::addSocket(sptr<const ISocket>& sock, const PacketHandler& handler)
+	bool ReceptionThread::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
 	{
 		scoped_lock lk(m_SocketSetMutex);
 		return m_SockSet->addSocket( sock, handler );
@@ -85,7 +83,7 @@ namespace MiepMiep
 		m_ReceptionThreads.clear();
 	}
 
-	MM_TS void SocketSetManager::addSocket(sptr<const ISocket>& sock, const PacketHandler& handler)
+	MM_TS void SocketSetManager::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
 	{
 		scoped_lock lk(m_ReceptionThreadsMutex);
 

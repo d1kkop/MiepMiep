@@ -116,9 +116,6 @@
     <ClCompile Include="SocketSet.cpp">
       <Filter>Core\Network</Filter>
     </ClCompile>
-    <ClCompile Include="Threading.cpp">
-      <Filter>Core\Common</Filter>
-    </ClCompile>
     <ClCompile Include="Endpoint.cpp">
       <Filter>Core\Network</Filter>
     </ClCompile>
@@ -142,6 +139,9 @@
     </ClCompile>
     <ClCompile Include="SocketSetManager.cpp">
       <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHandler.cpp">
+      <Filter>Core\HighLevelTypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -246,6 +246,9 @@
     </ClInclude>
     <ClInclude Include="SocketSetManager.h">
       <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHandler.h">
+      <Filter>Core\HighLevelTypes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

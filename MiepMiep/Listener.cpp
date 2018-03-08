@@ -1,10 +1,14 @@
 #include "Listener.h"
+#include "Endpoint.h"
+#include "JobSystem.h"
+#include "SocketSetManager.h"
 
 
 namespace MiepMiep
 {
 	Listener::Listener(Network& network):
 		ParentNetwork(network),
+		IPacketHandler(network),
 		m_ListenPort(-1),
 		m_Listening(false)
 	{
@@ -37,7 +41,8 @@ namespace MiepMiep
 			{
 				if ( m_Socket->bind( port, &err ) )
 				{
-					// TODO get socket set manager and register a socket
+					sptr<IPacketHandler> handler = ptr<IPacketHandler>();
+					m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>( m_Socket ), handler );
 					m_Listening = true;
 				}
 				else
