@@ -1,6 +1,12 @@
 #include "Link.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
+#include "Listener.h"
+#include "ReliableRecv.h"
+#include "UnreliableRecv.h"
+#include "ReliableNewRecv.h"
+#include "ReliableAckRecv.h"
+#include "ReliableNewestAckRecv.h"
 
 
 namespace MiepMiep
@@ -19,11 +25,18 @@ namespace MiepMiep
 		return link;
 	}
 
-	MM_TS class BinSerializer& Link::beginSend()
+	void Link::setOriginator(const Listener& listener)
 	{
-		auto& bs = PerThreadDataProvider::getSerializer();
-		bs.write( m_Id );
-		return bs;
+		scoped_spinlock lk(m_OriginatorMutex);
+		// Should only be set ever once.
+		assert( !m_Originator );
+		m_Originator = listener.to_ptr();
+	}
+
+	const Listener* Link::getOriginator() const
+	{
+		scoped_spinlock lk(m_OriginatorMutex);
+		return m_Originator.get();
 	}
 
 	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
@@ -37,4 +50,43 @@ namespace MiepMiep
 	{
 		
 	}
+
+	MM_TS void Link::receive(BinSerializer& bs)
+	{
+		byte streamId;
+		PacketInfo pi;
+
+		__CHECKED( bs.read(streamId) );
+		__CHECKED( bs.read(pi.m_Flags) );
+		__CHECKED( bs.read(pi.m_Sequence) );
+
+		byte channel = pi.m_Flags & MM_CHANNEL_MASK;
+		EComponentType et = (EComponentType) streamId;
+
+		switch ( et )
+		{
+		case EComponentType::ReliableRecv:
+			getOrAdd<ReliableRecv>(channel)->receive( bs, pi );
+			break;
+
+		case EComponentType::UnreliableRecv:
+			getOrAdd<UnreliableRecv>(channel)->receive( bs );
+			break;
+
+		case EComponentType::ReliableNewRecv:
+			getOrAdd<ReliableNewRecv>()->receive( bs );
+			break;
+
+			// -- Acks --
+
+		case EComponentType::ReliableAckRecv:
+			getOrAdd<ReliableAckRecv>()->receive( bs );
+			break;
+
+		case EComponentType::ReliableNewAckRecv:
+			getOrAdd<ReliableNewestAckRecv>()->receive( bs );
+			break;
+		}
+	}
+
 }

@@ -45,6 +45,9 @@
     <Filter Include="Variables\Group">
       <UniqueIdentifier>{a7acfbf0-6a33-4b28-8d3f-5db78feca40e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Link\Components\Acks">
+      <UniqueIdentifier>{0eaf1ec1-38f2-4f3c-8337-7a7ff7aaa3b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Util.cpp">
@@ -145,6 +148,18 @@
     </ClCompile>
     <ClCompile Include="Group.cpp">
       <Filter>Variables\Group</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableAckRecv.cpp">
+      <Filter>Link\Components\Acks</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableAckSend.cpp">
+      <Filter>Link\Components\Acks</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableNewestAckRecv.cpp">
+      <Filter>Link\Components\Acks</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableNewestAckSend.cpp">
+      <Filter>Link\Components\Acks</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -255,6 +270,18 @@
     </ClInclude>
     <ClInclude Include="Group.h">
       <Filter>Variables\Group</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableAckRecv.h">
+      <Filter>Link\Components\Acks</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableAckSend.h">
+      <Filter>Link\Components\Acks</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableNewestAckRecv.h">
+      <Filter>Link\Components\Acks</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableNewestAckSend.h">
+      <Filter>Link\Components\Acks</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

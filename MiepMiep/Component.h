@@ -29,8 +29,10 @@ namespace MiepMiep
 		ReliableNewSend,
 		ReliableNewRecv,
 		// ack stream components
-		ReliableAck,
-		ReliableNewAck
+		ReliableAckSend,
+		ReliableAckRecv,
+		ReliableNewAckSend,
+		ReliableNewAckRecv
 	};
 
 

@@ -4,6 +4,7 @@
 #include "Component.h"
 #include "Endpoint.h"
 #include "Network.h"
+#include "Threading.h"
 
 
 namespace MiepMiep
@@ -14,13 +15,14 @@ namespace MiepMiep
 	{
 	public:
 		Link(Network& network);
+		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp);
+
+		void setOriginator( const class Listener& listener );
+		const class Listener* getOriginator() const;
 
 		u32 id() const { return m_Id; }
 		const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
-
-		MM_TS static sptr<Link> create(Network& network, const IEndpoint& other);
-		MM_TS class BinSerializer& beginSend();
-
+		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );
 
@@ -33,10 +35,13 @@ namespace MiepMiep
 		template <typename T, typename ...Args>
 		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
 
+		MM_TS void receive( BinSerializer& bs );
+
 	private:
 		u32 m_Id;
 		sptr<const class IEndpoint> m_RemoteEtp;
-		map<EComponentType, vector<uptr<IComponent>>> m_Components;
+		mutable SpinLock m_OriginatorMutex;
+		sptr<const class Listener> m_Originator;
 	};
 
 

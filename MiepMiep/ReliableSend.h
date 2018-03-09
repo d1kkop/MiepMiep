@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Component.h"
-#include "Memory.h"
 #include "Link.h"
 
 

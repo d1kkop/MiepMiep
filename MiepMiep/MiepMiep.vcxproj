@@ -36,6 +36,10 @@
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Platform.cpp" />
+    <ClCompile Include="ReliableAckRecv.cpp" />
+    <ClCompile Include="ReliableAckSend.cpp" />
+    <ClCompile Include="ReliableNewestAckRecv.cpp" />
+    <ClCompile Include="ReliableNewestAckSend.cpp" />
     <ClCompile Include="ReliableNewRecv.cpp" />
     <ClCompile Include="ReliableNewSend.cpp" />
     <ClCompile Include="ReliableRecv.cpp" />
@@ -62,6 +66,10 @@
     <ClInclude Include="NetworkListeners.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="PerThreadDataProvider.h" />
+    <ClInclude Include="ReliableAckRecv.h" />
+    <ClInclude Include="ReliableAckSend.h" />
+    <ClInclude Include="ReliableNewestAckRecv.h" />
+    <ClInclude Include="ReliableNewestAckSend.h" />
     <ClInclude Include="Rpc.h" />
     <ClInclude Include="SocketSetManager.h" />
     <ClInclude Include="Types.h" />

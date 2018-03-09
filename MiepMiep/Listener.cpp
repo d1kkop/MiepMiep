@@ -86,16 +86,16 @@ namespace MiepMiep
 	void Listener::handleSpecial(class BinSerializer& bs, const Endpoint& etp)
 	{
 		u32 linkId;
-		byte streamId;
 		__CHECKED( bs.read(linkId) );
-		__CHECKED( bs.read(streamId) );
 
 		sptr<Link> link = m_Network.getLink( etp );
 		if ( !link )
 		{
 			// is new link
-			m_Network.getOrAdd<LinkManager>()->addLink( etp );
+			link = m_Network.getOrAdd<LinkManager>()->addLink( etp );
+			link->setOriginator( *this );
 		}
-	}
 
+		link->receive( bs );
+	}
 }

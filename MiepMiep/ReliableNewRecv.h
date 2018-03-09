@@ -1,14 +1,16 @@
 #pragma once
 
-#include "Component.h"
-#include "Memory.h"
+#include "Link.h"
 
 
 namespace MiepMiep
 {
-	class ReliableNewRecv: public IComponent, public ITraceable
+	class ReliableNewRecv: public ParentLink, public IComponent, public ITraceable
 	{
 	public:
+		ReliableNewRecv(Link& link);
 		static EComponentType compType() { return EComponentType::ReliableNewRecv; }
+
+		void receive( BinSerializer& bs );
 	};
 }

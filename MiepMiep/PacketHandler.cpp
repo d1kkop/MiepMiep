@@ -23,7 +23,7 @@ namespace MiepMiep
 		i32 err;
 		ERecvResult res = sock->recv( buff, rawSize, etp, &err );
 
-		if ( err != 0 ) 
+		if ( err != 0 )
 		{
 			LOGW( "Socket recv error: %d.", err );
 			return;
@@ -43,6 +43,131 @@ namespace MiepMiep
 				LOGW( "Received packet with less than %d bytes. Packet discarded.", MM_MIN_HDR_SIZE );
 			}
 		}
+	}
+
+
+	// --- Packet ------------------------------------------------------------------------------------------
+
+	Packet::Packet(byte id, u32 len):
+		m_Id(id),
+		m_Length(len)
+	{
+		// Remainder is zeroed by 'calloc'.
+	}
+
+	Packet::Packet(byte id, const byte* data, u32 len, byte flags):
+		m_Id(id),
+		m_Data(reserveN<byte>(MM_FL, len)),
+		m_Length(len),
+		m_Flags(flags)
+	{
+		Platform::memCpy(m_Data, len, data, len);
+	}
+
+	Packet::Packet(const Packet& p)
+	{
+		*this = move(p);
+	}
+
+	Packet::Packet(Packet&& p)
+	{
+		*this = move(p);
+	}
+
+	Packet& Packet::operator=(const Packet& p)
+	{
+		m_Id=p.m_Id;
+		m_Length=p.m_Length;
+		m_Flags=p.m_Flags;
+		releaseN(m_Data);
+		reserveN<byte>(MM_FL, m_Length);
+		Platform::memCpy(m_Data, m_Length, p.m_Data, m_Length);
+		return *this;
+	}
+
+	Packet& Packet::operator=(Packet&& p)
+	{
+		m_Id=p.m_Id;
+		m_Length=p.m_Length;
+		m_Flags=p.m_Flags;
+		m_Data=p.m_Data;
+		p.m_Data=nullptr;
+		return *this;
+	}
+
+	Packet::~Packet()
+	{
+		releaseN(m_Data);
+	}
+
+
+	// --- PacketHelper ------------------------------------------------------------------------------------------
+
+	bool PacketHelper::tryReassembleBigPacket(Packet& finalPack, std::map<u32, Packet>& fragments, u32 seq, u32& seqBegin, u32& seqEnd)
+	{
+		// try find begin
+		seqBegin = seq;
+		auto itBegin = fragments.find( seqBegin );
+		while ( itBegin != fragments.end() )
+		{
+			Packet& pack = itBegin->second;
+			if ( (pack.m_Flags & MM_FRAGMENT_FIRST_BIT) != 0 )
+			{
+				// found begin, try find end now..
+				seqEnd = seq;
+				auto itEnd = fragments.find( seqEnd );
+				while ( itEnd != fragments.end() )
+				{
+					if ( (pack.m_Flags & MM_FRAGMENT_LAST_BIT) != 0 )
+					{
+						// all fragments available, re-assemble framgents to one pack
+						finalPack = reAssembleBigPacket(fragments, seqBegin, seqEnd);
+						return true;
+					}
+					itEnd = fragments.find( ++seqEnd );
+				}
+				return false;
+			}
+			itBegin = fragments.find( --seqBegin );
+		}
+		return false;
+	}
+
+	Packet PacketHelper::reAssembleBigPacket(std::map<u32, Packet>& fragments, u32 seqBegin, u32 seqEnd)
+	{
+		// Count total length.
+		u32 totalLen = 0;
+		u32 curSeq = seqBegin;
+		while (curSeq != seqEnd+1) // take into account that seq wraps
+		{
+			totalLen += fragments[curSeq].m_Length;
+			curSeq++;
+		}
+
+		// Allocate data for packet
+		Packet finalPack(fragments[seqBegin].m_Id, totalLen);
+
+		// Copy each fragment
+		curSeq = seqBegin;
+		u32 curLen = 0;
+		while (curSeq != seqEnd+1) // take into count that seq wraps
+		{
+			auto fragIt = fragments.find(curSeq);
+			const Packet& frag = fragIt->second;
+			Platform::memCpy( finalPack.m_Data + curLen, (totalLen-curLen), frag.m_Data, frag.m_Length );
+			curLen += frag.m_Length;
+			fragments.erase( fragIt );
+			curSeq++;
+		}
+
+		// use move construct
+		return finalPack;
+	}
+
+	bool PacketHelper::isSeqNewer(u32 incoming, u32 having)
+	{
+		u32 diff = incoming - having;
+		return diff <= (UINT_MAX>>2);
 	}
 
 }

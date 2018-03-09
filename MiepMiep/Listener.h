@@ -26,6 +26,8 @@ namespace MiepMiep
 		// All packets are handled here first after they have been converted from raw to binStream.
 		void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override;
 
+		MM_TO_PTR( Listener )
+
 	private:
 		mutex m_ListeningMutex;
 		sptr<ISocket> m_Socket;
