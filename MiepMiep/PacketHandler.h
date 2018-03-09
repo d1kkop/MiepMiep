@@ -10,6 +10,9 @@ namespace MiepMiep
 	public:
 		IPacketHandler(Network& network);
 
-		void handle( const sptr<const class ISocket>& bs );
+		// All packets are handled here first and then if 'valid' passed to handleSpecial.
+		void handle( const sptr<const class ISocket>& sock );
+
+		virtual void handleSpecial( class BinSerializer& bs, const class Endpoint& etp ) = 0;
 	};
 }

@@ -4,11 +4,11 @@
 
 namespace MiepMiep
 {
-	MM_TS BinSerializer& PerThreadDataProvider::getSerializer()
+	MM_TS BinSerializer& PerThreadDataProvider::getSerializer(bool reset)
 	{
 		scoped_lock lk(m_PerThreadMapMutex);
 		auto& bs = m_PerThreadDataMap[ this_thread::get_id() ].m_Serializer;
-		bs.reset();
+		if ( reset ) bs.reset();
 		return bs;
 	}
 
@@ -16,7 +16,7 @@ namespace MiepMiep
 	{
 		scoped_lock lk(m_PerThreadMapMutex);
 		auto& bs = m_PerThreadDataMap[ this_thread::get_id() ].m_Serializer;
-		bs.moveWrite( 5 );
+		bs.moveWrite( MM_MIN_HDR_SIZE );
 		return bs;
 	}
 

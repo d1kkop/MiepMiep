@@ -29,7 +29,7 @@ namespace MiepMiep
 	};
 
 
-	class MM_DECLSPEC_INTERN ISocket
+	class ISocket
 	{
 	protected:
 		ISocket();

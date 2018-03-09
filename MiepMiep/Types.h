@@ -19,14 +19,8 @@
 #define MM_TS  /* Thread safe function. */
 
 
-#define MM_NETWORK_CREATABLE() \
-	static u16 typeId() { return MM_COUNTER; } \
-	static void remoteCreate(INetwork& network, const IEndpoint& etp)
-
-
 #include <map>
 #include <memory>
-
 
 
 namespace MiepMiep

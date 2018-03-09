@@ -17,10 +17,16 @@ using namespace std;
 #define MM_SOCK_SELECT_TIMEOUT 100
 #define MM_MAX_FRAGMENTSIZE 1900
 #define MM_MAX_RECVSIZE 4096
+#define MM_MIN_HDR_SIZE 5
 
-#define __CHECKED( expr ) if ( !(expr) ) { assert(false); return; }
-#define __CHECKEDB( expr ) if ( !(expr) ) { assert(false); return false; }
-#define __CHECKEDSR( expr ) if ( !(expr) ) { assert(false); return ESendCallResult::SerializationError; }
+#define __CHECKED( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return; }
+#define __CHECKEDB( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return false; }
+#define __CHECKEDSR( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return ESendCallResult::SerializationError; }
+
+
+#define MM_TO_PTR( TYPE ) \
+	sptr<TYPE> to_ptr() { return ptr<TYPE>(); } \
+	sptr<const TYPE> to_ptr() const { return ptr<const TYPE>(); }
 
 
 namespace MiepMiep

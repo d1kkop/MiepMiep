@@ -20,7 +20,7 @@ namespace MiepMiep
 	class PerThreadDataProvider
 	{
 	public:
-		MM_TS static BinSerializer& getSerializer();
+		MM_TS static BinSerializer& getSerializer(bool reset=true);
 		MM_TS static BinSerializer& beginSend();
 		MM_TS static vector<class NetVariable*>& getConstructedVariables();
 		MM_TS static void cleanupStatics();

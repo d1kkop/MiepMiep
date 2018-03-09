@@ -47,7 +47,7 @@ namespace MiepMiep
 		template <> bool write(const i16& b)					{ return write16(b); }
 		template <> bool write(const i32& b)					{ return write32(b); }
 		template <> bool write(const BinSerializer& other)		{ return write(other.data(), other.length()); }
-//		template <> bool write(const Endpoint& b)				{ return b.write(*this); }
+	//	template <> bool write(const IEndpoint& b)				{ return b.write(*this); }
 		template <> bool write(const std::string& b)
 		{
 			if ( b.length() > TempBuffSize-1 ) return false;
@@ -75,7 +75,7 @@ namespace MiepMiep
 		template <> bool read(i16& b)							{ return read16((u16&)b); }
 		template <> bool read(i32& b)							{ return read32((u32&)b); }
 		template <> bool read(BinSerializer& other)				{ return other.write(data(), length()); }
-//		template <> bool read(Endpoint& b)						{ return b.read(*this); }
+	//	template <> bool read(IEndpoint& b)						{ return b.read(*this); }
 		template <> bool read(std::string& b) 
 		{
 			char buff[TempBuffSize];

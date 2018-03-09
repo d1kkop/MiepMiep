@@ -11,12 +11,12 @@ namespace MiepMiep
 	class Endpoint: public IEndpoint, public ITraceable
 	{
 	public:
-		static sptr<Endpoint> resolve( const string& name, u16 port, i32* errOut=nullptr );
-		static sptr<Endpoint> fromIpAndPort( const string& ipAndPort, i32* errOut=nullptr );
+		MM_TS static sptr<Endpoint> resolve( const string& name, u16 port, i32* errOut=nullptr );
+		MM_TS static sptr<Endpoint> fromIpAndPort( const string& ipAndPort, i32* errOut=nullptr );
 
 		// IEndpoint
-		string toIpAndPort() const override;
-		sptr<IEndpoint> getCopy() const override;
+		MM_TS string toIpAndPort() const override;
+		MM_TS sptr<IEndpoint> getCopy() const override;
 		
 		bool operator==( const Endpoint& other ) const;
 		bool operator==( const sptr<Endpoint>& other )	const		{ return *this == *other; }

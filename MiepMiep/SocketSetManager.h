@@ -13,7 +13,7 @@ namespace MiepMiep
 	{
 	public:
 		ReceptionThread(SocketSetManager& manager);
-		virtual ~ReceptionThread();
+		~ReceptionThread() override;
 		MM_TS bool addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler);
 		MM_TS void removeSocket(const sptr<const ISocket>& sock);
 		void start();

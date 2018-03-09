@@ -3,6 +3,7 @@
 #include "MiepMiep.h"
 #include "Memory.h"
 #include "Component.h"
+#include "Endpoint.h"
 using namespace std;
 
 
@@ -50,13 +51,13 @@ namespace MiepMiep
 		MM_TS MM_DECLSPEC static void printMemoryLeaks();
 
 		// Gets, checks or adds directly in a link in the network -> linkManagerComponent.
-		MM_TS sptr<Link> getLink(const IEndpoint& etp) const;
+		MM_TS sptr<Link> getLink(const Endpoint& etp) const;
 		template <typename T>
-		MM_TS bool hasOnLink(const IEndpoint& etp, byte idx=0) const;
+		MM_TS bool hasOnLink(const Endpoint& etp, byte idx=0) const;
 		template <typename T>
-		MM_TS sptr<T> getOnLink(const IEndpoint& etp, byte idx=0) const;
+		MM_TS sptr<T> getOnLink(const Endpoint& etp, byte idx=0) const;
 		template <typename T>
-		MM_TS sptr<T> getOrAddOnLink(const IEndpoint& etp, byte idx=0);
+		MM_TS sptr<T> getOrAddOnLink(const Endpoint& etp, byte idx=0);
 
 		// Gets or adds component to ComponentCollection.
 		template <typename T, typename ...Args>
@@ -66,7 +67,7 @@ namespace MiepMiep
 
 
 	template <typename T>
-	MM_TS bool MiepMiep::Network::hasOnLink(const IEndpoint& etp, byte idx) const
+	MM_TS bool MiepMiep::Network::hasOnLink(const Endpoint& etp, byte idx) const
 	{
 		const sptr<Link>& link = getLink(etp);
 		if ( !link ) return false;
@@ -74,7 +75,7 @@ namespace MiepMiep
 	}
 
 	template <typename T>
-	MM_TS sptr<T> MiepMiep::Network::getOnLink(const IEndpoint& etp, byte idx) const
+	MM_TS sptr<T> MiepMiep::Network::getOnLink(const Endpoint& etp, byte idx) const
 	{
 		Link* link = getLink(etp);
 		if ( !link ) return nullptr;
@@ -82,7 +83,7 @@ namespace MiepMiep
 	}
 
 	template <typename T>
-	MM_TS sptr<T> MiepMiep::Network::getOrAddOnLink(const IEndpoint& etp, byte idx)
+	MM_TS sptr<T> MiepMiep::Network::getOrAddOnLink(const Endpoint& etp, byte idx)
 	{
 		Link* link = getLink(etp);
 		if ( !link ) return nullptr;

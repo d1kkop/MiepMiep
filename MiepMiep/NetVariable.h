@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MiepMiep.h"
+#include "Threading.h"
 #include <cassert>
 #include <mutex>
 #include <vector>
@@ -16,41 +17,54 @@ namespace MiepMiep
 		NetVariable(class NetVar& userVar, byte* data, u32 size);
 		~NetVariable();
 
-		void setGroup(class Group* g)		{ assert(!m_Group); m_Group = g; }
-		void unGroup()						{ m_Group = nullptr; }
+		// Set on initialization (through constructor, no locks required).
+		byte* data()			{ return m_Data; }	
+		u32 size() const		{ return m_Size; }
+		byte bit() const		{ return m_Bit; }
+
+		MM_TS void setGroup(class Group* g, byte bit);
+		MM_TS void unGroup();
+		MM_TS void unrefGroup();
+
+		MM_TS u32 id() const;
+		MM_TS sptr<IEndpoint> getOwner() const;
+		MM_TS enum class EVarControl getVarControl() const;
+
+		// Requires VariablesMutex to be thread safe and to call user callback code!
+		NetVar& getUserVar() const { return m_UserVar; }
 		
-		byte* data()		{ return m_Data; }	
-		u32 size() const	{ return m_Size; }
+		// State changers.
+		MM_TS void markChanged();
+		MM_TS bool isChanged() const;
+		MM_TS void markUnchanged();
 
-		u32 id() const;
-		const IEndpoint* getOwner() const;
-		enum class EVarControl getVarControl() const;
-		
+		MM_TS EChangeOwnerCallResult changeOwner( const IEndpoint& etp );
+		MM_TS void setNewOwner( const IEndpoint* etp );
 
-		EChangeOwnerCallResult changeOwner( const IEndpoint& etp );
-
-		// Mark changed when variable changes data.
-		void markChanged();
-		bool isChanged() const { return m_Changed; }
-		void markUnchanged();				// Mark unchanged when variable is written to network stream.
-		
-		bool sync( class BinSerializer& bs, bool write );
-
+		MM_TS bool readOrWrite( class BinSerializer& bs, bool write );
 		MM_TS void addUpdateCallback( const std::function<void (NetVar&, const byte*, const byte*)>& callback );
 
 
 	private:
-		// All these vars upon creation.
+		// All these initialized upon creation.
 		class NetVar& m_UserVar;
+		mutable SpinLock m_GroupMutex;
 		class Group* m_Group;
 		byte* m_Data;
 		const u32 m_Size;
+		byte m_Bit;
 
 		// Allow marking changed from different threads.
+		mutable  SpinLock m_ChangeMutex;
 		bool  m_Changed;
 
+		// Ownership can be changed on a variable basis inside the group.
+		mutable SpinLock m_OwnershipMutex;
+		atomic<EVarControl> m_VarControl;
+		sptr<IEndpoint> m_Owner;
+
 		// Allow thread safe adding of multiple callbacks for a single variable.
-		mutex m_UpdateCallbackMutex;
+		mutable mutex m_UpdateCallbackMutex;
 		vector<function<void (NetVar&, const byte*, const byte*)>> m_UpdateCallbacks;
 	};
 }

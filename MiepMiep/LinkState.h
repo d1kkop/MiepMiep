@@ -36,7 +36,7 @@ namespace MiepMiep
 		LinkState(Link& link);
 		static EComponentType compType() { return EComponentType::LinkState; }
 
-		bool connect();
+		bool connect(const string& pw, const MetaData& md=MetaData());
 		void acceptConnect();
 
 		NetUint32 m_SharedState;

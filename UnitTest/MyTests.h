@@ -49,7 +49,13 @@ class UnitTestPacketHandler: public IPacketHandler
 {
 public:
 	UnitTestPacketHandler(Network& nw):
+		ParentNetwork(nw),
 		IPacketHandler(nw) { }
+
+	void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override
+	{
+
+	}
 };
 
 UTESTBEGIN(SocketSetTest)
@@ -63,7 +69,9 @@ UTESTBEGIN(SocketSetTest)
 	EListenOnSocketsResult res = ss2.listenOnSockets(1, &err );
 	assert( res == EListenOnSocketsResult::NoSocketsInSet );
 
-	sptr<UnitTestPacketHandler> handler = reserve_sp<UnitTestPacketHandler, Network&>( MM_FL,static_cast<Network&>( *network ) );
+	
+	Network& nw = static_cast<Network&>( *network ) ;
+	sptr<UnitTestPacketHandler> handler = reserve_sp<UnitTestPacketHandler, Network&>( MM_FL, nw );
 
 	constexpr auto kThreads=50;
 	i32 k=10000;

@@ -20,7 +20,7 @@ namespace MiepMiep
 	{
 		Fine,		// Change was broadcasted.
 		NotOwned,	// Can only change ownership if owning the variable.
-		Fail		// See log why.
+		Fail		// See log why. TODO specify why
 	};
 
 
@@ -35,10 +35,11 @@ namespace MiepMiep
 
 
 		/*	Returns the remote owner of this endpoint or nullptr if owned here. */
-		const class IEndpoint* getOwner() const;
+		MM_TS sptr<IEndpoint> getOwner() const;
 
 
-		EChangeOwnerCallResult changeOwner( const IEndpoint& etp );
+		/*	Change ownership of this variable. Is only allowed if we own the variable. */
+		MM_TS EChangeOwnerCallResult changeOwner( const IEndpoint& etp );
 
 
 		/*	Specifies how this variable is controlled.
@@ -49,25 +50,26 @@ namespace MiepMiep
 						or wants the value to be different.
 			[Remote]	The variable is completely owned remotely. That is, if you write to the variable, it will automatically be 
 						overwritten by updates from the network. Furthermore, local changes will not be committed to the network. */
-		EVarControl getVarConrol() const;
+		MM_TS EVarControl getVarConrol() const;
 
 
 		/*	The NetVar is part of a group that has an id. This id is network wide unique.
 			Use this networkGroupId to target specific group's remotely. */
-		u32 getGroupId() const;
+		MM_TS u32 getGroupId() const;
 
 
 		/*	If a variable is written to, this can be called in addition to let the network stream know it has changed
 			and should be retransmitted. 
-			NOTE: This function does NOT need to be called when assigning data using the assigment(=) operator.*/
-		void markChanged();
+			NOTE: This function does NOT need to be called when assigning data using the assigment (=) operator. */
+		MM_TS void markChanged();
 
 
 		/*	Add callbacks which are called when the variable is updated from the network. */
-		void addUpdateCallback( const std::function<void (NetVar& nvar, const byte* newData, const byte* prevData)>& cb );
+		MM_TS void addUpdateCallback( const std::function<void (NetVar& nvar, const byte* newData, const byte* prevData)>& cb );
 
 
-		virtual bool sync( BinSerializer& bs, bool write ) = 0;
+		/*	Callback called from network system to either write (send) or read (update) the variable. */
+		virtual bool readOrWrite( BinSerializer& bs, bool write ) = 0;
 
 
 	private:
@@ -92,7 +94,7 @@ namespace MiepMiep
 
 		operator T& () { return m_Data; }
 
-		bool sync( BinSerializer& bs, bool write ) override { return bs.readOrWrite(m_Data, write); }
+		bool readOrWrite( BinSerializer& bs, bool write ) override { return bs.readOrWrite(m_Data, write); }
 
 	protected:
 		T m_Data;

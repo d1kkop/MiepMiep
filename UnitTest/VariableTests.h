@@ -14,51 +14,54 @@ using namespace std;
 class Person
 {
 public:
-	Person ( INetwork& network ):
-		m_Network(network),
-		m_Age(22),
-		m_Weight(86)
+	Person (i32 race, i32 age, i32 weight):
+		m_Race(race),
+		m_Age(age),
+		m_Weight(weight)
 	{
-		int k = 0;
-
 	}
 
-	MM_NETWORK_CREATABLE()
-	{
-		new Person( network );
-	}
 
 	NetInt32  m_Race;
 	NetInt32  m_Age;
 	NetUint32 m_Weight;
-
-	INetwork& m_Network;
 };
 
+MM_VARGROUP(personVarGroup, i32, i32, u32)
+{
+	i32 race = get<0>(tp);
+	i32 age  = get<1>(tp);
+	i32 weight = get<2>(tp);
+	new Person( race, age, weight );
+}
 
 
 UTESTBEGIN(VariablesTest)
 {
 	sptr<INetwork> network = INetwork::create();
 
+	vector<thread> ts;
+	for ( i32 i=0; i < 10; i++ )
+	{
+		ts.emplace_back( [=]() 
+		{
+			sptr<Person> p = make_shared<Person>( 22, 33, 44 );
+			network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33 );
 
-	sptr<Person> p;// = sptr<Person>(pp);
+			assert( p->m_Age.getGroupId() == -1 );
+			assert( p->m_Age.getOwner() == nullptr );
+			assert( p->m_Age.getVarConrol() == EVarControl::Full );
 
-	assert( p->m_Age.getGroupId() == -1 );
-	assert( p->m_Age.getOwner() == nullptr );
-	assert( p->m_Age.getVarConrol() == EVarControl::Unowned );
+			assert( p->m_Weight.getGroupId() == -1 );
+			assert( p->m_Weight.getOwner() == nullptr );
+			assert( p->m_Weight.getVarConrol() == EVarControl::Full );
 
-	assert( p->m_Weight.getGroupId() == -1 );
-	assert( p->m_Weight.getOwner() == nullptr );
-	assert( p->m_Weight.getVarConrol() == EVarControl::Unowned );
+			this_thread::sleep_for( std::chrono::milliseconds(20) );
+		});
+	}
 
-	//assert( p->m_Age.getGroupId() == -1 );
-	//assert( p->m_Age.getOwner() == nullptr );
-	//assert( p->m_Age.getVarConrol() == EVarControl::Full || p->m_Age.getVarConrol() == EVarControl::Semi );
-
-	//assert( p->m_Weight.getGroupId() == -1 );
-	//assert( p->m_Weight.getOwner() == nullptr );
-	//assert( p->m_Weight.getVarConrol() == EVarControl::Full || p->m_Weight.getVarConrol() == EVarControl::Semi );
+	for ( auto& t : ts )
+		t.join();
 
 	return true;
 }

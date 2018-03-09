@@ -14,17 +14,17 @@ namespace MiepMiep
 	MM_RPC( linkStateAlreadyConnected )
 	{
 		auto& nw = toNetwork(network);
-		sptr<Link> link = nw.getLink( *etp );
+		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::AlreadyConnected );
 		}
 	}
 
-	MM_RPC( linkStateConnect )
+	MM_RPC( linkStateConnect, string, MetaData )
 	{
 		auto& nw = toNetwork(network);
-		sptr<Link> link = nw.getLink( *etp );
+		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
 		if ( link )
 		{
 			if ( link->has<LinkState>() )
@@ -41,11 +41,9 @@ namespace MiepMiep
 		ParentLink(link),
 		m_State(EConnectState::Unknown)
 	{
-		// TODO
-		// m_Parent.createGroup(typeId());
 	}
 
-	bool LinkState::connect()
+	bool LinkState::connect(const string& pw, const MetaData& md)
 	{
 		if ( m_State != EConnectState::Unknown )
 		{
@@ -53,16 +51,14 @@ namespace MiepMiep
 			return false;
 		}
 
-
 		m_State = EConnectState::Connecting;
 		m_SharedState = (u32)m_State;
 
-		return m_Link.callRpc<linkStateConnect>(false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
+		return m_Link.callRpc<linkStateConnect, string, MetaData>( pw, md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
 	}
 
 	void LinkState::acceptConnect()
 	{
-
 	}
 
 }

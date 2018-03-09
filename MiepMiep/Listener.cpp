@@ -1,7 +1,7 @@
 #include "Listener.h"
-#include "Endpoint.h"
 #include "JobSystem.h"
 #include "SocketSetManager.h"
+#include "LinkManager.h"
 
 
 namespace MiepMiep
@@ -81,6 +81,21 @@ namespace MiepMiep
 	{
 		scoped_spinlock lk(m_PasswordLock);
 		m_Password = pw;
+	}
+
+	void Listener::handleSpecial(class BinSerializer& bs, const Endpoint& etp)
+	{
+		u32 linkId;
+		byte streamId;
+		__CHECKED( bs.read(linkId) );
+		__CHECKED( bs.read(streamId) );
+
+		sptr<Link> link = m_Network.getLink( etp );
+		if ( !link )
+		{
+			// is new link
+			m_Network.getOrAdd<LinkManager>()->addLink( etp );
+		}
 	}
 
 }

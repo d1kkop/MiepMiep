@@ -41,6 +41,16 @@ namespace MiepMiep
 		return Endpoint::compareLess(a, b);
 	}
 
+	sptr<IEndpoint> IEndpoint::to_ptr()
+	{
+		return static_pointer_cast<IEndpoint>( static_cast<Endpoint&>(*this).ptr<Endpoint>() );
+	}
+
+	sptr<const IEndpoint> IEndpoint::to_ptr() const
+	{
+		return static_pointer_cast<const IEndpoint>( static_cast<const Endpoint&>(*this).ptr<const Endpoint>() );
+	}
+
 
 	// --- Endpoint ---------------------------------------------------------------------------------------
 
@@ -67,6 +77,7 @@ namespace MiepMiep
 
 			char ipBuff[128];
 			char portBuff[32];
+			// TODO check thread safety
 			Platform::formatPrint(ipBuff, 128, "%s", name.c_str());
 			Platform::formatPrint(portBuff, 32, "%d", port);
 

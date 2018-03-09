@@ -18,34 +18,40 @@ namespace MiepMiep
 		Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData);
 		~Group() override;
 
-		// Post set after Id, control and owner are know.
+		// Post set after Id is available. 
+		// Once set from job in job system. No need for lock.
 		void setId(u32 _id)							{ assert(m_Id==-1); m_Id = _id; }
-		//void setControl( EVarControl control )		{ assert(m_VarControl == EVarControl::Unowned); m_VarControl = control; }
-		void setOwner( const IEndpoint* etp )		{ m_Owner = etp->getCopy(); }
 
+		// Getters on group basis.
+		// Set initially through constructor, no need for lock.
 		u32 id() const								{ return m_Id; }
 		const string& typeName() const				{ return m_TypeName; }
-		EVarControl getVarControl() const			{ return m_VarControl; }
-		const IEndpoint* getOwner() const			{ return m_Owner.get(); }
 		const BinSerializer& initData() const		{ return m_InitData; }
 
 		// Flag dirty when any of the variables inside the group get written/changed.
 		void markChanged();
-		void unGroup();
+		MM_TS void unGroup();
+		MM_TS void setNewOwnership( byte varIdx, const IEndpoint* newOwner );
+		MM_TS bool wasUngrouped() const;
+
+		// Within lock/unlock varMutex, other threads that are about to destuct variables will block as the destructor of the variable
+		// will acquire the same variable mutex. So within this lock/unlock, we can call any function on the variable if it did not return null.
+		MM_TS void lockVariablesMutex() const;
+		MM_TS NetVar* getUserVar( byte idx ) const;
+		MM_TS void unlockVariablesMutex() const;
 
 		class Network& network() const;
-		
+
+		MM_TO_PTR(Group)
 		
 	private:
 		GroupCollection& m_GroupCollection;
 		u32 m_Id;
 		string m_TypeName;
 		bool m_WasUngrouped;
-		bool m_Changed;
+		volatile bool m_Changed;
 		bool m_RemotelyCreated;
-		EVarControl m_VarControl;
-		sptr<IEndpoint> m_Owner;
-		mutex m_VariablesMutex;
+		mutable mutex m_VariablesMutex;
 		vector<NetVariable*> m_Variables;
 		BinSerializer m_InitData;
 	};

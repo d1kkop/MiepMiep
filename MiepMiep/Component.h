@@ -11,6 +11,7 @@ namespace MiepMiep
 	enum class EComponentType
 	{
 		LinkState,
+		MasterJoinData,
 		RemoteServerInfo,
 		Listener,
 		LinkManager,

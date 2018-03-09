@@ -8,6 +8,7 @@
 #include "ReliableSend.h"
 #include "JobSystem.h"
 #include "NetworkListeners.h"
+#include "MasterJoinData.h"
 
 
 namespace MiepMiep
@@ -60,9 +61,9 @@ namespace MiepMiep
 		{
 			return ERegisterServerCallResult::AlreadyRegistered;
 		}
-		auto& bs = link->beginSend();
-		sptr<LinkState> ls = link->getOrAdd<LinkState>();
-		ls->connect();
+		link->getOrAdd<MasterJoinData>()->setName( name );
+		link->getOrAdd<MasterJoinData>()->setMetaData( md );
+		link->getOrAdd<LinkState>()->connect( pw );
 		return ERegisterServerCallResult::Fine;
 	}
 
@@ -131,7 +132,7 @@ namespace MiepMiep
 		Memory::printUntracedMemory();
 	}
 
-	MM_TS sptr<Link> Network::getLink(const IEndpoint& etp) const
+	MM_TS sptr<Link> Network::getLink(const Endpoint& etp) const
 	{
 		sptr<LinkManager> lm = get<LinkManager>();
 		if (!lm) return nullptr;

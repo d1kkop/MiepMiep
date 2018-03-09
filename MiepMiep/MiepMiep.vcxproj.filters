@@ -14,9 +14,6 @@
     <Filter Include="Network\Components">
       <UniqueIdentifier>{d4cef248-dee1-4691-92b8-67e19b3c8e0d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Groups">
-      <UniqueIdentifier>{1672e434-70d8-492e-af74-a24f3d094359}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Provides">
       <UniqueIdentifier>{f3ba4d29-6c6b-4e3e-9e84-3c3fc06ffe17}</UniqueIdentifier>
     </Filter>
@@ -45,6 +42,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Variables\Group">
+      <UniqueIdentifier>{a7acfbf0-6a33-4b28-8d3f-5db78feca40e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Util.cpp">
@@ -52,9 +52,6 @@
     </ClCompile>
     <ClCompile Include="Link.cpp">
       <Filter>Link</Filter>
-    </ClCompile>
-    <ClCompile Include="Group.cpp">
-      <Filter>Groups</Filter>
     </ClCompile>
     <ClCompile Include="U32.cpp">
       <Filter>Variables</Filter>
@@ -143,6 +140,12 @@
     <ClCompile Include="PacketHandler.cpp">
       <Filter>Core\HighLevelTypes</Filter>
     </ClCompile>
+    <ClCompile Include="MasterJoinData.cpp">
+      <Filter>Link\Components\Link</Filter>
+    </ClCompile>
+    <ClCompile Include="Group.cpp">
+      <Filter>Variables\Group</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MiepMiep.h">
@@ -156,9 +159,6 @@
     </ClInclude>
     <ClInclude Include="Link.h">
       <Filter>Link</Filter>
-    </ClInclude>
-    <ClInclude Include="Group.h">
-      <Filter>Groups</Filter>
     </ClInclude>
     <ClInclude Include="Network.h">
       <Filter>Network</Filter>
@@ -249,6 +249,12 @@
     </ClInclude>
     <ClInclude Include="PacketHandler.h">
       <Filter>Core\HighLevelTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterJoinData.h">
+      <Filter>Link\Components\Link</Filter>
+    </ClInclude>
+    <ClInclude Include="Group.h">
+      <Filter>Variables\Group</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

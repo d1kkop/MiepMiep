@@ -1,9 +1,11 @@
 #pragma once
 
 #include "PacketHandler.h"
+#include "BinSerializer.h"
 #include "Common.h"
 #include "Endpoint.h"
 #include "Socket.h"
+#include "PerThreadDataProvider.h"
 
 
 namespace MiepMiep
@@ -11,7 +13,6 @@ namespace MiepMiep
 	IPacketHandler::IPacketHandler(Network& network):
 		ParentNetwork(network)
 	{
-
 	}
 
 	void IPacketHandler::handle(const sptr<const class ISocket>& sock)
@@ -30,7 +31,17 @@ namespace MiepMiep
 
 		if ( res == ERecvResult::Succes )
 		{
-
+			// Minimum size is linkId + some protocol (1 byte)
+			if ( rawSize >= MM_MIN_HDR_SIZE )
+			{
+				BinSerializer& bs = PerThreadDataProvider::getSerializer( false );
+				bs.resetTo( buff, rawSize, rawSize );
+				handleSpecial( bs, etp );
+			}
+			else
+			{
+				LOGW( "Received packet with less than %d bytes. Packet discarded.", MM_MIN_HDR_SIZE );
+			}
 		}
 	}
 

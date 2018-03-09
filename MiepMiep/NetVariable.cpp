@@ -3,6 +3,7 @@
 #include "Platform.h"
 #include "Group.h"
 #include "Network.h"
+#include "NetworkListeners.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
 #include <cassert>
@@ -11,24 +12,79 @@
 
 namespace MiepMiep
 {
+	// ---- Event ------------------------------------------------------------
+
+	struct EventOwnerChanged : EventBase
+	{
+		EventOwnerChanged(const IEndpoint& remote, const IEndpoint* newOwner, const Group& group, byte varIdx):
+			EventBase(remote),
+			m_NewOwner( newOwner ? newOwner->to_ptr() : nullptr ),
+			m_Group(group.to_ptr()),
+			m_VarBit(varIdx)
+		{
+		}
+
+		void process() override
+		{
+			// User var(s) may be destructed in meantime (is in user memory).
+			if ( !m_Group->wasUngrouped() )
+			{
+				// It is the user's responsibility that the obtained ptr is still valid.
+				m_Group->lockVariablesMutex();
+				NetVar* userVar = m_Group->getUserVar( m_VarBit );
+				if ( !userVar )
+				{
+					LOG( "Could not process variable owner change event as variable was no longer available." );
+					m_Group->unlockVariablesMutex();
+					return;
+				}
+
+				// Safe to obtain ref to userVar as we have acquired variables the lock.
+				m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
+				{
+					l->onOwnerChanged( *m_Network, *m_Endpoint, m_NewOwner.get(), *userVar );
+				});
+
+				m_Group->unlockVariablesMutex();
+			}
+			else
+			{
+				LOG( "Change owner event was not posted as user variable was destructed before the event was processed." );
+			}
+		}
+
+		byte m_VarBit;
+		sptr<const Group> m_Group;
+		sptr<const IEndpoint> m_NewOwner;
+	};
+
 	// ---- RPC ------------------------------------------------------------
 
-	MM_RPC(changeOwner, u32, string)
+	// ID, bit idx, Endpoint (as string)
+	MM_RPC(changeOwner, u32, byte, string)
 	{
-		auto& nw = static_cast<Network&>(network);
-		u32 netId = get<0>(tp);
-
-		sptr<Group> g = nw.getOrAdd<GroupCollectionNetwork>()->findGroup( netId );
-		if ( !g )
+		auto& nw  = static_cast<Network&>(network);
+		sptr<Link> l = nw.getLink( static_cast<const Endpoint&>(*etp) );
+		if ( !l )
 		{
-			Platform::log(ELogType::Warning, MM_FL, "Cannot find group with id %d.", netId);
+			LOG( "Did not handle change owner RPC as link was not found." );
 			return;
 		}
 
-		const string& ipAndPort = get<1>(tp);
+		u32 netId = get<0>(tp);
+		sptr<Group> g = nw.getOrAdd<GroupCollectionNetwork>()->findGroup( netId );
+		if ( !g )
+		{
+			LOGW( "Cannot find group with id %d.", netId );
+			return;
+		}
+
+		byte bit = get<1>(tp);
+		const string& ipAndPort = get<2>(tp);
 		if ( ipAndPort.empty() ) // we become owner
 		{
-			g->setOwner( nullptr );
+			g->setNewOwnership( bit, nullptr );
+			l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte>( nullptr, *g,  bit );
 		}
 		else
 		{
@@ -36,11 +92,12 @@ namespace MiepMiep
 			sptr<IEndpoint> remoteEtp = IEndpoint::fromIpAndPort( ipAndPort, &err );
 			if ( remoteEtp && err == 0 )
 			{
-				g->setOwner( remoteEtp.get() );
+				g->setNewOwnership( bit, remoteEtp.get() );
+				l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte>( remoteEtp.get(), *g,  bit );
 			}
 			else
 			{
-			//	g->network().setError( 
+				LOGC( "Cannot set new owner, endpoint could not be resolved, error %d.", err );
 			}
 		}
 	}
@@ -58,32 +115,32 @@ namespace MiepMiep
 		delete p;
 	}
 
-	const IEndpoint* NetVar::getOwner() const
+	MM_TS sptr<IEndpoint> NetVar::getOwner() const
 	{
 		return p->getOwner();
 	}
 
-	EChangeOwnerCallResult NetVar::changeOwner(const IEndpoint& etp)
+	MM_TS EChangeOwnerCallResult NetVar::changeOwner(const IEndpoint& etp)
 	{
 		return p->changeOwner( etp );
 	}
 
-	EVarControl NetVar::getVarConrol() const
+	MM_TS EVarControl NetVar::getVarConrol() const
 	{
 		return p->getVarControl();
 	}
 
-	u32 NetVar::getGroupId() const
+	MM_TS u32 NetVar::getGroupId() const
 	{
 		return p->id();
 	}
 
-	void NetVar::markChanged()
+	MM_TS void NetVar::markChanged()
 	{
 		p->markChanged();
 	}
 
-	void NetVar::addUpdateCallback( const function<void(NetVar&, const byte*, const byte*)>& cb )
+	MM_TS void NetVar::addUpdateCallback( const function<void(NetVar&, const byte*, const byte*)>& cb )
 	{
 		p->addUpdateCallback( cb );
 	}
@@ -96,6 +153,7 @@ namespace MiepMiep
 		m_Group(nullptr),
 		m_Data(data),
 		m_Size(size),
+		m_Bit(-1),
 		m_Changed(false)
 	{
 		assert( m_Group == nullptr && "VariableGroup::Last" );
@@ -115,47 +173,109 @@ namespace MiepMiep
 		{
 			return nvar == this;
 		});
+		unGroup();
+	}
 
+	MM_TS void NetVariable::setGroup(class Group* g, byte bit)
+	{
+		scoped_spinlock lk(m_GroupMutex);
+		assert( g && !m_Group && m_Bit==-1 );
+		m_Group = g;
+		m_Bit = bit;
+	}
+
+	MM_TS void NetVariable::unGroup()
+	{
+		scoped_spinlock lk(m_GroupMutex);
 		if ( m_Group )
 		{
 			m_Group->unGroup();
 		}
 	}
 
-	const IEndpoint* NetVariable::getOwner() const
+	MM_TS void NetVariable::unrefGroup()
 	{
-		if ( !m_Group ) return nullptr;
-		return m_Group->getOwner();
+		scoped_spinlock lk(m_GroupMutex);
+		m_Group = nullptr;
 	}
 
-	EVarControl NetVariable::getVarControl() const
+	MM_TS u32 NetVariable::id() const
 	{
-		if ( !m_Group )
-			return EVarControl::Unowned;
-		return m_Group->getVarControl();
-	}
-
-	u32 NetVariable::id() const
-	{
+		scoped_spinlock lk(m_GroupMutex);
 		if ( !m_Group )
 			return -1;
 		return m_Group->id();
 	}
 
-	EChangeOwnerCallResult NetVariable::changeOwner(const IEndpoint& etp)
+	MM_TS sptr<IEndpoint> NetVariable::getOwner() const
+	{
+		scoped_spinlock lk(m_OwnershipMutex);
+		return m_Owner->getCopy();
+	}
+
+	MM_TS enum class EVarControl NetVariable::getVarControl() const
+	{
+		return m_VarControl;
+	}
+
+	MM_TS void NetVariable::markChanged()
+	{
+		// If any var changes, group changes too.
+		{
+			scoped_spinlock lk(m_OwnershipMutex);
+			if ( m_Group )
+			{
+				m_Group->markChanged();
+			}
+		}
+		scoped_spinlock lk(m_ChangeMutex);
+		m_Changed = true;
+	}
+
+	MM_TS bool NetVariable::isChanged() const
+	{
+		scoped_spinlock lk(m_ChangeMutex);
+		return m_Changed;
+	}
+
+	MM_TS void NetVariable::markUnchanged()
+	{
+		scoped_spinlock lk(m_ChangeMutex);
+		m_Changed = false;
+	}
+
+	MM_TS EChangeOwnerCallResult NetVariable::changeOwner(const IEndpoint& etp)
 	{
 		// Cannot change if we are the NOT owner.
-		if ( getOwner() ) return EChangeOwnerCallResult::NotOwned; 
-		if ( !m_Group ) return EChangeOwnerCallResult::NotOwned;
+		if ( getOwner() ) return EChangeOwnerCallResult::NotOwned;
 
 		// TODO change to endpoint serialization
 		string ipAndPort = etp.toIpAndPort();
 
-		auto sendRes = m_Group->network().callRpc<MiepMiep::changeOwner, u32, string>( id(), ipAndPort, false, nullptr, false, false, true, MM_VG_CHANNEL, nullptr ) ;
+		Network* nw;
+		{
+			scoped_spinlock lk(m_GroupMutex);
+			if ( !m_Group ) return EChangeOwnerCallResult::NotOwned;
+			nw = &m_Group->network();
+		}
+
+		auto sendRes = nw->callRpc<MiepMiep::changeOwner, u32, byte, string>( id(), bit(), ipAndPort, false, nullptr, false, false, true, MM_VG_CHANNEL, nullptr ) ;
 		return (sendRes == ESendCallResult::Fine ? EChangeOwnerCallResult::Fine : EChangeOwnerCallResult::Fail );		
 	}
 
-	bool NetVariable::sync(BinSerializer& bs, bool write)
+	MM_TS void NetVariable::setNewOwner(const IEndpoint* etp)
+	{
+		scoped_spinlock lk(m_OwnershipMutex);
+		if ( !etp )
+		{
+			m_Owner.reset();
+			return;
+		}
+		m_Owner = etp->getCopy();
+		m_VarControl = EVarControl::Full;
+	}
+
+	MM_TS bool NetVariable::readOrWrite(BinSerializer& bs, bool write)
 	{
 		byte prevData[MM_MAXMTUSIZE];
 
@@ -166,7 +286,7 @@ namespace MiepMiep
 			Platform::memCpy( prevData, m_Size, m_Data, m_Size );
 		}
 
-		__CHECKEDB( m_UserVar.sync( bs, write ) );
+		__CHECKEDB( m_UserVar.readOrWrite( bs, write ) );
 
 		// if reading and data was changed
 		if ( !write && !m_UpdateCallbacks.empty() && memcmp( m_Data, prevData, m_Size ) != 0 )
@@ -180,26 +300,10 @@ namespace MiepMiep
 		return true;
 	}
 
-	void NetVariable::markChanged()
-	{
-		if ( m_Group )
-		{
-			m_Group->markChanged();
-		}
-		m_Changed = true;
-	}
-
-	void NetVariable::markUnchanged()
-	{
-		m_Changed = false;
-	}
-
 	MM_TS void NetVariable::addUpdateCallback(const std::function<void(NetVar&, const byte*, const byte*)>& callback)
 	{
 		scoped_lock lk(m_UpdateCallbackMutex);
 		m_UpdateCallbacks.emplace_back(callback);
 	}
-
-
 
 }

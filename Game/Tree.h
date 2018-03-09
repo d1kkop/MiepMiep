@@ -13,10 +13,6 @@ namespace MyGame
 
 		}
 
-		MM_NETWORK_CREATABLE()
-		{
-			new Tree;
-		}
 	};
 		
 }

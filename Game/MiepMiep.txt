@@ -1,9 +1,9 @@
-Thu Mar  8 00:51:29 2018 ------- New Session --------
-Thu Mar  8 00:51:29 2018 ----------------------------
-Thu Mar  8 00:51:29 2018 Thread 11256 suspends -> loses lock.
-Thu Mar  8 00:51:29 2018 Thread 8100 locks.
-Thu Mar  8 00:51:29 2018 Thread 14020 suspends -> loses lock.
-Thu Mar  8 00:51:29 2018 Thread 5848 suspends -> loses lock.
-Thu Mar  8 00:51:29 2018 Thread 8100 unlocks.
-Thu Mar  8 00:51:29 2018 Thread 11256 suspends -> loses lock.
-Thu Mar  8 00:51:29 2018 No memory leaks detected.
+Thu Mar  8 17:37:06 2018 ------- New Session --------
+Thu Mar  8 17:37:06 2018 ----------------------------
+Thu Mar  8 17:37:06 2018 Thread 1376 suspends -> loses lock.
+Thu Mar  8 17:37:06 2018 Thread 7876 suspends -> loses lock.
+Thu Mar  8 17:37:06 2018 Thread 4316 suspends -> loses lock.
+Thu Mar  8 17:37:06 2018 Thread 6320 locks.
+Thu Mar  8 17:37:06 2018 Thread 6320 unlocks.
+Thu Mar  8 17:37:06 2018 Thread 1376 suspends -> loses lock.
+Thu Mar  8 17:37:06 2018 No memory leaks detected.

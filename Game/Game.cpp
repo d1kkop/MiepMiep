@@ -44,8 +44,6 @@ namespace MyGame
 		cout << var1 << " " << var2 << endl;
 	}
 
-
-
 	Game::Game()
 	= default;
 
@@ -82,7 +80,6 @@ namespace MyGame
 
 	}
 
-
 	void Game::stop()
 	{
 		if ( m_Network )
@@ -115,8 +112,5 @@ namespace MyGame
 			cout << "connecting to: " << etp.toIpAndPort() << " unknown result returned!" << endl;
 			break;
 		}
-
-		
 	}
-
 }

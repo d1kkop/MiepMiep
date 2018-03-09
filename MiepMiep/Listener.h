@@ -23,6 +23,9 @@ namespace MiepMiep
 		MM_TS void setMaxConnections( u32 num );
 		MM_TS void setPassword( string& pw );
 
+		// All packets are handled here first after they have been converted from raw to binStream.
+		void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override;
+
 	private:
 		mutex m_ListeningMutex;
 		sptr<ISocket> m_Socket;

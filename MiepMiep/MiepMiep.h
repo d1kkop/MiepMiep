@@ -67,35 +67,38 @@ namespace MiepMiep
 	{
 	public:
 		virtual void onConnectResult( INetwork& network, const IEndpoint& etp, EConnectResult res ) { }
+		virtual void onOwnerChanged( INetwork& network, const IEndpoint& etp, const IEndpoint* newOwner, NetVar& variable ) { }
 	};
 
 
+	/*	Do not use constructor directly. Use 'resolve' or 'fromIpAndPort'. */
 	class MM_DECLSPEC IEndpoint
 	{
 	public:
-		static sptr<IEndpoint> resolve( const std::string& name, u16 port, i32* errOut=nullptr );
-		static sptr<IEndpoint> fromIpAndPort( const std::string& ipAndPort, i32* errOut=nullptr );
+		MM_TS static sptr<IEndpoint> resolve( const std::string& name, u16 port, i32* errOut=nullptr );
+		MM_TS static sptr<IEndpoint> fromIpAndPort( const std::string& ipAndPort, i32* errOut=nullptr );
 
-		virtual std::string toIpAndPort() const = 0;
-		virtual sptr<IEndpoint> getCopy() const = 0;
+		MM_TS virtual std::string toIpAndPort() const = 0;
+		MM_TS virtual sptr<IEndpoint> getCopy() const = 0;
 
-		bool operator==( const IEndpoint& other ) const;
-		bool operator==( const sptr<IEndpoint>& other )	const		{ return *this == *other; }
-		bool operator!=( const IEndpoint& other ) const				{ return !(*this == other); }
-		bool operator!=( const sptr<IEndpoint>& other )				{ return !(*this == *other); }
+		MM_TS bool operator==( const IEndpoint& other ) const;
+		MM_TS bool operator==( const sptr<IEndpoint>& other )	const		{ return *this == *other; }
+		MM_TS bool operator!=( const IEndpoint& other ) const				{ return !(*this == other); }
+		MM_TS bool operator!=( const sptr<IEndpoint>& other )				{ return !(*this == *other); }
 
 		struct stl_less
 		{
 			bool operator()( const sptr<IEndpoint>& left, const sptr<IEndpoint>& right ) const;
-
 		};
+
+		MM_TS sptr<IEndpoint> to_ptr();
+		MM_TS sptr<const IEndpoint> to_ptr() const;
 	};
 
 
 	class MM_DECLSPEC INetwork
 	{
 	public:
-		virtual ~INetwork() = default;
 		MM_TS static  sptr<INetwork> create();
 
 		MM_TS virtual void processEvents() = 0;
@@ -118,7 +121,7 @@ namespace MiepMiep
 													bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
 
 
-		static void setLogSettings( bool logToFile, bool logToIde );
+		MM_TS static void setLogSettings( bool logToFile, bool logToIde );
 	};
 
 

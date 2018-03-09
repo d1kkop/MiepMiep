@@ -16,7 +16,7 @@ namespace MiepMiep
 		Link(Network& network);
 
 		u32 id() const { return m_Id; }
-		const sptr<const IEndpoint>& remoteEtp() const { return m_RemoteEtp; }
+		const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
 
 		MM_TS static sptr<Link> create(Network& network, const IEndpoint& other);
 		MM_TS class BinSerializer& beginSend();
@@ -45,7 +45,7 @@ namespace MiepMiep
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., m_Network, bs, localCall);
-		return priv_send_rpc( m_Network, T::rpcName(), bs, remoteEtp().get(), false, false, relay, channel, trace );
+		return priv_send_rpc( m_Network, T::rpcName(), bs, &remoteEtp(), false, false, relay, channel, trace );
 	}
 
 	template <typename T, typename ...Args>

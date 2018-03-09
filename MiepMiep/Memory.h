@@ -18,17 +18,16 @@ namespace MiepMiep
 	class ITraceable
 	{
 	public:
-		ITraceable():
-			m_Ptr(this)
-		{
-		}
-		MM_DECLSPEC_INTERN virtual ~ITraceable();
+		ITraceable();
+		virtual ~ITraceable();
 
 		template <class T>
-		sptr<T> ptr() { return static_pointer_cast<T>(m_Ptr); }
+		sptr<T> ptr() const { assert(m_Ptr.get()); return static_pointer_cast<T>(m_Ptr); }
 		
 	private:
 		sptr<ITraceable> m_Ptr;
+
+		friend class Memory;
 	};
 
 
@@ -44,16 +43,14 @@ namespace MiepMiep
 		MM_TS static void printUntracedMemory();
 
 	private:
-		MM_TS MM_DECLSPEC_INTERN static void* trace(void* p, u64 size, char* fname, u64 line);
-		MM_TS MM_DECLSPEC_INTERN static ITraceable* trace(ITraceable* p, u64 size, char* fname, u64 line);
-		MM_TS static void untrace(void* p);
+		MM_TS static void* trace(void* p, u64 size, char* fname, u64 line);
+		MM_TS static ITraceable* trace(ITraceable* p, u64 size, char* fname, u64 line);
+		MM_TS static bool untrace(void* p);
 		MM_TS static void untrace(ITraceable* p);
 
 	private:
 		static mutex m_MemoryMutex;
-		static mutex m_MemoryMutexRaw;
-		static map<ITraceable*, MemoryFootprint> m_Memory;
-		static map<void*, MemoryFootprint> m_MemoryRaw;
+		static map<void*, MemoryFootprint> m_Memory;
 
 		friend class ITraceable;
 	};
