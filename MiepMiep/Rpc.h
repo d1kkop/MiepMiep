@@ -36,7 +36,7 @@ inline static void rpc( INetwork& network, BinSerializer& bs, bool localCall ) /
 	if ( localCall ) rpc_tuple_##name( network, nullptr, std::tuple<>() ); \
 }};\
 extern "C" {\
-inline void MM_DLL_EXPORT deserialize_##name(INetwork& network, const IEndpoint& etp, BinSerializer& bs)\
+inline void MM_DLL_EXPORT rpc_dsr_##name(INetwork& network, const IEndpoint& etp, BinSerializer& bs)\
 { \
 	std::tuple<__VA_ARGS__> tp; \
 	MiepMiep::serialize<0, std::tuple<__VA_ARGS__>, __VA_ARGS__>( bs, false, tp ); \

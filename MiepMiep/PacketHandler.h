@@ -21,12 +21,13 @@ namespace MiepMiep
 	{
 	public:
 		Packet() = default; // Auto zeroed, due to 'calloc'
+		Packet(byte id, class BinSerializer& bs);
 		Packet(byte id, u32 len);
 		Packet(byte id, const byte* data, u32 len, byte flags);
 		Packet(const Packet& p);
-		Packet(Packet&& p);
+		Packet(Packet&& p) noexcept;
 		Packet& operator=(const Packet& p);
-		Packet& operator=(Packet&& p);
+		Packet& operator=(Packet&& p) noexcept;
 		~Packet();
 	
 		byte  m_Id;

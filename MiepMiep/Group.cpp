@@ -5,7 +5,7 @@
 
 namespace MiepMiep
 {
-	Group::Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData):
+	Group::Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, EVarControl initControlType):
 		m_GroupCollection(groupCollection),
 		m_Variables(vars),
 		m_InitData(initData),
@@ -16,7 +16,7 @@ namespace MiepMiep
 	{
 		byte k=0;
 		for ( auto* v : m_Variables ) 
-			v->setGroup( this, k++ );
+			v->initialize( this, initControlType, k++ );
 	}
 
 	Group::~Group()
@@ -37,8 +37,6 @@ namespace MiepMiep
 			if (m_WasUngrouped) return;
 			m_WasUngrouped = true;
 		}
-		for ( auto* v : m_Variables )
-			v->unrefGroup();
 		m_Variables.clear();
 	}
 

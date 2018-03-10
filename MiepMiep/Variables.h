@@ -9,7 +9,7 @@ namespace MiepMiep
 {
 	enum class EVarControl
 	{
-		Unowned,	// Not in network (yet.
+		Unowned,	// Not in network (yet).
 		Full,		// The variable is controlled at this Znode. A change to it will be broadcasted to others.
 		Semi,		// The variable is partially controlled on this Znode. A change will be broadcasted, but it may be overwritten later by an authoritive node if it did not agree on the change.
 		Remote		// The variable is controlled remotely. Any change to it on this Znode is 'unsafe' and will be overwritten.

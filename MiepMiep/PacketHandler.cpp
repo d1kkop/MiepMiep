@@ -6,6 +6,7 @@
 #include "Endpoint.h"
 #include "Socket.h"
 #include "PerThreadDataProvider.h"
+#include <iostream>
 
 
 namespace MiepMiep
@@ -53,6 +54,13 @@ namespace MiepMiep
 		m_Length(len)
 	{
 		// Remainder is zeroed by 'calloc'.
+	//	cout << "Pack constructor." << endl;
+	}
+
+	Packet::Packet(byte id, class BinSerializer& bs):
+		Packet(id, bs.data(), bs.length(), 0)
+	{
+	//	cout << "Pack constructor." << endl;
 	}
 
 	Packet::Packet(byte id, const byte* data, u32 len, byte flags):
@@ -62,42 +70,49 @@ namespace MiepMiep
 		m_Flags(flags)
 	{
 		Platform::memCpy(m_Data, len, data, len);
+	//	cout << "Pack constructor." << endl;
 	}
 
-	Packet::Packet(const Packet& p)
+	Packet::Packet(const Packet& p):
+		Packet(p.m_Id, p.m_Data, p.m_Length, p.m_Flags)
 	{
-		*this = move(p);
+	//	cout << "Pack const copy constructor." << endl;
 	}
 
-	Packet::Packet(Packet&& p)
+	Packet::Packet(Packet&& p) noexcept:
+		m_Id(p.m_Id),
+		m_Data(p.m_Data),
+		m_Length(p.m_Length),
+		m_Flags(p.m_Flags)
 	{
-		*this = move(p);
+		p.m_Data = nullptr;
+	//	cout << "Pack non-const move constructor." << endl;
 	}
 
 	Packet& Packet::operator=(const Packet& p)
 	{
-		m_Id=p.m_Id;
-		m_Length=p.m_Length;
-		m_Flags=p.m_Flags;
+		m_Id = p.m_Id;
+		m_Length = p.m_Length;
+		m_Flags  = p.m_Flags;
 		releaseN(m_Data);
-		reserveN<byte>(MM_FL, m_Length);
+		m_Data = reserveN<byte>(MM_FL, m_Length);
 		Platform::memCpy(m_Data, m_Length, p.m_Data, m_Length);
+	//	cout << "Pack asignment." << endl;
 		return *this;
 	}
 
-	Packet& Packet::operator=(Packet&& p)
+	Packet& Packet::operator=(Packet&& p) noexcept
 	{
-		m_Id=p.m_Id;
-		m_Length=p.m_Length;
-		m_Flags=p.m_Flags;
-		m_Data=p.m_Data;
-		p.m_Data=nullptr;
+		Platform::copy<Packet>(this, &p, 1);
+		p.m_Data = nullptr;
+	//	cout << "Pack non-const move asignment." << endl;
 		return *this;
 	}
 
 	Packet::~Packet()
 	{
 		releaseN(m_Data);
+	//	cout << "Pack destructor." << endl;
 	}
 
 

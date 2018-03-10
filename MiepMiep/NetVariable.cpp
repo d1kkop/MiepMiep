@@ -84,7 +84,7 @@ namespace MiepMiep
 		if ( ipAndPort.empty() ) // we become owner
 		{
 			g->setNewOwnership( bit, nullptr );
-			l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte>( nullptr, *g,  bit );
+			l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte&>( nullptr, *g,  bit );
 		}
 		else
 		{
@@ -93,7 +93,7 @@ namespace MiepMiep
 			if ( remoteEtp && err == 0 )
 			{
 				g->setNewOwnership( bit, remoteEtp.get() );
-				l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte>( remoteEtp.get(), *g,  bit );
+				l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte&>( remoteEtp.get(), *g,  bit );
 			}
 			else
 			{
@@ -154,7 +154,8 @@ namespace MiepMiep
 		m_Data(data),
 		m_Size(size),
 		m_Bit(-1),
-		m_Changed(false)
+		m_Changed(false),
+		m_VarControl(EVarControl::Unowned)
 	{
 		assert( m_Group == nullptr && "VariableGroup::Last" );
 		assert( data && size <= MM_MAXMTUSIZE );
@@ -162,7 +163,6 @@ namespace MiepMiep
 		{
 			Platform::log(ELogType::Warning, MM_FL, "Variable has no valid 'data' ptr. It will not synchronize!");
 		}
-
 		PerThreadDataProvider::getConstructedVariables().emplace_back( this );
 	}
 
@@ -176,12 +176,13 @@ namespace MiepMiep
 		unGroup();
 	}
 
-	MM_TS void NetVariable::setGroup(class Group* g, byte bit)
+	void NetVariable::initialize(class Group* g, EVarControl initVarControl, byte bit)
 	{
 		scoped_spinlock lk(m_GroupMutex);
-		assert( g && !m_Group && m_Bit==-1 );
+		assert( g && !m_Group && m_Bit==(byte)-1 );
 		m_Group = g;
 		m_Bit = bit;
+		m_VarControl = initVarControl;
 	}
 
 	MM_TS void NetVariable::unGroup()
@@ -190,13 +191,8 @@ namespace MiepMiep
 		if ( m_Group )
 		{
 			m_Group->unGroup();
+			m_Group = nullptr;
 		}
-	}
-
-	MM_TS void NetVariable::unrefGroup()
-	{
-		scoped_spinlock lk(m_GroupMutex);
-		m_Group = nullptr;
 	}
 
 	MM_TS u32 NetVariable::id() const
@@ -210,7 +206,9 @@ namespace MiepMiep
 	MM_TS sptr<IEndpoint> NetVariable::getOwner() const
 	{
 		scoped_spinlock lk(m_OwnershipMutex);
-		return m_Owner->getCopy();
+		// Return copy because owner may be changed at any time while the caller is then reading from a 'volatile' IEndpoint.
+		if ( m_Owner ) return m_Owner->getCopy();
+		return nullptr;
 	}
 
 	MM_TS enum class EVarControl NetVariable::getVarControl() const
@@ -268,11 +266,13 @@ namespace MiepMiep
 		scoped_spinlock lk(m_OwnershipMutex);
 		if ( !etp )
 		{
+			// We become owner.
 			m_Owner.reset();
+			m_VarControl = EVarControl::Full;
 			return;
 		}
 		m_Owner = etp->getCopy();
-		m_VarControl = EVarControl::Full;
+		m_VarControl = EVarControl::Remote;
 	}
 
 	MM_TS bool NetVariable::readOrWrite(BinSerializer& bs, bool write)

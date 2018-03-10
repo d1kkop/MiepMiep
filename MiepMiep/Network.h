@@ -25,7 +25,7 @@ namespace MiepMiep
 	class Network: public ComponentCollection, public INetwork, public ITraceable
 	{
 	public:
-		Network();
+		Network(bool allowAsyncCallbacks);
 		~Network() override;
 
 		void processEvents() override;
@@ -63,6 +63,11 @@ namespace MiepMiep
 		template <typename T, typename ...Args>
 		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
 
+		bool allowAsyncCallbacks() const { return m_AllowAsyncCallbacks; }
+
+
+	private:
+		bool m_AllowAsyncCallbacks;
 	};
 
 

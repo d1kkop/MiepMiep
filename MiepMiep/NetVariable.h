@@ -16,15 +16,14 @@ namespace MiepMiep
 	public:
 		NetVariable(class NetVar& userVar, byte* data, u32 size);
 		~NetVariable();
+		MM_TS void initialize(class Group* g, EVarControl initVarControl, byte bit);
 
 		// Set on initialization (through constructor, no locks required).
 		byte* data()			{ return m_Data; }	
 		u32 size() const		{ return m_Size; }
 		byte bit() const		{ return m_Bit; }
 
-		MM_TS void setGroup(class Group* g, byte bit);
 		MM_TS void unGroup();
-		MM_TS void unrefGroup();
 
 		MM_TS u32 id() const;
 		MM_TS sptr<IEndpoint> getOwner() const;

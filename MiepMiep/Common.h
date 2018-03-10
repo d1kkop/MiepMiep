@@ -24,6 +24,7 @@ using namespace std;
 #define MM_RELAY_BIT 4
 #define MM_FRAGMENT_FIRST_BIT 8
 #define MM_FRAGMENT_LAST_BIT 16
+#define MM_SYSTEM_BIT 32
 
 #define __CHECKED( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return; }
 #define __CHECKEDB( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return false; }

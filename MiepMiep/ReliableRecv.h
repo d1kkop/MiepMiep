@@ -13,6 +13,9 @@ namespace MiepMiep
 		static EComponentType compType() { return EComponentType::ReliableRecv; }
 
 		MM_TS void receive( class BinSerializer& bs, const struct PacketInfo& pi );
+		MM_TS void proceedRecvQueue();
+		MM_TS void handlePacket( const Packet& pack );
+		MM_TS void handleRpc( const Packet& pack );
 		
 	private:
 		mutex m_RecvMutex;

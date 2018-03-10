@@ -21,7 +21,6 @@ public:
 	{
 	}
 
-
 	NetInt32  m_Race;
 	NetInt32  m_Age;
 	NetUint32 m_Weight;

@@ -115,7 +115,7 @@ namespace MiepMiep
 	// To get from user code to find func -->
 	MM_TS void* priv_get_rpc_func(const std::string& name)
 	{
-		return Platform::getPtrFromName( (std::string("rpc_") + name).c_str() );
+		return Platform::getPtrFromName( (std::string("rpc_dsr_") + name).c_str() );
 	}
 
 	void Platform::log(ELogType ltype, const char* fname, u64 line, const char* msg, ...)

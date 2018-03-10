@@ -30,10 +30,16 @@ namespace MiepMiep
 		MM_TS ESendCallResult callRpc(Args... args, bool localCall=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr);
 
 		template <typename T, typename ...Args>
-		MM_TS void pushEvent(Args... args); 
+		MM_TS void pushEvent(Args&&... args); 
 
 		template <typename T, typename ...Args>
 		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
+
+		template <typename T, typename ...Args>
+		MM_TS sptr<T> getInNetwork(byte idx=0, Args... args);
+
+		template <typename T, typename ...Args>
+		MM_TS sptr<T> getOrAddInNetwork(byte idx=0, Args... args);
 
 		MM_TS void receive( BinSerializer& bs );
 
@@ -54,7 +60,7 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS void Link::pushEvent(Args... args)
+	MM_TS void Link::pushEvent(Args&&... args)
 	{
 		sptr<T> evt = make_shared<T>(remoteEtp(), args...);
 		sptr<IEvent> evtDown = static_pointer_cast<IEvent>(evt);
@@ -67,6 +73,17 @@ namespace MiepMiep
 		return getOrAddInternal<T, Link&>(idx, *this, args...);
 	}
 
+	template <typename T, typename ...Args>
+	MM_TS sptr<T> Link::getInNetwork(byte idx, Args... args)
+	{
+		return m_Network.get<T, Args...>(idx, args...);
+	}
+
+	template <typename T, typename ...Args>
+	MM_TS sptr<T> Link::getOrAddInNetwork(byte idx, Args... args)
+	{
+		return m_Network.getOrAdd<T, Args...>(idx, args...);
+	}
 
 	// ------------ ParentLink -----------------------------------------------
 

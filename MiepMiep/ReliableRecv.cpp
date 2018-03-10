@@ -1,10 +1,42 @@
 #include "ReliableRecv.h"
 #include "PacketHandler.h"
 #include "JobSystem.h"
+#include "PerThreadDataProvider.h"
+#include "NetworkListeners.h"
 
 
 namespace MiepMiep
 {
+	// ------ Event --------------------------------------------------------------------------------
+
+	using RpcFunc = void (*)( INetwork&, const IEndpoint&, BinSerializer& );
+
+	struct EventRpc : EventBase
+	{
+		EventRpc(const IEndpoint& remote, const RpcFunc& rpcFunc, const Packet& pack):
+			EventBase(remote),
+			m_RpcFunc(rpcFunc),
+			m_Pack(pack)
+		{
+		}
+
+		void process() override
+		{
+			auto& bs = PerThreadDataProvider::getSerializer(false);
+			bs.resetTo( m_Pack.m_Data, m_Pack.m_Length, m_Pack.m_Length );	
+			m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
+			{
+				bs.setRead( 0 );
+				m_RpcFunc( *m_Network, *m_Endpoint, bs );
+			});
+		}
+
+		RpcFunc m_RpcFunc;
+		Packet m_Pack;
+	};
+
+
+	// ------ ReliableRecv --------------------------------------------------------------------------------
 
 	ReliableRecv::ReliableRecv(Link& link):
 		ParentLink(link),
@@ -39,41 +71,95 @@ namespace MiepMiep
 			// Fragment may arrive multiple time as recv_sequence is only incremented when expected sequence is received.
 			pair<decltype(m_OrderedFragments.begin()),bool> inserted = 
 				m_OrderedFragments.try_emplace( pi.m_Sequence, packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_Flags );
+
 			if ( !inserted.second )
 				return; // Already exists, nothing to do.
 			
 			// This fragment may have completed the puzzle. Check if all fragments are available to re-assmble big packet.
 			Packet finalPack;
 			u32 seqBegin, seqEnd;
-			if (PacketHelper::tryReassembleBigPacket(finalPack, m_OrderedFragments, pi.m_Sequence, seqBegin, seqEnd))
+			if (PacketHelper::tryReassembleBigPacket( finalPack, m_OrderedFragments, pi.m_Sequence, seqBegin, seqEnd ))
 			{
 				m_OrderedPackets.try_emplace( seqBegin, /* key */
-											  move(finalPack), 1+(seqEnd-seqBegin) /* value */
+											  finalPack, 1+(seqEnd-seqBegin) /* value */
 				);
 			}
 		}
 
 		// Process packet reply's that do not need to await game thread intervention
-		auto rr = this->ptr<ReliableRecv>();
-		auto& queue = m_OrderedPackets;
-		m_Link.m_Network.get<JobSystem>()->addJob( [&, rr]()
+		sptr<ReliableRecv> sThis = ptr<ReliableRecv>();
+		m_Link.getInNetwork<JobSystem>()->addJob( [sThis]()
 		{
-			scoped_lock lk(rr->m_RecvMutex);
-			auto packIt = queue.find(rr->m_RecvSequence);
-			while ( packIt != queue.end() )
-			{
-				Packet pack = move( packIt->second.first );
-				u32 numFragments = packIt->second.second;
-				queue.erase( packIt );
-				if ( pack.m_Id == 0 ) // TODO should be if RPC
-				{
-					// TODO impl rpc call
-				}
-				rr->m_RecvSequence += numFragments;
-				// try find next ordered sequence
-				packIt = queue.find(rr->m_RecvSequence);
-			}
+			sThis->proceedRecvQueue();
 		});
+	}
+
+	MM_TS void ReliableRecv::proceedRecvQueue()
+	{
+		sptr<ReliableRecv> sThis = ptr<ReliableRecv>();
+		auto& queue = m_OrderedPackets;
+		
+		scoped_lock lk(m_RecvMutex);
+		auto packIt = queue.find(m_RecvSequence);
+		while ( packIt != queue.end() )
+		{
+			Packet pack = packIt->second.first;
+			u32 numFragments = packIt->second.second;
+			queue.erase( packIt );
+
+			m_Link.getInNetwork<JobSystem>()->addJob( [&, sThis]()
+			{
+				sThis->handlePacket( pack );
+			});
+			
+			m_RecvSequence += numFragments;
+			// try find next ordered sequence
+			packIt = queue.find(m_RecvSequence);
+		}
+	}
+
+	MM_TS void ReliableRecv::handlePacket(const Packet& pack)
+	{
+		EPacketType pt = static_cast<EPacketType>( pack.m_Id );
+		switch (pt)
+		{
+		case EPacketType::RPC:
+			handleRpc( pack );
+			break;
+
+		case EPacketType::UserOffsetStart:
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	MM_TS void ReliableRecv::handleRpc(const Packet& pack)
+	{
+		auto& bs = PerThreadDataProvider::getSerializer( false );
+		bs.resetTo( pack.m_Data, pack.m_Length, pack.m_Length );
+
+		// TODO optimize this by setting a flag in the packet if the rpc has been resolved to a static ID
+		string rpcName;
+		__CHECKED( bs.read( rpcName ) );
+		void* rpcAddress = priv_get_rpc_func(rpcName);
+		if ( !rpcAddress )
+		{
+			LOGC( "Cannot find rpc named: %s.", rpcName.c_str() );
+			return;
+		}
+		
+		auto rpcFunc = reinterpret_cast<RpcFunc>( rpcAddress );
+		bool isSystemCall = pack.m_Flags & MM_SYSTEM_BIT;
+		if ( isSystemCall || m_Link.m_Network.allowAsyncCallbacks() ) // call async always
+		{
+			rpcFunc ( m_Link.m_Network, m_Link.remoteEtp(), bs );
+		}
+		else
+		{
+			m_Link.pushEvent<EventRpc>( rpcFunc, pack );
+		}
 	}
 
 }

@@ -15,11 +15,11 @@ namespace MiepMiep
 {
 	// -------- INetwork -----------------------------------------------------------------------------------------------------
 
-	MM_TS sptr<INetwork> INetwork::create()
+	MM_TS sptr<INetwork> INetwork::create(bool allowAsyncCalbacks)
 	{
 		if (0 == Platform::initialize())
 		{
-			return reserve_sp<Network>(MM_FL);
+			return reserve_sp<Network>(MM_FL, allowAsyncCalbacks);
 		}
 		return nullptr;
 	}
@@ -31,7 +31,8 @@ namespace MiepMiep
 
 	// -------- Network -----------------------------------------------------------------------------------------------------
 
-	Network::Network()
+	Network::Network(bool allowAsyncCallbacks):
+		m_AllowAsyncCallbacks(allowAsyncCallbacks)
 	{
 		getOrAdd<JobSystem>(0, 3); // 3 worker threads
 	}

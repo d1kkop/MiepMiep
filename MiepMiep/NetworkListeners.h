@@ -117,21 +117,4 @@ namespace MiepMiep
 		sptr<const IEndpoint> m_Endpoint;
 	};
 
-	struct EventConnectResult : EventBase
-	{
-		EventConnectResult(const IEndpoint& remote, EConnectResult res):
-			EventBase(remote),
-			m_Result(res) { }
-
-		void process() override
-		{
-			m_NetworkListener->processEvents<IConnectionListener>( [this] (IConnectionListener* l) 
-			{
-				l->onConnectResult( *m_Network, *m_Endpoint, m_Result );
-			});
-		}
-
-		EConnectResult m_Result;
-	};
-
 }

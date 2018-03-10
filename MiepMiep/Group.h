@@ -15,7 +15,7 @@ namespace MiepMiep
 	class Group: public ITraceable
 	{
 	public:
-		Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData);
+		Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, EVarControl initControlType);
 		~Group() override;
 
 		// Post set after Id is available. 

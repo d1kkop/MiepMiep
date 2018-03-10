@@ -32,7 +32,6 @@ namespace MiepMiep
 		m_PerThreadDataMap.clear();
 	}
 
-
 	MM_TS BinSerializer& priv_get_thread_serializer()
 	{
 		return PerThreadDataProvider::getSerializer();

@@ -5,6 +5,9 @@
 #include "SocketSet.h"
 #include "PacketHandler.h"
 #include "Memory.h"
+#include "BinSerializer.h"
+#include "Threading.h"
+#include "PerThreadDataProvider.h"
 #include <thread>
 #include <mutex>
 #include <cassert>
@@ -105,3 +108,67 @@ UTESTBEGIN(SocketSetTest)
 	return true;
 }
 UNITTESTEND(SocketSetTest)
+
+
+UTESTBEGIN(SpinLockTest)
+{
+	SpinLock sl;
+	u32 num=0;
+	const u32 kThreads=100;
+	const u32 mp=1000;
+	thread tds[kThreads];
+	for (auto & td : tds)
+	{
+		td = thread( [&]()
+		{
+			for ( u32 j=0; j<mp; j++)
+			{
+				scoped_spinlock lk(sl);
+				num += 1;
+			}
+		});
+	}
+	for (auto& t : tds)
+		t.join();
+
+	assert( num == kThreads*mp );
+	return (num == kThreads*mp);
+}
+UNITTESTEND(SpinLockTest)
+
+
+Packet PackProvider()
+{
+	auto& bs = PerThreadDataProvider::getSerializer(true);
+	bs.write(string("2 hello, how are you? 2"));
+	return Packet( 6, bs );
+}
+
+UTESTBEGIN(PacketTest)
+{
+	constexpr u32 kThreads = 50;
+	thread tds[kThreads];
+
+	for ( auto& t : tds )
+	{
+		t = thread( [] ()
+		{
+			auto& bs = PerThreadDataProvider::getSerializer(true);
+			bs.write(string("hello, how are you?"));
+			cout << "p1" << endl;
+			Packet p1( 7, bs );
+			cout << "p2" << endl;
+			Packet p2(p1);
+			cout << "p3" << endl;
+			Packet p3 = move( PackProvider() ); //Packet( 7, bs ); // move( Packet( 7, bs ) );
+			assert( string ( (char*)p3.m_Data ) == "2 hello, how are you? 2" );
+			cout << "p4" << endl;
+			Packet p4( move( Packet( 7, bs ) ) );
+		});
+	}
+
+	for ( auto& t : tds ) t.join();
+
+	return true;
+}
+UNITTESTEND(PacketTest)

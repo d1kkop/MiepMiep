@@ -8,6 +8,12 @@
 namespace MiepMiep
 {
 	// ---------- Enums -------------------------------
+
+	enum class EPacketType : byte
+	{
+		RPC = 0,
+		UserOffsetStart
+	};
 	
 	enum class EListenCallResult
 	{
@@ -99,7 +105,9 @@ namespace MiepMiep
 	class MM_DECLSPEC INetwork
 	{
 	public:
-		MM_TS static  sptr<INetwork> create();
+		/*	If asyncCallbacks == true, all network events may be called from different threads!
+			The default is false. When false, 'processEvents' must be called to handle network events. */
+		MM_TS static  sptr<INetwork> create(bool allowAsyncCallbacks=false);
 
 		MM_TS virtual void processEvents() = 0;
 
@@ -121,7 +129,7 @@ namespace MiepMiep
 													bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
 
 
-		MM_TS static void setLogSettings( bool logToFile, bool logToIde );
+		MM_TS static void setLogSettings( bool logToFile=true, bool logToIde=true );
 	};
 
 
