@@ -14,7 +14,9 @@ namespace MiepMiep
 	public:
 		BinSerializer();
 		BinSerializer(const BinSerializer& other);
-		BinSerializer& operator==(const BinSerializer& other);
+		BinSerializer(BinSerializer&& other) noexcept;
+		BinSerializer& operator=(const BinSerializer& other);
+		BinSerializer& operator=(BinSerializer&& other) noexcept;
 		~BinSerializer();
 
 		void reset();

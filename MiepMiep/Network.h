@@ -39,9 +39,14 @@ namespace MiepMiep
 
 		MM_TS void createRemoteGroup( const string& typeName, u32 netId, const BinSerializer& initData, const IEndpoint& etp );
 
-		MM_TS ESendCallResult sendReliable(BinSerializer& bs, const IEndpoint* specific, 
+		MM_TS ESendCallResult sendReliable(byte id, const BinSerializer* bs, u32 numSerializers, const IEndpoint* specific, 
 										   bool exclude, bool buffer, bool relay,
 										   byte channel, IDeliveryTrace* trace) override;
+		MM_TS ESendCallResult sendReliable(byte id, const BinSerializer** bs, u32 numSerializers, const IEndpoint* specific, 
+										   bool exclude, bool buffer, bool relay, bool systemBit,
+										   byte channel, IDeliveryTrace* trace);
+		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const IEndpoint* specific, 
+										   bool exclude, bool buffer, byte channel, IDeliveryTrace* trace);
 
 		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
 		MM_TS void removeConnectionListener( const IConnectionListener* listener ) override;
@@ -62,6 +67,11 @@ namespace MiepMiep
 		// Gets or adds component to ComponentCollection.
 		template <typename T, typename ...Args>
 		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
+
+		// Send rpc with system bit (true or false). Other than that, exactly same as Inetwork.callRpc
+		template <typename T, typename ...Args> 
+		MM_TS ESendCallResult callRpc2( Args... args, bool localCall=false, const IEndpoint* specific=nullptr, bool exclude=false, bool buffer=false, 
+										bool relay=false, bool systemBit=true, byte channel=0, IDeliveryTrace* trace=nullptr );
 
 		bool allowAsyncCallbacks() const { return m_AllowAsyncCallbacks; }
 
@@ -95,11 +105,20 @@ namespace MiepMiep
 		return link->getOrAdd<>T();
 	}
 
-
 	template <typename T, typename ...Args>
 	MM_TS sptr<T> MiepMiep::Network::getOrAdd(byte idx, Args... args)
 	{
 		return getOrAddInternal<T, Network&>(idx, *this, args...);
+	}
+
+	template <typename T, typename ...Args>
+	MM_TS ESendCallResult MiepMiep::Network::callRpc2(Args... args, bool localCall, const IEndpoint* specific, 
+													  bool exclude, bool buffer, bool relay, bool systemBit,
+													  byte channel, IDeliveryTrace* trace)
+	{
+		auto& bs = priv_get_thread_serializer();
+		T::rpc<Args...>(args..., *this, bs, localCall);
+		return priv_send_rpc( *this, T::rpcName(), bs, specific, exclude, buffer, relay, systemBit, channel, trace );
 	}
 
 

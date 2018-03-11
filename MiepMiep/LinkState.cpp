@@ -65,14 +65,16 @@ namespace MiepMiep
 
 	bool LinkState::connect(const string& pw, const MetaData& md)
 	{
-		if ( m_State != EConnectState::Unknown )
+		// Check state
 		{
-			Platform::log(ELogType::Warning, MM_FL, "Can only connect if state is set to 'Unknown'.");
-			return false;
+			scoped_spinlock lk(m_StateMutex);
+			if ( m_State != EConnectState::Unknown )
+			{
+				LOGW( "Can only connect if state is set to 'Unknown." );
+				return false;
+			}
+			m_State = EConnectState::Connecting;
 		}
-
-		m_State = EConnectState::Connecting;
-		m_SharedState = (u32)m_State;
 
 		return m_Link.callRpc<linkStateConnect, string, MetaData>( pw, md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
 	}

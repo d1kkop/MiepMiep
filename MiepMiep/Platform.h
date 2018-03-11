@@ -59,7 +59,7 @@ namespace MiepMiep
 		static void vsprintf(char* buff, u64 size, const char* msg, va_list& vaList);
 		static void formatPrint(char* dst, u64 dstSize, const char* frmt, ... );
 		static void sleep( u32 milliSeconds );
-		static void memCpy(void* dst, u64 size, const void* src, u64 count);
+		static void memCpy(void* dst, u64 size, const void* src, u64 srcSize);
 		static void fprintf(FILE* f, const char* msg);
 		template<typename T> static void copy(T* dst, const T* src, u64 cnt);
 

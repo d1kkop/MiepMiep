@@ -125,7 +125,7 @@ namespace MiepMiep
 		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener ) = 0;
 		MM_TS virtual void removeConnectionListener( const IConnectionListener* connectionListener ) = 0;
 
-		MM_TS virtual ESendCallResult sendReliable( BinSerializer& bs, const IEndpoint* specific=nullptr, bool exclude=false, bool buffer=false, 
+		MM_TS virtual ESendCallResult sendReliable( byte id, const BinSerializer* serializers, u32 numSerializers=1, const IEndpoint* specific=nullptr, bool exclude=false, bool buffer=false, 
 													bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
 
 
@@ -139,7 +139,7 @@ namespace MiepMiep
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., *this, bs, localCall);
-		return priv_send_rpc( *this, T::rpcName(), bs, specific, exclude, buffer, relay, channel, trace );
+		return priv_send_rpc( *this, T::rpcName(), bs, specific, exclude, buffer, relay, false, channel, trace );
 	}
 
 	template <typename T, typename ...Args>

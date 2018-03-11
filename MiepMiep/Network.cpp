@@ -9,6 +9,9 @@
 #include "JobSystem.h"
 #include "NetworkListeners.h"
 #include "MasterJoinData.h"
+#include "PacketHandler.h"
+#include "SendThread.h"
+#include "SocketSetManager.h"
 
 
 namespace MiepMiep
@@ -34,15 +37,16 @@ namespace MiepMiep
 	Network::Network(bool allowAsyncCallbacks):
 		m_AllowAsyncCallbacks(allowAsyncCallbacks)
 	{
-		getOrAdd<JobSystem>(0, 3); // 3 worker threads
+		getOrAdd<JobSystem>(0, 4);   // N worker threads
+		getOrAdd<SendThread>();		 // starts a 'resend' flow and creates jobs per N links whom dispatch their data
+		getOrAdd<SocketSetManager>(); // each N sockets is a new reception thread, default N = 64
 	}
 
 	Network::~Network()
 	{
-		if ( has<JobSystem>() )
-		{
-			get<JobSystem>()->stop();
-		}
+		get<JobSystem>()->stop();
+		get<SendThread>()->stop();
+		get<SocketSetManager>()->stop();
 		if ( Platform::shutdown() ) 
 		{
 			Network::clearAllStatics();
@@ -62,9 +66,12 @@ namespace MiepMiep
 		{
 			return ERegisterServerCallResult::AlreadyRegistered;
 		}
-		link->getOrAdd<MasterJoinData>()->setName( name );
-		link->getOrAdd<MasterJoinData>()->setMetaData( md );
-		link->getOrAdd<LinkState>()->connect( pw );
+		get<JobSystem>()->addJob( [=]()
+		{
+			link->getOrAdd<MasterJoinData>()->setName( name );
+			link->getOrAdd<MasterJoinData>()->setMetaData( md );
+			link->getOrAdd<LinkState>()->connect( pw );
+		});
 		return ERegisterServerCallResult::Fine;
 	}
 
@@ -101,13 +108,31 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS ESendCallResult Network::sendReliable(BinSerializer& bs, const IEndpoint* specific,
-												bool exclude, bool buffer, bool relay,
-												byte channel, IDeliveryTrace* trace)
+	MM_TS ESendCallResult Network::sendReliable(byte id, const BinSerializer* bs, u32 numSerializers, const IEndpoint* specific, 
+												bool exclude, bool buffer, bool relay, byte channel, IDeliveryTrace* trace)
 	{
-		bool wasSent = getOrAdd<LinkManager>()->forLink( specific, exclude, [&](Link& link)
+		const BinSerializer* bs2 [] = { bs } ;
+		return sendReliable( id, bs2, numSerializers, specific, exclude, buffer, relay, false, channel, trace );
+	}
+
+	MM_TS ESendCallResult Network::sendReliable(byte id, const BinSerializer** bs, u32 numSerializers, const IEndpoint* specific,
+												bool exclude, bool buffer, bool relay, bool systemBit, byte channel, IDeliveryTrace* trace)
+	{
+		vector<sptr<const NormalSendPacket>> packets;
+		if ( !PacketHelper::createNormalPacket( packets, (byte)ReliableSend::compType(), id, bs, numSerializers, channel, relay, systemBit,
+			  MM_MAX_FRAGMENTSIZE /* TODO change for current known max MTU */ ))
 		{
-			link.getOrAdd<ReliableSend>(channel)->enqueue( bs, relay, trace );
+			return ESendCallResult::SerializationError;
+		}
+		return sendReliable( packets, specific, exclude, buffer, channel, trace );
+	}
+
+	MM_TS ESendCallResult Network::sendReliable(const vector<sptr<const NormalSendPacket>>& data, const IEndpoint* specific,
+												bool exclude, bool buffer, byte channel, IDeliveryTrace* trace)
+	{
+		bool wasSent = getOrAdd<LinkManager>()->forLink( specific, exclude, [&, data](Link& link)
+		{
+			link.getOrAdd<ReliableSend>(channel)->enqueue( data, trace );
 		});
 		return wasSent?ESendCallResult::Fine:ESendCallResult::NotSent;
 	}

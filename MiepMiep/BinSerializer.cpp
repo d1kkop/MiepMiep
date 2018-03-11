@@ -23,10 +23,22 @@ namespace MiepMiep
 		write(other.data(), other.length());
 	}
 
-	BinSerializer& BinSerializer::operator==(const BinSerializer& other)
+	BinSerializer::BinSerializer(BinSerializer&& other) noexcept
+	{
+		*this = move(other);
+	}
+
+	BinSerializer& BinSerializer::operator=(const BinSerializer& other)
 	{
 		reset();
 		write(other.data(), other.length());
+		return *this;
+	}
+
+	BinSerializer& BinSerializer::operator=(BinSerializer&& other) noexcept
+	{
+		Platform::copy( this, &other, 1 );
+		other.m_OrigPtr = nullptr;
 		return *this;
 	}
 

@@ -1,4 +1,5 @@
 #include "LinkManager.h"
+#include "Util.h"
 
 
 namespace MiepMiep
@@ -18,6 +19,7 @@ namespace MiepMiep
 		scoped_lock lk(m_LinksMapMutex);
 		if ( m_Links.count( etpCpy ) != 0 ) return nullptr;
 		m_Links[etpCpy] = link;
+		m_LinksAsArray.emplace_back( link );
 
 		return link;
 	}
@@ -30,11 +32,26 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	MM_TS void LinkManager::forEachLink(const std::function<void(Link&)>& cb)
+	MM_TS void LinkManager::forEachLink(const std::function<void(Link&)>& cb, u32 clusterSize)
 	{
-		scoped_lock lk(m_LinksMapMutex);
-		for ( auto& kvp : m_Links )
-			cb( *kvp.second );
+		if ( 0 == clusterSize )
+		{
+			scoped_lock lk(m_LinksMapMutex);
+			for ( auto& link : m_LinksAsArray )
+				cb( *link );
+		}
+		else
+		{
+			auto lm = this->ptr<LinkManager>();
+			Util::cluster( m_LinksAsArray.size(), clusterSize, [&, lm]( auto s, auto e )
+			{
+				while ( s < e )
+				{
+					cb( *lm->m_LinksAsArray[s] );
+					++s;
+				}
+			});
+		}
 	}
 
 	MM_TS bool LinkManager::forLink(const IEndpoint* specific, bool exclude, const std::function<void(Link&)>& cb)
@@ -54,20 +71,20 @@ namespace MiepMiep
 			}
 			else
 			{
-				for ( auto& kvp : m_Links )
+				for ( auto& link : m_LinksAsArray )
 				{
-					if ( *kvp.first == *specific ) 
+					if ( link->remoteEtp() == *specific ) 
 						continue; // skip this one
-					cb ( *kvp.second );
+					cb ( *link );
 				}
 				wasSentAtLeastOnce = m_Links.size() > 1 || ((!m_Links.empty()) && (*specific != *m_Links.begin()->first));
 			}
 		}
 		else
 		{
-			for ( auto& kvp : m_Links )
-				cb ( *kvp.second );
-			wasSentAtLeastOnce = !m_Links.empty();
+			for ( auto& link : m_LinksAsArray )
+				cb ( *link );
+			wasSentAtLeastOnce = !m_LinksAsArray.empty();
 		}
 		return wasSentAtLeastOnce;
 	}

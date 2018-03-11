@@ -1,5 +1,6 @@
 #include "Util.h"
 #include "Platform.h"
+using namespace chrono;
 
 namespace MiepMiep
 {
@@ -20,4 +21,11 @@ namespace MiepMiep
 		return val;
 	#endif
 	}
+
+	u64 Util::abs_time()
+	{
+		high_resolution_clock::time_point cl;
+		return duration_cast<milliseconds>( cl.time_since_epoch() ).count();
+	}
+
 }

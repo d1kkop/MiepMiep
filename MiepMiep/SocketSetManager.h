@@ -35,12 +35,13 @@ namespace MiepMiep
 		~SocketSetManager() override;
 		static EComponentType compType() { return EComponentType::SocketSetManager; }
 		bool isClosing() const volatile { return m_Closing; }
+		void stop();
 
 		MM_TS void addSocket( sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler );
 		MM_TS void removeSocket( const sptr<const ISocket>& sock );
 
 	private:
-		volatile bool m_Closing;
+		bool m_Closing;
 		mutex m_ReceptionThreadsMutex;
 		vector<sptr<ReceptionThread>> m_ReceptionThreads;
 	};

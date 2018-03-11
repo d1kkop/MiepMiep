@@ -39,10 +39,9 @@ namespace MiepMiep
 		bool connect(const string& pw, const MetaData& md=MetaData());
 		void acceptConnect();
 
-		NetUint32 m_SharedState;
-
 		EConnectState m_State;
 		EDisconnectReason m_DiscReason;
 		EConnectFailReason m_ConnFailReason;
+		SpinLock m_StateMutex;
 	};
 }

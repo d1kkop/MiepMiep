@@ -7,6 +7,7 @@
 #include "ReliableNewRecv.h"
 #include "ReliableAckRecv.h"
 #include "ReliableNewestAckRecv.h"
+#include "Util.h"
 
 
 namespace MiepMiep
@@ -19,9 +20,29 @@ namespace MiepMiep
 
 	sptr<Link> Link::create(Network& network, const IEndpoint& other)
 	{
+		sptr<ISocket> sock = ISocket::create();
+		if (!sock) return nullptr;
+
+		i32 err;
+		sock->open(IPProto::Ipv4, false, &err);
+		if ( err != 0 )
+		{
+			LOGW( "Socket open error %d, cannot create link.", err );
+			return nullptr;
+		}
+
+		sock->bind(0, &err);
+		if ( err != 0 )
+		{
+			LOGW( "Socket bind error %d, cannot create link.", err );
+			return nullptr;
+		}
+
 		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
 		link->m_RemoteEtp = other.getCopy();
 		link->m_Id = rand();
+		link->m_Socket = sock;
+
 		return link;
 	}
 
@@ -86,6 +107,34 @@ namespace MiepMiep
 		case EComponentType::ReliableNewAckRecv:
 			getOrAdd<ReliableNewestAckRecv>()->receive( bs );
 			break;
+		}
+	}
+
+	MM_TS void Link::send(const NormalSendPacket& pack)
+	{
+		if ( !m_Socket )
+		{
+			LOGC( "Invalid socket, cannot send." );
+			return;
+		}
+
+		assert( pack.m_PayLoad.length()+4 <= MM_MAX_SENDSIZE );
+
+		// The linkID is specific to each id, all other data in the packet is shared by all links.
+		// Before send, print linkID after a copy of the data.
+		byte finalData[MM_MAX_SENDSIZE];
+		*(u32*)finalData = Util::htonl(m_Id);
+		Platform::memCpy( finalData + 4, MM_MAX_SENDSIZE-4, pack.m_PayLoad.data(), pack.m_PayLoad.length() );
+
+		i32 err;
+		ESendResult res = m_Socket->send( static_cast<const Endpoint&>( *m_RemoteEtp ), 
+										  finalData,
+										  pack.m_PayLoad.length()+4, 
+										  &err );
+
+		if ( err != 0 && ESendResult::Error==res ) /* ignore err if socket gets closed */
+		{
+			LOGW( "Socket send error %d.", err );
 		}
 	}
 

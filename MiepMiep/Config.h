@@ -1,8 +1,6 @@
 #pragma once
 
 
-#define MM_MAXMTUSIZE									4096
-
 
 #define MM_TRACE_MEMORY_LEAKS							(1)
 #define MM_TRACE_JOBSYSTEM								(1)

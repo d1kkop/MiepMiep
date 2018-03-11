@@ -13,7 +13,7 @@ namespace MiepMiep
 
 	struct EventRpc : EventBase
 	{
-		EventRpc(const IEndpoint& remote, const RpcFunc& rpcFunc, const Packet& pack):
+		EventRpc(const IEndpoint& remote, const RpcFunc& rpcFunc, const RecvPacket& pack):
 			EventBase(remote),
 			m_RpcFunc(rpcFunc),
 			m_Pack(pack)
@@ -32,7 +32,7 @@ namespace MiepMiep
 		}
 
 		RpcFunc m_RpcFunc;
-		Packet m_Pack;
+		RecvPacket  m_Pack;
 	};
 
 
@@ -63,7 +63,7 @@ namespace MiepMiep
 			// Packet may arrive multiple time as recv_sequence is only incremented when expected sequence is received.
 			m_OrderedPackets.try_emplace(
 				pi.m_Sequence, /* key */
-					Packet(packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_Flags), 1 /* value */
+					RecvPacket(packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_Flags), 1 /* value */
 			);
 		}
 		else // fragmented
@@ -76,7 +76,7 @@ namespace MiepMiep
 				return; // Already exists, nothing to do.
 			
 			// This fragment may have completed the puzzle. Check if all fragments are available to re-assmble big packet.
-			Packet finalPack;
+			RecvPacket finalPack;
 			u32 seqBegin, seqEnd;
 			if (PacketHelper::tryReassembleBigPacket( finalPack, m_OrderedFragments, pi.m_Sequence, seqBegin, seqEnd ))
 			{
@@ -103,7 +103,7 @@ namespace MiepMiep
 		auto packIt = queue.find(m_RecvSequence);
 		while ( packIt != queue.end() )
 		{
-			Packet pack = packIt->second.first;
+			RecvPacket pack = packIt->second.first;
 			u32 numFragments = packIt->second.second;
 			queue.erase( packIt );
 
@@ -118,7 +118,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS void ReliableRecv::handlePacket(const Packet& pack)
+	MM_TS void ReliableRecv::handlePacket(const RecvPacket& pack)
 	{
 		EPacketType pt = static_cast<EPacketType>( pack.m_Id );
 		switch (pt)
@@ -135,7 +135,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS void ReliableRecv::handleRpc(const Packet& pack)
+	MM_TS void ReliableRecv::handleRpc(const RecvPacket& pack)
 	{
 		auto& bs = PerThreadDataProvider::getSerializer( false );
 		bs.resetTo( pack.m_Data, pack.m_Length, pack.m_Length );

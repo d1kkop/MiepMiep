@@ -57,10 +57,9 @@ namespace MiepMiep
 	void GroupCollectionLink::msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData )
 	{
 		// Only send group create on this link.
-		inetwork().callRpc<createGroup, string, u32, BinSerializer>
+		m_Link.callRpc<createGroup, string, u32, BinSerializer>
 			(
-				typeName, groupId, initData, false,
-				&link()->remoteEtp(), false, false, false, 
+				typeName, groupId, initData, false, false,
 				MM_VG_CHANNEL, nullptr
 			);
 	}

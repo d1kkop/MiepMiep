@@ -161,6 +161,12 @@
     <ClCompile Include="ReliableNewestAckSend.cpp">
       <Filter>Link\Components\Acks</Filter>
     </ClCompile>
+    <ClCompile Include="SendThread.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="LinkStats.cpp">
+      <Filter>Link\Components\Link</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MiepMiep.h">
@@ -282,6 +288,12 @@
     </ClInclude>
     <ClInclude Include="ReliableNewestAckSend.h">
       <Filter>Link\Components\Acks</Filter>
+    </ClInclude>
+    <ClInclude Include="SendThread.h">
+      <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkStats.h">
+      <Filter>Link\Components\Link</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

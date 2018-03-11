@@ -5,6 +5,7 @@
 #include "Endpoint.h"
 #include "Network.h"
 #include "Threading.h"
+#include "Socket.h"
 
 
 namespace MiepMiep
@@ -22,6 +23,7 @@ namespace MiepMiep
 
 		u32 id() const { return m_Id; }
 		const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
+		const ISocket& socket() const { return *m_Socket; }
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );
@@ -42,10 +44,12 @@ namespace MiepMiep
 		MM_TS sptr<T> getOrAddInNetwork(byte idx=0, Args... args);
 
 		MM_TS void receive( BinSerializer& bs );
+		MM_TS void send( const NormalSendPacket& pack );
 
 	private:
 		u32 m_Id;
 		sptr<const class IEndpoint> m_RemoteEtp;
+		sptr<ISocket> m_Socket;
 		mutable SpinLock m_OriginatorMutex;
 		sptr<const class Listener> m_Originator;
 	};
@@ -56,7 +60,7 @@ namespace MiepMiep
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., m_Network, bs, localCall);
-		return priv_send_rpc( m_Network, T::rpcName(), bs, &remoteEtp(), false, false, relay, channel, trace );
+		return priv_send_rpc( m_Network, T::rpcName(), bs, &remoteEtp(), false, false, relay, true /* sys bit */, channel, trace );
 	}
 
 	template <typename T, typename ...Args>

@@ -10,5 +10,8 @@ namespace MiepMiep
 	public:
 		ReliableNewSend(Link& link);
 		static EComponentType compType() { return EComponentType::ReliableNewSend; }
+
+		void dispatchRelNewestQueueIfTimePassed ( u64 time );
+		void dispatchRelNewestAck( u64 time );
 	};
 }

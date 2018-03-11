@@ -158,7 +158,7 @@ namespace MiepMiep
 		m_VarControl(EVarControl::Unowned)
 	{
 		assert( m_Group == nullptr && "VariableGroup::Last" );
-		assert( data && size <= MM_MAXMTUSIZE );
+		assert( data && size <= MM_MAX_FRAGMENTSIZE ); // If bigger than fragment size, there is no possiblity to fit this variable in a fragment.
 		if ( !data )
 		{
 			Platform::log(ELogType::Warning, MM_FL, "Variable has no valid 'data' ptr. It will not synchronize!");
@@ -257,7 +257,7 @@ namespace MiepMiep
 			nw = &m_Group->network();
 		}
 
-		auto sendRes = nw->callRpc<MiepMiep::changeOwner, u32, byte, string>( id(), bit(), ipAndPort, false, nullptr, false, false, true, MM_VG_CHANNEL, nullptr ) ;
+		auto sendRes = nw->callRpc2<MiepMiep::changeOwner, u32, byte, string>( id(), bit(), ipAndPort, false, nullptr, false, false, true, true, MM_VG_CHANNEL, nullptr ) ;
 		return (sendRes == ESendCallResult::Fine ? EChangeOwnerCallResult::Fine : EChangeOwnerCallResult::Fail );		
 	}
 
@@ -277,7 +277,7 @@ namespace MiepMiep
 
 	MM_TS bool NetVariable::readOrWrite(BinSerializer& bs, bool write)
 	{
-		byte prevData[MM_MAXMTUSIZE];
+		byte prevData[MM_MAX_FRAGMENTSIZE];
 
 		// capture previous state
 		scoped_lock lk(m_UpdateCallbackMutex);

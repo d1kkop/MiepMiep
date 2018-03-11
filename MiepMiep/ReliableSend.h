@@ -1,19 +1,28 @@
 #pragma once
 
 #include "Link.h"
+#include <list>
 
 
 namespace MiepMiep
 {
+
 	class ReliableSend: public ParentLink, public IComponent, public ITraceable
 	{
 	public:
-		ReliableSend(Link& link):
-			ParentLink(link) { }
+		ReliableSend(Link& link);
 		static EComponentType compType() { return EComponentType::ReliableSend; }
 
-		MM_TS void enqueue( BinSerializer& bs, bool relay, class IDeliveryTrace* trace );
+		MM_TS void enqueue( const vector<sptr<const NormalSendPacket>>& rsp, class IDeliveryTrace* trace );
+		MM_TS void resend();
 
-		MM_TS BinSerializer& beginSend();
+		void resendIfLatencyTimePassed( u64 time );
+		void dispatchAckQueueIfAggregateTimePassed( u64 time );
+
+	private:
+		mutex m_SendQueueMutex;
+		u32 m_SendSequence;
+		u64 m_LastResendTS;
+		map<u32, sptr<const NormalSendPacket>> m_SendQueue;
 	};
 }

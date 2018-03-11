@@ -11,11 +11,13 @@ namespace MiepMiep
 	enum class EComponentType
 	{
 		LinkState,
+		LinkStats,
 		MasterJoinData,
 		RemoteServerInfo,
 		Listener,
 		LinkManager,
 		SocketSetManager,
+		SendThreadManager,
 		JobSystem,
 		NetworkListeners,
 		GroupCollectionLink,

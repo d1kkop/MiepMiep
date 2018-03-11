@@ -78,9 +78,13 @@ namespace MiepMiep
 
 	SocketSetManager::~SocketSetManager()
 	{
+		stop();
+	}
+
+	void SocketSetManager::stop()
+	{
 		m_Closing = true;
-		scoped_lock lk(m_ReceptionThreadsMutex);
-		m_ReceptionThreads.clear();
+		m_ReceptionThreads.clear(); // will invoke reception thread destructors which join the calling thread
 	}
 
 	MM_TS void SocketSetManager::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)

@@ -208,12 +208,12 @@ namespace MiepMiep
 		this_thread::sleep_for(milliseconds(ms));
 	}
 
-	void Platform::memCpy(void* dst, u64 size, const void* src, u64 count)
+	void Platform::memCpy(void* dst, u64 size, const void* src, u64 srcSize)
 	{
 	#if MM_SECURE_CRT
-		memcpy_s(dst, size, src, count);
+		memcpy_s(dst, size, src, srcSize);
 	#else
-		memcpy(dst, src, count);
+		memcpy(dst, src, srcSize);
 	#endif
 	}
 

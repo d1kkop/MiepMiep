@@ -137,11 +137,11 @@ UTESTBEGIN(SpinLockTest)
 UNITTESTEND(SpinLockTest)
 
 
-Packet PackProvider()
+RecvPacket PackProvider()
 {
 	auto& bs = PerThreadDataProvider::getSerializer(true);
 	bs.write(string("2 hello, how are you? 2"));
-	return Packet( 6, bs );
+	return RecvPacket( 6, bs );
 }
 
 UTESTBEGIN(PacketTest)
@@ -156,14 +156,14 @@ UTESTBEGIN(PacketTest)
 			auto& bs = PerThreadDataProvider::getSerializer(true);
 			bs.write(string("hello, how are you?"));
 			cout << "p1" << endl;
-			Packet p1( 7, bs );
+			RecvPacket p1( 7, bs );
 			cout << "p2" << endl;
-			Packet p2(p1);
+			RecvPacket p2(p1);
 			cout << "p3" << endl;
-			Packet p3 = move( PackProvider() ); //Packet( 7, bs ); // move( Packet( 7, bs ) );
+			RecvPacket p3 = move( PackProvider() ); //Packet( 7, bs ); // move( Packet( 7, bs ) );
 			assert( string ( (char*)p3.m_Data ) == "2 hello, how are you? 2" );
 			cout << "p4" << endl;
-			Packet p4( move( Packet( 7, bs ) ) );
+			RecvPacket p4( move( RecvPacket( 7, bs ) ) );
 		});
 	}
 

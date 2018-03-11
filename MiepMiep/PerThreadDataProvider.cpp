@@ -12,14 +12,6 @@ namespace MiepMiep
 		return bs;
 	}
 
-	MM_TS BinSerializer& PerThreadDataProvider::beginSend()
-	{
-		scoped_lock lk(m_PerThreadMapMutex);
-		auto& bs = m_PerThreadDataMap[ this_thread::get_id() ].m_Serializer;
-		bs.moveWrite( MM_MIN_HDR_SIZE );
-		return bs;
-	}
-
 	MM_TS vector<NetVariable*>& PerThreadDataProvider::getConstructedVariables()
 	{
 		scoped_lock lk(m_PerThreadMapMutex);

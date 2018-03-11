@@ -45,7 +45,7 @@ namespace MiepMiep
 
 	// ---- !! FOR INTERNAL USE ONLY !! ------
 	MM_TS MM_DECLSPEC extern BinSerializer& priv_get_thread_serializer();
-	MM_TS MM_DECLSPEC extern ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& bs, const IEndpoint* specific, bool exclude, bool buffer, bool relay, byte channel, IDeliveryTrace* trace); 
+	MM_TS MM_DECLSPEC extern ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& bs, const IEndpoint* specific, bool exclude, bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace); 
 	MM_TS MM_DECLSPEC extern void  priv_create_group(INetwork& nw, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace);
 	MM_TS MM_DECLSPEC extern void* priv_get_rpc_func(const std::string& name);
 }
