@@ -1,39 +1,45 @@
-Sat Mar 10 00:04:10 2018 ------- New Session --------
-Sat Mar 10 00:04:10 2018 ----------------------------
-Sat Mar 10 00:04:10 2018 Thread 10952 suspends -> loses lock.
-Sat Mar 10 00:04:10 2018 Thread 10632 suspends -> loses lock.
-Sat Mar 10 00:04:10 2018 Thread 9952 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 9272 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 11124 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 2172 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 8228 locks.
-Sat Mar 10 00:04:11 2018 Thread 8228 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 840 locks.
-Sat Mar 10 00:04:11 2018 Thread 840 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 11124 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 7288 locks.
-Sat Mar 10 00:04:11 2018 Thread 7288 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 9276 locks.
-Sat Mar 10 00:04:11 2018 Thread 9276 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 11124 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 5296 locks.
-Sat Mar 10 00:04:11 2018 Thread 9272 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 5296 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 11124 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 5152 locks.
-Sat Mar 10 00:04:11 2018 Thread 2172 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 5152 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 9932 locks.
-Sat Mar 10 00:04:11 2018 Thread 9932 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 11124 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 8276 locks.
-Sat Mar 10 00:04:11 2018 Thread 8276 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 2172 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 7740 locks.
-Sat Mar 10 00:04:11 2018 Thread 7740 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 11140 locks.
-Sat Mar 10 00:04:11 2018 Thread 11140 unlocks.
-Sat Mar 10 00:04:11 2018 Thread 2172 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 11124 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 Thread 9272 suspends -> loses lock.
-Sat Mar 10 00:04:11 2018 No memory leaks detected.
+Mon Mar 12 02:05:13 2018 ------- New Session --------
+Mon Mar 12 02:05:13 2018 ----------------------------
+Mon Mar 12 02:05:13 2018 Thread 7264 suspends -> loses lock.
+Mon Mar 12 02:05:13 2018 Thread 3296 suspends -> loses lock.
+Mon Mar 12 02:05:13 2018 Thread 7300 suspends -> loses lock.
+Mon Mar 12 02:05:13 2018 Thread 9648 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 6276 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 8144 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 10604 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 11408 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 12184 locks.
+Mon Mar 12 02:05:15 2018 Thread 12184 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 8780 locks.
+Mon Mar 12 02:05:15 2018 Thread 6276 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 8780 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 8144 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 11480 locks.
+Mon Mar 12 02:05:15 2018 Thread 11480 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 10604 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 5840 locks.
+Mon Mar 12 02:05:15 2018 Thread 5840 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 2692 locks.
+Mon Mar 12 02:05:15 2018 Thread 11408 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 2692 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 12176 locks.
+Mon Mar 12 02:05:15 2018 Thread 12176 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 6276 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 11060 locks.
+Mon Mar 12 02:05:15 2018 Thread 11060 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 11476 locks.
+Mon Mar 12 02:05:15 2018 Thread 11476 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 8144 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 7600 locks.
+Mon Mar 12 02:05:15 2018 Thread 7600 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 11292 locks.
+Mon Mar 12 02:05:15 2018 Thread 11292 unlocks.
+Mon Mar 12 02:05:15 2018 Thread 10604 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 10604 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 6276 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 8144 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 11408 starts to execute job.
+Mon Mar 12 02:05:15 2018 Thread 6276 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 8144 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 Thread 11408 suspends -> loses lock.
+Mon Mar 12 02:05:15 2018 No memory leaks detected.

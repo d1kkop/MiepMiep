@@ -24,7 +24,10 @@ namespace MiepMiep
 		scoped_lock lk(m_ListeningMutex);
 
 		if ( port == m_ListenPort && m_Listening )
+		{
+			LOG( "Started listener while already listening on requested port %d, call ignored.", port );
 			return true; // already listening on that port
+		}
 
 		// already listening
 		if ( m_Listening ) 
@@ -65,7 +68,11 @@ namespace MiepMiep
 		scoped_lock lk(m_ListeningMutex);
 		if ( m_Socket )
 		{
-			// Remove socket from socket set
+			auto ss = m_Network.get<SocketSetManager>();
+			if ( ss )
+			{
+				ss->removeSocket( m_Socket );
+			}
 			m_Socket.reset();
 			m_Listening  = false;
 			m_ListenPort = -1;

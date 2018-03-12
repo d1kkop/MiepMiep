@@ -119,9 +119,6 @@
     <ClCompile Include="Endpoint.cpp">
       <Filter>Core\Network</Filter>
     </ClCompile>
-    <ClCompile Include="Component.cpp">
-      <Filter>Core\HighLevelTypes</Filter>
-    </ClCompile>
     <ClCompile Include="Memory.cpp">
       <Filter>Core\Common</Filter>
     </ClCompile>

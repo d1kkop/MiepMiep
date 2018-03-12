@@ -21,6 +21,12 @@ namespace MiepMiep
 
 	void WorkerThread::start()
 	{
+		set_terminate([]()
+		{ 
+			LOGC( "Worker thread encountered exception." );
+			abort();
+		});
+
 		m_Thread = thread([&]
 		/* This is the thread function */
 		{
@@ -40,6 +46,11 @@ namespace MiepMiep
 				lk.unlock();
 				if ( j.valid() )
 				{
+				#if MM_TRACE_JOBSYSTEM
+					stringstream ss;
+					this_thread::get_id()._To_text( ss );
+					LOG( "Thread %s starts to execute job.", ss.str().c_str() );
+				#endif
 					j.m_WorkFunc();
 				}
 			}
@@ -81,7 +92,8 @@ namespace MiepMiep
 			LOG( "Thread %s locks.", ss.str().c_str() );
 		#endif
 		m_JobsMutex.lock();
-		m_GlobalQueue.push_back ( { cb } );
+		m_GlobalQueue.push ( { cb } );
+		//m_QueueCv.notify_one();
 		m_JobsMutex.unlock();
 		#if MM_TRACE_JOBSYSTEM
 			stringstream ss2;
@@ -95,8 +107,8 @@ namespace MiepMiep
 	{
 		if ( !m_GlobalQueue.empty() )
 		{
-			Job j = m_GlobalQueue.back();
-			m_GlobalQueue.pop_back();
+			Job j = m_GlobalQueue.front();
+			m_GlobalQueue.pop();
 			return j;
 		}
 		return Job();
@@ -123,7 +135,7 @@ namespace MiepMiep
 			wt->stop();
 		}
 		m_WorkerThreads.clear();
-		m_GlobalQueue.clear();
+		while ( !m_GlobalQueue.empty() ) m_GlobalQueue.pop();
 	}
 
 }

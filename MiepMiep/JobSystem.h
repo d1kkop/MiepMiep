@@ -4,9 +4,9 @@
 #include "Component.h"
 #include "Memory.h"
 #include "Network.h"
-#include <list>
 #include <functional>
 #include <thread>
+#include <queue>
 #include <condition_variable>
 using namespace std;
 
@@ -58,7 +58,7 @@ namespace MiepMiep
 	private:
 		volatile bool m_Closing;
 		mutex m_JobsMutex;
-		list<Job> m_GlobalQueue;
+		queue<Job> m_GlobalQueue;
 		condition_variable m_QueueCv;
 		vector<uptr<WorkerThread>> m_WorkerThreads;
 

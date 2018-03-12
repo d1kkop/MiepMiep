@@ -47,6 +47,12 @@ namespace MiepMiep
 
 	void ReceptionThread::receptionThread()
 	{
+		set_terminate([]()
+		{ 
+			LOGC( "ReceptionThread encountered exception." );
+			abort();
+		});
+
 		while ( true )
 		{
 			i32 err;

@@ -8,10 +8,12 @@
 #include "BinSerializer.h"
 #include "Threading.h"
 #include "PerThreadDataProvider.h"
+#include "Util.h"
 #include <thread>
 #include <mutex>
 #include <cassert>
 using namespace std;
+using namespace chrono;
 
 
 UTESTBEGIN(SocketTest)
@@ -172,3 +174,34 @@ UTESTBEGIN(PacketTest)
 	return true;
 }
 UNITTESTEND(PacketTest)
+
+
+UTESTBEGIN(TimeTest)
+{
+	constexpr u32 kThreads = 50;
+	thread tds[kThreads];
+
+	for ( auto& t : tds )
+	{
+		t = thread( [] ()
+		{
+			u64 t = Util::abs_time();
+			for ( u32 i=0; i < 1000; i++ )
+			{
+				this_thread::sleep_for( milliseconds(1) );
+			}
+			u64 t2 = Util::abs_time();
+			u64 d  = t2-t;
+			if ( !( d >= 940 && d <= 1060 ) )
+			{
+				cout << " NOTE Thread waited for " << d << " ms, this is VERY inaccurate." << endl;
+			}
+			cout << "Thread waited for " << d << " ms." << endl;
+		});
+	}
+
+	for ( auto& t : tds ) t.join();
+
+	return true;
+}
+UNITTESTEND(TimeTest)

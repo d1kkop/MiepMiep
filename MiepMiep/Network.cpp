@@ -62,10 +62,8 @@ namespace MiepMiep
 	{
 		sptr<LinkManager> lm = getOrAdd<LinkManager>();
 		sptr<Link> link = lm->addLink( masterEtp );
-		if ( link )
-		{
+		if (!link) // Returns nullptr if already added, link otherwise.
 			return ERegisterServerCallResult::AlreadyRegistered;
-		}
 		get<JobSystem>()->addJob( [=]()
 		{
 			link->getOrAdd<MasterJoinData>()->setName( name );

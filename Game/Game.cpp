@@ -4,28 +4,15 @@
 #include "Tree.h"
 #include <iostream>
 #include <tuple>
+#include <thread>
+#include <chrono>
 using namespace std;
+using namespace chrono;
 
 
 
 namespace MyGame
 {
-	struct MyTest
-	{
-		MyTest():
-			ptr(this)
-		{
-		}
-
-		~MyTest()
-		{
-			cout << "destructing my test"<< endl;
-		}
-
-		int age;
-		sptr<MyTest> ptr;
-	};
-
 	// Define your RPC (this is 'just' a static function)
 	// Inetwork, Iendpopint and Tuple<params...> tp are passed in always.
 	MM_RPC( myFirstRpc, i32, i32 )
@@ -50,28 +37,20 @@ namespace MyGame
 
 	bool Game::init()
 	{
-		sptr<MyTest> mt2;
-		{
-			MyTest* mt = new MyTest;
-			 cout << mt->ptr.use_count() << endl;
-			 mt2 = mt->ptr;
-			 mt2._Decref();
-			 cout << mt2->ptr.use_count() << endl;
-		}
-
-		cout << mt2.use_count() << endl;
-
 		m_Network = INetwork::create();
 
 		m_Network->addConnectionListener( this );
+
+
 		m_Network->callRpc<myFirstRpc, i32, i32>( 5, 10, true );
-		m_Network->createGroup<myFirstVarGroup, string, bool>( "hello bartje k", true, true, 6 );
+		m_Network->createGroup<myFirstVarGroup, string, bool>( "hello bartje k", true, true, 6 );*/
 
 		auto masterEtp = IEndpoint::resolve( "localhost", 12200 );
 
 		m_Network->registerServer( *masterEtp, "myFirstGame" );
 		m_Network->joinServer( *masterEtp, "myFirstGame" );
 
+		this_thread::sleep_for( milliseconds(20000) );
 		return true;
 	}
 

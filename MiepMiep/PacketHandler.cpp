@@ -129,22 +129,22 @@ namespace MiepMiep
 		channelAndFlags |= sysBit? MM_SYSTEM_BIT : 0;
 		channelAndFlags |= MM_FRAGMENT_FIRST_BIT;
 		// --
-		u32 len = 0;
+		u32 totalLength = 0;
 		for ( u32 i=0; i< numSerializers; ++i )
 		{
-			len += serializers[i]->length();
+			totalLength += serializers[i]->length();
 		}
 		u32 offset = 0;
 		bool quit  = false;
 		bool isFirstFragment = true;
+		u32 srIdx = 0;
 		do // allow zero length payload packets
 		{
 			auto sp = make_shared<NormalSendPacket>( dataId, channel );
 			BinSerializer& fragment = sp->m_PayLoad;
-			u32 writeLen = Util::min(len, fragmentSize);
-			len -= writeLen;
-			offset += writeLen;
-			if ( 0 == len )
+			u32 writeLen = Util::min(totalLength, fragmentSize);
+			totalLength -= writeLen;
+			if ( 0 == totalLength )
 			{
 				channelAndFlags |= MM_FRAGMENT_LAST_BIT;
 				quit = true;
@@ -157,10 +157,22 @@ namespace MiepMiep
 				channelAndFlags &= ~(MM_FRAGMENT_FIRST_BIT);
 				isFirstFragment  = false;
 			}
-			__CHECKEDB( fragment.write( (*serializers)->data()+offset, Util::min( writeLen, (*serializers)->length()-offset ) ) );
-			if ( offset + writeLen >= (*serializers)->length() )
+			while ( srIdx < numSerializers && writeLen > 0 )
 			{
-				serializers++;
+				u32 leftOverInSerializer = serializers[srIdx]->length()-offset;
+				if ( writeLen < leftOverInSerializer )
+				{
+					__CHECKEDB( fragment.write( serializers[srIdx]->data()+offset, writeLen ) );
+					offset += writeLen;
+					break;
+				}
+				else
+				{
+					__CHECKEDB( fragment.write( serializers[srIdx]->data()+offset, leftOverInSerializer ) );
+					offset = 0;
+					writeLen -= leftOverInSerializer;
+					srIdx++;
+				}			
 			}
 			framgentsOut.emplace_back( const_pointer_cast<const NormalSendPacket>(sp) );
 		} while (!quit);

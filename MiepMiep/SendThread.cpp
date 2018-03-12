@@ -17,6 +17,7 @@ namespace MiepMiep
 		ParentNetwork(network),
 		m_Closing(false)
 	{
+		start();
 	}
 
 	SendThread::~SendThread()
@@ -58,7 +59,7 @@ namespace MiepMiep
 			if ( !lm )
 				continue;
 
-			// Per N links create a async job and resend if necessary
+			// Per N links create an async job and resend if necessary
 			lm->forEachLink( [=](Link& link)
 			{
 				auto rs = link.get<ReliableSend>();

@@ -24,8 +24,7 @@ namespace MiepMiep
 
 	u64 Util::abs_time()
 	{
-		high_resolution_clock::time_point cl;
-		return duration_cast<milliseconds>( cl.time_since_epoch() ).count();
+		return duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count();
 	}
 
 }

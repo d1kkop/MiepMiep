@@ -27,7 +27,6 @@
     <ClCompile Include="NetworkListeners.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="PerThreadDataProvider.cpp" />
-    <ClCompile Include="Component.cpp" />
     <ClCompile Include="Endpoint.cpp" />
     <ClCompile Include="Group.cpp" />
     <ClCompile Include="GroupCollection.cpp" />

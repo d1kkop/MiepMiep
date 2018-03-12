@@ -29,17 +29,19 @@ namespace MiepMiep
 	template <typename S, typename Pred>
 	void MiepMiep::Util::cluster(S s, u32 clusterSize, const Pred& pred)
 	{
-		auto num = s / clusterSize;
-		decltype(num) i = 0;
-		for ( ; i<num; ++i )
+		u32 off = 0;
+		while (true)
 		{
-			pred( i*clusterSize, (i+1)*clusterSize );
-		}
-		auto remainder = (i+1)*clusterSize - s;
-		if ( remainder != 0 )
-		{
-			auto offs = (i+1)*clusterSize;
-			pred( offs, offs+remainder );
+			if ( s > clusterSize ) 
+			{
+				pred( off, off + clusterSize );
+				off += clusterSize;
+			}
+			else
+			{
+				pred( off, off + s );
+				break;
+			}
 		}
 	}
 
