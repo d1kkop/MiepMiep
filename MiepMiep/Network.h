@@ -31,6 +31,8 @@ namespace MiepMiep
 		void processEvents() override;
 
 		// INetwork
+		MM_TS EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 ) override;
+		MM_TS bool stopListen( u16 port ) override;
 		MM_TS ERegisterServerCallResult registerServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
 		MM_TS EJoinServerCallResult joinServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
 
@@ -58,15 +60,15 @@ namespace MiepMiep
 		// Gets, checks or adds directly in a link in the network -> linkManagerComponent.
 		MM_TS sptr<Link> getLink(const Endpoint& etp) const;
 		template <typename T>
-		MM_TS bool hasOnLink(const Endpoint& etp, byte idx=0) const;
+		MM_TS bool hasOnLink(const Endpoint& etp, u32 idx=0) const;
 		template <typename T>
-		MM_TS sptr<T> getOnLink(const Endpoint& etp, byte idx=0) const;
+		MM_TS sptr<T> getOnLink(const Endpoint& etp, u32 idx=0) const;
 		template <typename T>
-		MM_TS sptr<T> getOrAddOnLink(const Endpoint& etp, byte idx=0);
+		MM_TS sptr<T> getOrAddOnLink(const Endpoint& etp, u32 idx=0);
 
 		// Gets or adds component to ComponentCollection.
 		template <typename T, typename ...Args>
-		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
+		MM_TS sptr<T> getOrAdd(u32 idx=0, Args... args);
 
 		// Send rpc with system bit (true or false). Other than that, exactly same as Inetwork.callRpc
 		template <typename T, typename ...Args> 
@@ -78,11 +80,12 @@ namespace MiepMiep
 
 	private:
 		bool m_AllowAsyncCallbacks;
+		mutex m_ListenerAddMutex;
 	};
 
 
 	template <typename T>
-	MM_TS bool MiepMiep::Network::hasOnLink(const Endpoint& etp, byte idx) const
+	MM_TS bool MiepMiep::Network::hasOnLink(const Endpoint& etp, u32 idx) const
 	{
 		const sptr<Link>& link = getLink(etp);
 		if ( !link ) return false;
@@ -90,7 +93,7 @@ namespace MiepMiep
 	}
 
 	template <typename T>
-	MM_TS sptr<T> MiepMiep::Network::getOnLink(const Endpoint& etp, byte idx) const
+	MM_TS sptr<T> MiepMiep::Network::getOnLink(const Endpoint& etp, u32 idx) const
 	{
 		Link* link = getLink(etp);
 		if ( !link ) return nullptr;
@@ -98,7 +101,7 @@ namespace MiepMiep
 	}
 
 	template <typename T>
-	MM_TS sptr<T> MiepMiep::Network::getOrAddOnLink(const Endpoint& etp, byte idx)
+	MM_TS sptr<T> MiepMiep::Network::getOrAddOnLink(const Endpoint& etp, u32 idx)
 	{
 		Link* link = getLink(etp);
 		if ( !link ) return nullptr;
@@ -106,7 +109,7 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> MiepMiep::Network::getOrAdd(byte idx, Args... args)
+	MM_TS sptr<T> MiepMiep::Network::getOrAdd(u32 idx, Args... args)
 	{
 		return getOrAddInternal<T, Network&>(idx, *this, args...);
 	}

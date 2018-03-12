@@ -2,6 +2,7 @@
 #include "PerThreadDataProvider.h"
 #include "PacketHandler.h"
 #include "LinkStats.h"
+#include "Util.h"
 
 
 namespace MiepMiep
@@ -31,7 +32,17 @@ namespace MiepMiep
 		for ( auto& kvp : m_SendQueue )
 		{
 			const NormalSendPacket& sendPack = *kvp.second;
-			m_Link.send( sendPack );
+
+			// The linkID and sequence is specific to each link and packet, all other data in the packet is shared by all links.
+			// Before send, print linkID and seq in front of shared data.
+			byte finalData[MM_MAX_SENDSIZE];
+			*(u32*)finalData = Util::htonl(m_Link.id()); // linkId
+			*(u32*)(finalData + 4) = Util::htonl( kvp.first ); // seq
+			Platform::memCpy( finalData + 8, MM_MAX_SENDSIZE-8, sendPack.m_PayLoad.data(), sendPack.m_PayLoad.length() ); // payload
+
+			m_Link.send( finalData, sendPack.m_PayLoad.length()+8 );
+
+			this_thread::sleep_for( chrono::milliseconds(2) ); // TODO remove
 		}
 	}
 

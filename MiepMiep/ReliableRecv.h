@@ -20,7 +20,7 @@ namespace MiepMiep
 	private:
 		mutex m_RecvMutex;
 		u32 m_RecvSequence;
-		map<u32, pair<RecvPacket, u32>> m_OrderedPackets;
-		map<u32, RecvPacket> m_OrderedFragments;
+		map<u32, pair<sptr<const RecvPacket>, u32>> m_OrderedPackets;
+		map<u32, sptr<const RecvPacket>> m_OrderedFragments;
 	};
 }

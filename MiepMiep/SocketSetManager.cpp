@@ -66,11 +66,6 @@ namespace MiepMiep
 				LOGW( "Listen on socket set returned error %d", err );
 				continue;
 			}
-
-			if ( res == EListenOnSocketsResult::Fine )
-			{
-			//	m_SockSet->
-			}
 		}
 	}
 

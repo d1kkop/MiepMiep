@@ -14,8 +14,10 @@ namespace MiepMiep
 		template <typename T>
 		static T max(T a, T b) { return a > b ? a : b; }
 
+		static u64 htonll( u64 val );
 		static u32 htonl( u32 val );
 		static u16 htons( u16 val );
+		static u64 ntohll( u64 val ) { return htonll(val); }
 		static u32 ntohl( u32 val ) { return htonl(val); }
 		static u16 ntohs( u16 val ) { return htons(val); }
 

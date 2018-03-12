@@ -37,12 +37,11 @@ namespace MiepMiep
 
 	enum class EConnectResult
 	{
-		Succes,
+		Fine,
 		Timedout,
 		InvalidPassword,
 		MaxConnectionsReached,
-		AlreadyConnected,
-		InvalidConnectPacket
+		AlreadyConnected
 	};
 
 
@@ -94,7 +93,7 @@ namespace MiepMiep
 
 		struct stl_less
 		{
-			bool operator()( const sptr<IEndpoint>& left, const sptr<IEndpoint>& right ) const;
+			bool operator()( const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right ) const;
 		};
 
 		MM_TS sptr<IEndpoint> to_ptr();
@@ -110,6 +109,9 @@ namespace MiepMiep
 		MM_TS static  sptr<INetwork> create(bool allowAsyncCallbacks=false);
 
 		MM_TS virtual void processEvents() = 0;
+
+		MM_TS virtual EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 ) = 0;
+		MM_TS virtual bool stopListen( u16 port ) = 0;
 
 		MM_TS virtual ERegisterServerCallResult registerServer( const IEndpoint& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
 		MM_TS virtual EJoinServerCallResult joinServer( const IEndpoint& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;

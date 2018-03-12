@@ -21,10 +21,18 @@ namespace MiepMiep
 		MM_TS void stopListen();
 
 		MM_TS void setMaxConnections( u32 num );
-		MM_TS void setPassword( string& pw );
+		MM_TS void setPassword( const string& pw );
 
 		// All packets are handled here first after they have been converted from raw to binStream.
-		void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override;
+		MM_TS void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override;
+
+		MM_TS u16 getPort() const{ return m_ListenPort; }
+		MM_TS u32 getMaxClients() const { return m_MaxConnections; }
+		MM_TS u32 getNumClients() const { return m_NumConnections; }
+		MM_TS string getPassword() const;
+
+		// Called upon link closes so that it unregisters itself.
+		MM_TS void reduceNumClientsByOne();
 
 		MM_TO_PTR( Listener )
 
@@ -32,9 +40,10 @@ namespace MiepMiep
 		mutex m_ListeningMutex;
 		sptr<ISocket> m_Socket;
 		bool m_Listening;
-		u16  m_ListenPort;
+		atomic_ushort  m_ListenPort;
 		atomic_uint m_MaxConnections;
-		SpinLock m_PasswordLock;
+		atomic_uint m_NumConnections;
+		mutable SpinLock m_PasswordLock;
 		string m_Password;
 	};
 }

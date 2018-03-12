@@ -48,11 +48,13 @@ namespace MiepMiep
 	class ComponentCollection
 	{
 	public:
-		template <typename T> MM_TS bool has(byte idx=0) const;
-		template <typename T> MM_TS sptr<T> get(byte idx=0) const;
+		template <typename T> MM_TS bool has(u32 idx=0) const;
+		template <typename T> MM_TS sptr<T> get(u32 idx=0) const;
+		template <typename T> MM_TS u32 count() const;
+		template <typename T> MM_TS bool remove(u32 idx=0);
 
 	protected:
-		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(byte idx=0, Args... args);
+		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(u32 idx=0, Args... args);
 
 	private:
 		mutable rmutex m_ComponentsMutex;
@@ -61,15 +63,15 @@ namespace MiepMiep
 
 
 	template <typename T>
-	MM_TS bool ComponentCollection::has(byte idx) const
+	MM_TS bool ComponentCollection::has(u32 idx) const
 	{
 		rscoped_lock lk(m_ComponentsMutex);
 		auto it = m_Components.find( T::compType() );
-		return (it != m_Components.end()) && (it->second.size() > idx);
+		return (it != m_Components.end()) && (it->second.size() > idx) && (it->second[idx].get() != nullptr);
 	}
 
 	template <typename T>
-	MM_TS sptr<T> ComponentCollection::get(byte idx) const
+	MM_TS sptr<T> ComponentCollection::get(u32 idx) const
 	{
 		rscoped_lock lk(m_ComponentsMutex);
 		auto compIt = m_Components.find( T::compType() );
@@ -84,8 +86,31 @@ namespace MiepMiep
 		return nullptr;
 	}
 
+	template <typename T>
+	MM_TS u32 ComponentCollection::count() const
+	{
+		rscoped_lock lk(m_ComponentsMutex);
+		auto compIt = m_Components.find( T::compType() );
+		if ( compIt != m_Components.end() )
+			return (u32)compIt->second.size();
+		else
+			return 0;
+	}
+
+	template <typename T>
+	MM_TS bool ComponentCollection::remove(u32 idx)
+	{
+		rscoped_lock lk(m_ComponentsMutex);
+		if ( has<T>(idx) )
+		{
+			m_Components[ T::compType() ][idx].reset();
+			return true;
+		}
+		return false;
+	}
+
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> ComponentCollection::getOrAddInternal(byte idx, Args... args)
+	MM_TS sptr<T> ComponentCollection::getOrAddInternal(u32 idx, Args... args)
 	{
 		rscoped_lock lk(m_ComponentsMutex);
 		if (!has<T>(idx))

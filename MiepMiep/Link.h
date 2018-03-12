@@ -16,7 +16,9 @@ namespace MiepMiep
 	{
 	public:
 		Link(Network& network);
-		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp);
+		~Link() override;
+		MM_TS void close();
+		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp, u32* id);
 
 		void setOriginator( const class Listener& listener );
 		const class Listener* getOriginator() const;
@@ -35,16 +37,16 @@ namespace MiepMiep
 		MM_TS void pushEvent(Args&&... args); 
 
 		template <typename T, typename ...Args>
-		MM_TS sptr<T> getOrAdd(byte idx=0, Args... args);
+		MM_TS sptr<T> getOrAdd(u32 idx=0, Args... args);
 
 		template <typename T, typename ...Args>
-		MM_TS sptr<T> getInNetwork(byte idx=0, Args... args);
+		MM_TS sptr<T> getInNetwork(u32 idx=0, Args... args);
 
 		template <typename T, typename ...Args>
-		MM_TS sptr<T> getOrAddInNetwork(byte idx=0, Args... args);
+		MM_TS sptr<T> getOrAddInNetwork(u32 idx=0, Args... args);
 
 		MM_TS void receive( BinSerializer& bs );
-		MM_TS void send( const NormalSendPacket& pack );
+		MM_TS void send( const byte* data, u32 length );
 
 	private:
 		u32 m_Id;
@@ -72,19 +74,19 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> Link::getOrAdd(byte idx, Args... args)
+	MM_TS sptr<T> Link::getOrAdd(u32 idx, Args... args)
 	{
 		return getOrAddInternal<T, Link&>(idx, *this, args...);
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> Link::getInNetwork(byte idx, Args... args)
+	MM_TS sptr<T> Link::getInNetwork(u32 idx, Args... args)
 	{
 		return m_Network.get<T, Args...>(idx, args...);
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> Link::getOrAddInNetwork(byte idx, Args... args)
+	MM_TS sptr<T> Link::getOrAddInNetwork(u32 idx, Args... args)
 	{
 		return m_Network.getOrAdd<T, Args...>(idx, args...);
 	}

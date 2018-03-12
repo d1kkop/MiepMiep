@@ -157,14 +157,14 @@ UTESTBEGIN(PacketTest)
 		{
 			auto& bs = PerThreadDataProvider::getSerializer(true);
 			bs.write(string("hello, how are you?"));
-			cout << "p1" << endl;
+		//	cout << "p1" << endl;
 			RecvPacket p1( 7, bs );
-			cout << "p2" << endl;
+		//	cout << "p2" << endl;
 			RecvPacket p2(p1);
-			cout << "p3" << endl;
+		//	cout << "p3" << endl;
 			RecvPacket p3 = move( PackProvider() ); //Packet( 7, bs ); // move( Packet( 7, bs ) );
 			assert( string ( (char*)p3.m_Data ) == "2 hello, how are you? 2" );
-			cout << "p4" << endl;
+	//		cout << "p4" << endl;
 			RecvPacket p4( move( RecvPacket( 7, bs ) ) );
 		});
 	}
@@ -194,9 +194,9 @@ UTESTBEGIN(TimeTest)
 			u64 d  = t2-t;
 			if ( !( d >= 940 && d <= 1060 ) )
 			{
-				cout << " NOTE Thread waited for " << d << " ms, this is VERY inaccurate." << endl;
+				cout << "WARNING: Thread waited for " << d << " ms, this is VERY inaccurate." << endl;
 			}
-			cout << "Thread waited for " << d << " ms." << endl;
+		//	cout << "Thread waited for " << d << " ms." << endl;
 		});
 	}
 
@@ -205,3 +205,94 @@ UTESTBEGIN(TimeTest)
 	return true;
 }
 UNITTESTEND(TimeTest)
+
+
+UTESTBEGIN(BinMetaDataTest)
+{
+	BinSerializer bs;
+	MetaData md;
+
+	for (u32 i = 0; i < 10000 ; i++)
+	{
+		md[ std::to_string(i) ] = " lalalal this is metadata johoeeeee with value: " + std::to_string(i);
+	}
+	bs.write( md );
+
+	BinSerializer bs2( bs );
+
+	MetaData mdRead;
+	bs.read(mdRead);
+	assert( mdRead == md );
+
+	return true;
+}
+UNITTESTEND(BinMetaDataTest)
+
+
+UTESTBEGIN(StringSerializeTest)
+{
+	BinSerializer bs;
+	string str;
+	for (u32 i = 0; i < MiepMiep::TempBuffSize-1 ; i++)
+	{
+		auto r = rand () % 10;
+		str.append(to_string(r));
+	}
+	
+	__CHECKEDB( bs.write(str) );
+
+	BinSerializer bs2(bs);
+	string strOut;
+	__CHECKEDB( bs2.read( strOut ) );
+
+	u64 val = ~0ULL-1000;
+	bs.write( val );
+	bs.moveRead( bs2.length() );
+	u64 val2;
+	bs.read( val2 );
+
+	assert( val == val2 );
+
+	assert( strOut == str );
+	return true;
+}
+UNITTESTEND(StringSerializeTest)
+
+
+// mimic pw & md
+MetaData g_md;
+MM_RPC(MyRpcBigTest, string, MetaData)
+{
+	const string& pw	= std::get<0>(tp);
+	const MetaData& md	= std::get<1>(tp);
+	assert( md == g_md );
+}
+
+UTESTBEGIN(RPCBigTest)
+{
+	BinSerializer bs;
+
+	for (u32 i = 0; i < 100000 ; i++)
+	{
+		g_md[ std::to_string(i) ] = " lalalal this is metadata johoeeeee with value: " + std::to_string(i);
+	}
+	bs.write( g_md );
+
+	BinSerializer bs2;
+	string pw = string("this is my pw"); 
+	bs2.write( pw );
+	bs2.write( bs );
+
+	MetaData mdRead;
+	bs2.moveRead( (u32)pw.length()+1 );
+	bs2.read(mdRead);
+	assert( mdRead == g_md );
+
+	sptr<INetwork> nw = INetwork::create();
+	sptr<IEndpoint> etp = IEndpoint::resolve( "localhost", 12203 );
+	bs2.setRead(0);
+	rpc_dsr_MyRpcBigTest( *nw, *etp, bs2 );
+
+	return true;
+}
+UNITTESTEND(RPCBigTest)

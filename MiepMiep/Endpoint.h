@@ -17,6 +17,7 @@ namespace MiepMiep
 		// IEndpoint
 		MM_TS string toIpAndPort() const override;
 		MM_TS sptr<IEndpoint> getCopy() const override;
+		MM_TS sptr<Endpoint> getCopyDerived() const;
 		
 		bool operator==( const Endpoint& other ) const;
 		bool operator==( const sptr<Endpoint>& other )	const		{ return *this == *other; }

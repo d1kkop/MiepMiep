@@ -7,6 +7,7 @@
 #include "Socket.h"
 #include "PerThreadDataProvider.h"
 #include "Util.h"
+#include "JobSystem.h"
 #include <iostream>
 
 
@@ -19,40 +20,46 @@ namespace MiepMiep
 
 	void IPacketHandler::handle(const sptr<const class ISocket>& sock)
 	{
-		byte buff[MM_MAX_RECVSIZE];
-		u32 rawSize = MM_MAX_RECVSIZE; // buff size in
-		Endpoint etp;
-		i32 err;
-		ERecvResult res = sock->recv( buff, rawSize, etp, &err );
-
-		if ( err != 0 )
+		auto sThis = ptr<IPacketHandler>();
+		m_Network.get<JobSystem>()->addJob( [=]()
 		{
-			LOGW( "Socket recv error: %d.", err );
-			return;
-		}
+			byte buff[MM_MAX_RECVSIZE];
+			u32 rawSize = MM_MAX_RECVSIZE; // buff size in
+			Endpoint etp;
+			i32 err;
+			ERecvResult res = sock->recv( buff, rawSize, etp, &err );
 
-		if ( res == ERecvResult::Succes )
-		{
-			// Minimum size is linkId + some protocol (1 byte)
-			if ( rawSize >= MM_MIN_HDR_SIZE )
+			if ( err != 0 )
 			{
-				BinSerializer& bs = PerThreadDataProvider::getSerializer( false );
-				bs.resetTo( buff, rawSize, rawSize );
-				handleSpecial( bs, etp );
+				LOGW( "Socket recv error: %d.", err );
+				return;
 			}
-			else
+
+			if ( res == ERecvResult::Succes )
 			{
-				LOGW( "Received packet with less than %d bytes. Packet discarded.", MM_MIN_HDR_SIZE );
+				if ( rawSize >= MM_MIN_HDR_SIZE )
+				{
+					BinSerializer& bs = PerThreadDataProvider::getSerializer( false );
+					bs.resetTo( buff, rawSize, rawSize );
+					// thi etp is local, go to shared heap object
+					sThis->handleSpecial( bs, *etp.getCopyDerived() );
+				}
+				else
+				{
+					LOGW( "Received packet with less than %d bytes (= Hdr size), namely %d. Packet discarded.", MM_MIN_HDR_SIZE, rawSize );
+				}
 			}
-		}
+		} );
 	}
 
 
 	// --- Packet ------------------------------------------------------------------------------------------
 
-	RecvPacket::RecvPacket(byte id, u32 len):
+	RecvPacket::RecvPacket(byte id, u32 len, byte flags):
 		m_Id(id),
-		m_Length(len)
+		m_Data(reserveN<byte>(MM_FL, len)),
+		m_Length(len),
+		m_Flags(flags)
 	{
 		// Remainder is zeroed by 'calloc'.
 	//	cout << "Pack constructor." << endl;
@@ -124,6 +131,9 @@ namespace MiepMiep
 										  const BinSerializer** serializers, u32 numSerializers,
 										  byte channel, bool relay, bool sysBit, u32 fragmentSize)
 	{
+		// actual fragmentSize is somewhat lower due to fragment hdr overhead, subtract this, so that fragmentSize is never exceeded
+		fragmentSize -= MM_FRAGMENT_HDR_SIZE;
+		assert ( fragmentSize > MM_FRAGMENT_HDR_SIZE*2 );
 		byte channelAndFlags = channel & MM_CHANNEL_MASK;
 		channelAndFlags |= relay? MM_RELAY_BIT : 0;
 		channelAndFlags |= sysBit? MM_SYSTEM_BIT : 0;
@@ -140,7 +150,7 @@ namespace MiepMiep
 		u32 srIdx = 0;
 		do // allow zero length payload packets
 		{
-			auto sp = make_shared<NormalSendPacket>( dataId, channel );
+			auto sp = make_shared<NormalSendPacket>();
 			BinSerializer& fragment = sp->m_PayLoad;
 			u32 writeLen = Util::min(totalLength, fragmentSize);
 			totalLength -= writeLen;
@@ -179,22 +189,23 @@ namespace MiepMiep
 		return true; // jeej
 	}
 
-	bool PacketHelper::tryReassembleBigPacket(RecvPacket& finalPack, std::map<u32, RecvPacket>& fragments, u32 seq, u32& seqBegin, u32& seqEnd)
+	bool PacketHelper::tryReassembleBigPacket(sptr<const RecvPacket>& finalPack, std::map<u32, sptr<const RecvPacket>>& fragments, u32 seq, u32& seqBegin, u32& seqEnd)
 	{
 		// try find begin
 		seqBegin = seq;
 		auto itBegin = fragments.find( seqBegin );
 		while ( itBegin != fragments.end() )
 		{
-			RecvPacket& pack = itBegin->second;
-			if ( (pack.m_Flags & MM_FRAGMENT_FIRST_BIT) != 0 )
+			const sptr<const RecvPacket>& pack = itBegin->second;
+			if ( (pack->m_Flags & MM_FRAGMENT_FIRST_BIT) != 0 )
 			{
 				// found begin, try find end now..
 				seqEnd = seq;
 				auto itEnd = fragments.find( seqEnd );
 				while ( itEnd != fragments.end() )
 				{
-					if ( (pack.m_Flags & MM_FRAGMENT_LAST_BIT) != 0 )
+					const sptr<const RecvPacket>& pack = itEnd->second;
+					if ( (pack->m_Flags & MM_FRAGMENT_LAST_BIT) != 0 )
 					{
 						// all fragments available, re-assemble framgents to one pack
 						finalPack = reAssembleBigPacket(fragments, seqBegin, seqEnd);
@@ -209,19 +220,20 @@ namespace MiepMiep
 		return false;
 	}
 
-	RecvPacket PacketHelper::reAssembleBigPacket(std::map<u32, RecvPacket>& fragments, u32 seqBegin, u32 seqEnd)
+	sptr<const RecvPacket> PacketHelper::reAssembleBigPacket(std::map<u32, sptr<const RecvPacket>>& fragments, u32 seqBegin, u32 seqEnd)
 	{
 		// Count total length.
 		u32 totalLen = 0;
 		u32 curSeq = seqBegin;
 		while (curSeq != seqEnd+1) // take into account that seq wraps
 		{
-			totalLen += fragments[curSeq].m_Length;
+			totalLen += fragments[curSeq]->m_Length;
 			curSeq++;
 		}
 
-		// Allocate data for packet
-		RecvPacket finalPack(fragments[seqBegin].m_Id, totalLen);
+		// Allocate data for packet (copy id and flags from first fragment)
+		auto& firstFrag = fragments[seqBegin];
+		auto finalPack  = make_shared<RecvPacket>( firstFrag->m_Id, totalLen, firstFrag->m_Flags );
 
 		// Copy each fragment
 		curSeq = seqBegin;
@@ -229,15 +241,14 @@ namespace MiepMiep
 		while (curSeq != seqEnd+1) // take into count that seq wraps
 		{
 			auto fragIt = fragments.find(curSeq);
-			const RecvPacket& frag = fragIt->second;
-			Platform::memCpy( finalPack.m_Data + curLen, (totalLen-curLen), frag.m_Data, frag.m_Length );
-			curLen += frag.m_Length;
+			const sptr<const RecvPacket>& frag = fragIt->second;
+			Platform::memCpy( finalPack->m_Data + curLen, (totalLen-curLen), frag->m_Data, frag->m_Length );
+			curLen += frag->m_Length;
 			fragments.erase( fragIt );
 			curSeq++;
 		}
 
-		// use move construct
-		return finalPack;
+		return const_pointer_cast<const RecvPacket>( finalPack );
 	}
 
 	bool PacketHelper::isSeqNewer(u32 incoming, u32 having)

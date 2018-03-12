@@ -12,6 +12,7 @@
 #include "PacketHandler.h"
 #include "SendThread.h"
 #include "SocketSetManager.h"
+#include "Listener.h"
 
 
 namespace MiepMiep
@@ -58,17 +59,58 @@ namespace MiepMiep
 		getOrAdd<NetworkListeners>()->processAll();
 	}
 
+	MM_TS EListenCallResult Network::startListen(u16 port, const std::string& pw, u32 maxConnections)
+	{
+		sptr<Listener> listener;
+		{
+			scoped_lock lk(m_ListenerAddMutex);
+			u32 i=0;
+			while ( has<Listener>(i) ) i++;
+			listener = getOrAdd<Listener>(i);
+		}
+		assert( listener );
+		if ( !listener->startOrRestartListening( port )) 
+		{
+			return EListenCallResult::SocketError;
+		}
+		listener->setPassword( pw );
+		listener->setMaxConnections( maxConnections );
+		return EListenCallResult::Fine;
+	}
+
+	MM_TS bool Network::stopListen(u16 port)
+	{
+		sptr<Listener> listener;
+		{
+			scoped_lock lk(m_ListenerAddMutex);
+			u32 s=0, e = count<Listener>();
+			while (s < e)
+			{
+				sptr<Listener> listener = get<Listener>(s);
+				if ( listener && listener->getPort() == port )
+				{
+					return remove<Listener>( s );
+				}
+				++s;
+			}
+		}
+		return false;
+	}
+
 	MM_TS ERegisterServerCallResult Network::registerServer(const IEndpoint& masterEtp, const string& name, const string& pw, const MetaData& md)
 	{
 		sptr<LinkManager> lm = getOrAdd<LinkManager>();
-		sptr<Link> link = lm->addLink( masterEtp );
-		if (!link) // Returns nullptr if already added, link otherwise.
+		bool added;
+		sptr<Link> link = lm->getOrAdd( masterEtp, nullptr, &added );
+		if (!added) // Returns nullptr if already added, link otherwise.
+		{
 			return ERegisterServerCallResult::AlreadyRegistered;
+		}
 		get<JobSystem>()->addJob( [=]()
 		{
 			link->getOrAdd<MasterJoinData>()->setName( name );
 			link->getOrAdd<MasterJoinData>()->setMetaData( md );
-			link->getOrAdd<LinkState>()->connect( pw );
+			link->getOrAdd<LinkState>()->connect( pw, md ); // TODO , where put md
 		});
 		return ERegisterServerCallResult::Fine;
 	}

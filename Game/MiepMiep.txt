@@ -1,10 +1,38 @@
-Mon Mar 12 02:07:23 2018 ------- New Session --------
-Mon Mar 12 02:07:23 2018 ----------------------------
-Mon Mar 12 02:07:23 2018 Thread 12256 suspends -> loses lock.
-Mon Mar 12 02:07:23 2018 Thread 9376 suspends -> loses lock.
-Mon Mar 12 02:07:23 2018 Thread 6640 suspends -> loses lock.
-Mon Mar 12 02:07:23 2018 Thread 10768 suspends -> loses lock.
-Mon Mar 12 02:07:23 2018 Thread 10300 locks.
-Mon Mar 12 02:07:23 2018 Thread 10300 unlocks.
-Mon Mar 12 02:07:23 2018 Thread 12256 starts to execute job.
-Mon Mar 12 02:07:23 2018 Thread 12256 suspends -> loses lock.
+Mon Mar 12 22:32:14 2018 ------- New Session --------
+Mon Mar 12 22:32:14 2018 ----------------------------
+Mon Mar 12 22:32:14 2018 Created new link to 2.0.105.122:27002 with id 7687.
+Mon Mar 12 22:32:14 2018 Created new link to 2.0.223.4:57092 with id 7687.
+Mon Mar 12 22:32:14 2018 Received reliable seq: 0
+Mon Mar 12 22:32:14 2018 Received reliable seq: 1
+Mon Mar 12 22:32:14 2018 Received reliable seq: 2
+Mon Mar 12 22:32:14 2018 Received reliable seq: 3
+Mon Mar 12 22:32:14 2018 Received reliable seq: 4
+Mon Mar 12 22:32:14 2018 Received reliable seq: 5
+Mon Mar 12 22:32:14 2018 Received reliable seq: 6
+Mon Mar 12 22:32:14 2018 Received reliable seq: 7
+Mon Mar 12 22:32:14 2018 Received reliable seq: 8
+Mon Mar 12 22:32:14 2018 Received reliable seq: 9
+Mon Mar 12 22:32:14 2018 Received reliable seq: 10
+Mon Mar 12 22:32:14 2018 Received reliable seq: 11
+Mon Mar 12 22:32:14 2018 Received reliable seq: 12
+Mon Mar 12 22:32:14 2018 Received reliable seq: 13
+Mon Mar 12 22:32:14 2018 Received reliable seq: 14
+Mon Mar 12 22:32:14 2018 Received reliable seq: 15
+Mon Mar 12 22:32:14 2018 Received reliable seq: 16
+Mon Mar 12 22:32:14 2018 Received reliable seq: 17
+Mon Mar 12 22:32:14 2018 Received reliable seq: 18
+Mon Mar 12 22:32:14 2018 Received reliable seq: 19
+Mon Mar 12 22:32:14 2018 Received reliable seq: 20
+Mon Mar 12 22:32:14 2018 Received reliable seq: 21
+Mon Mar 12 22:32:14 2018 Received reliable seq: 22
+Mon Mar 12 22:32:14 2018 Received reliable seq: 23
+Mon Mar 12 22:32:14 2018 Received reliable seq: 24
+Mon Mar 12 22:32:14 2018 Received reliable seq: 25
+Mon Mar 12 22:32:14 2018 Received reliable seq: 26
+Mon Mar 12 22:32:14 2018 Received reliable seq: 27
+Mon Mar 12 22:32:14 2018 Received reliable seq: 28
+Mon Mar 12 22:32:14 2018 Received reliable seq: 29
+Mon Mar 12 22:32:14 2018 Received reliable seq: 30
+Mon Mar 12 22:32:14 2018 Received reliable seq: 31
+Mon Mar 12 22:32:14 2018 Received reliable seq: 32
+Mon Mar 12 22:32:14 2018 Received reliable seq: 33

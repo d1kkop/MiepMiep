@@ -40,14 +40,23 @@ namespace MyGame
 		m_Network = INetwork::create();
 
 		m_Network->addConnectionListener( this );
+		
+		m_Network->startListen( 27002 );
 
-
+		/*
 		m_Network->callRpc<myFirstRpc, i32, i32>( 5, 10, true );
 		m_Network->createGroup<myFirstVarGroup, string, bool>( "hello bartje k", true, true, 6 );*/
 
-		auto masterEtp = IEndpoint::resolve( "localhost", 12200 );
+		auto masterEtp = IEndpoint::resolve( "localhost", 27002 );
 
-		m_Network->registerServer( *masterEtp, "myFirstGame" );
+		MetaData md;
+
+		for ( i32 i=0; i<1000; i++ )
+		{
+			md[ to_string(i) ] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string(i);
+		}
+
+		m_Network->registerServer( *masterEtp, "myFirstGame", "my first pw", md );
 		m_Network->joinServer( *masterEtp, "myFirstGame" );
 
 		this_thread::sleep_for( milliseconds(20000) );
@@ -69,7 +78,7 @@ namespace MyGame
 	{
 		switch (res)
 		{
-		case MiepMiep::EConnectResult::Succes:
+		case MiepMiep::EConnectResult::Fine:
 			cout << "connected to: " << etp.toIpAndPort() << endl;
 			break;
 		case MiepMiep::EConnectResult::Timedout:
@@ -83,9 +92,6 @@ namespace MyGame
 			break;
 		case MiepMiep::EConnectResult::AlreadyConnected:
 			cout << "connecting to: " << etp.toIpAndPort() << " already connected." << endl;
-			break;
-		case MiepMiep::EConnectResult::InvalidConnectPacket:
-			cout << "connecting to: " << etp.toIpAndPort() << " invalid connection packet." << endl;
 			break;
 		default:
 			cout << "connecting to: " << etp.toIpAndPort() << " unknown result returned!" << endl;

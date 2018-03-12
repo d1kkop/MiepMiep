@@ -45,9 +45,11 @@ namespace MiepMiep
 		template <> bool write(const byte& b)					{ return write8(b); }
 		template <> bool write(const u16& b)					{ return write16(b); }
 		template <> bool write(const u32& b)					{ return write32(b); }
+		template <> bool write(const u64& b)					{ return write64(b); }
 		template <> bool write(const char& b)					{ return write8(b); }
 		template <> bool write(const i16& b)					{ return write16(b); }
 		template <> bool write(const i32& b)					{ return write32(b); }
+		template <> bool write(const i64& b)					{ return write64((i64&)b); }
 		template <> bool write(const BinSerializer& other)		{ return write(other.data(), other.length()); }
 	//	template <> bool write(const IEndpoint& b)				{ return b.write(*this); }
 		template <> bool write(const std::string& b)
@@ -57,8 +59,8 @@ namespace MiepMiep
 		}
 		template <> bool write(const MetaData& b)
 		{
-			if ( b.size() > UINT16_MAX ) return false;
-			if ( !write<u16>((u16)b.size()) ) return false;
+			if ( b.size() > UINT32_MAX ) return false;
+			if ( !write<u32>((u32)b.size()) ) return false;
 			for ( auto& kvp : b ) 
 			{
 				if ( !write(kvp.first) ) return false;
@@ -73,9 +75,11 @@ namespace MiepMiep
 		template <> bool read(byte& b)							{ return read8(b); }
 		template <> bool read(u16& b)							{ return read16(b); }
 		template <> bool read(u32& b)							{ return read32(b); }
+		template <> bool read(u64& b)							{ return read64(b); }
 		template <> bool read(char& b)							{ return read8((byte&)b); }
 		template <> bool read(i16& b)							{ return read16((u16&)b); }
 		template <> bool read(i32& b)							{ return read32((u32&)b); }
+		template <> bool read(i64& b)							{ return read64((u64&)b); }
 		template <> bool read(BinSerializer& other)				{ return other.write(data(), length()); }
 	//	template <> bool read(IEndpoint& b)						{ return b.read(*this); }
 		template <> bool read(std::string& b) 
@@ -92,8 +96,8 @@ namespace MiepMiep
 		}
 		template <> bool read(MetaData& b) 
 		{ 
-			u16 mlen;
-			if (!read<u16>(mlen)) return false;
+			u32 mlen;
+			if (!read(mlen)) return false;
 			std::string key, value;
 			for (u16 i=0; i<mlen; i++)
 			{
@@ -113,9 +117,11 @@ namespace MiepMiep
 		bool write8(byte b);
 		bool write16(u16 b);
 		bool write32(u32 b);
+		bool write64(u64 b);
 		bool read8(byte& b);
 		bool read16(u16& b);
 		bool read32(u32& b);
+		bool read64(u64& b);
 		byte* pr_data() const;
 		void growTo(u32 maxSize);
 

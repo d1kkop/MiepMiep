@@ -48,35 +48,37 @@ namespace MiepMiep
 	{
 		scoped_lock lk(m_RecvMutex);
 
-		// Early out if out of data.
+		// Early out if out of date.
 		if ( !PacketHelper::isSeqNewer( pi.m_Sequence, m_RecvSequence ) )
 		{
 			return;
 		}
 
+		LOG( "Received reliable seq: %d", pi.m_Sequence );
+
 		// Identifies datatype
 		byte packId;
 		__CHECKED( bs.read(packId) );
 
-		if ( (pi.m_Flags & MM_FRAGMENT_FIRST_BIT)!=0 && (pi.m_Flags & MM_FRAGMENT_LAST_BIT)!=0 ) // not fragmented
+		if ( (pi.m_ChannelAndFlags & MM_FRAGMENT_FIRST_BIT)!=0 && (pi.m_ChannelAndFlags & MM_FRAGMENT_LAST_BIT)!=0 ) // not fragmented
 		{
 			// Packet may arrive multiple time as recv_sequence is only incremented when expected sequence is received.
-			m_OrderedPackets.try_emplace(
-				pi.m_Sequence, /* key */
-					RecvPacket(packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_Flags), 1 /* value */
+			m_OrderedPackets.try_emplace( pi.m_Sequence, /* key */
+					make_shared<RecvPacket>( packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_ChannelAndFlags), 1 /* value */
 			);
 		}
 		else // fragmented
 		{
 			// Fragment may arrive multiple time as recv_sequence is only incremented when expected sequence is received.
 			pair<decltype(m_OrderedFragments.begin()),bool> inserted = 
-				m_OrderedFragments.try_emplace( pi.m_Sequence, packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_Flags );
+				m_OrderedFragments.try_emplace( pi.m_Sequence, /* key */
+					make_shared<RecvPacket>( packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_ChannelAndFlags ) /* value */ );
 
 			if ( !inserted.second )
 				return; // Already exists, nothing to do.
 			
 			// This fragment may have completed the puzzle. Check if all fragments are available to re-assmble big packet.
-			RecvPacket finalPack;
+			sptr<const RecvPacket> finalPack;
 			u32 seqBegin, seqEnd;
 			if (PacketHelper::tryReassembleBigPacket( finalPack, m_OrderedFragments, pi.m_Sequence, seqBegin, seqEnd ))
 			{
@@ -86,7 +88,7 @@ namespace MiepMiep
 			}
 		}
 
-		// Process packet reply's that do not need to await game thread intervention
+		// Processed ordered queue as much as possible
 		sptr<ReliableRecv> sThis = ptr<ReliableRecv>();
 		m_Link.getInNetwork<JobSystem>()->addJob( [sThis]()
 		{
@@ -103,13 +105,13 @@ namespace MiepMiep
 		auto packIt = queue.find(m_RecvSequence);
 		while ( packIt != queue.end() )
 		{
-			RecvPacket pack = packIt->second.first;
+			sptr<const RecvPacket> pack = packIt->second.first;
 			u32 numFragments = packIt->second.second;
 			queue.erase( packIt );
 
-			m_Link.getInNetwork<JobSystem>()->addJob( [&, sThis]()
+			m_Link.getInNetwork<JobSystem>()->addJob( [sThis, pack]()
 			{
-				sThis->handlePacket( pack );
+				sThis->handlePacket( *pack );
 			});
 			
 			m_RecvSequence += numFragments;
@@ -128,9 +130,11 @@ namespace MiepMiep
 			break;
 
 		case EPacketType::UserOffsetStart:
+			// TODO add event with user data
 			break;
 
 		default:
+			LOGW( "Unhandled packet received, data id was %d.", (byte)pt );
 			break;
 		}
 	}

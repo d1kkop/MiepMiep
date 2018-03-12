@@ -22,7 +22,8 @@ using namespace std;
 #define MM_MAX_FRAGMENTSIZE 1900
 #define MM_MAX_RECVSIZE 4096
 #define MM_MAX_SENDSIZE MM_MAX_RECVSIZE
-#define MM_MIN_HDR_SIZE 5
+#define MM_MIN_HDR_SIZE 9 /* linkId(4) + seq(4) + compId(1) */
+#define MM_FRAGMENT_HDR_SIZE 6 /* compId(1) + channAndFlags(1) + dataId(4) */
 #define MM_CHANNEL_MASK 7
 #define MM_RELAY_BIT 4
 #define MM_FRAGMENT_FIRST_BIT 8

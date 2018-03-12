@@ -10,25 +10,39 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS sptr<Link> LinkManager::addLink(const IEndpoint& etp)
+	MM_TS sptr<Link> LinkManager::getOrAdd(const IEndpoint& etp, u32* id, bool* wasAdded)
 	{
-		auto etpCpy = etp.getCopy();
-		sptr<Link> link = Link::create(m_Network, etp);
-		if (!link)  return nullptr;
-
 		scoped_lock lk(m_LinksMapMutex);
-		if ( m_Links.count( etpCpy ) != 0 ) return nullptr;
-		m_Links[etpCpy] = link;
+
+		auto etpPtr = etp.to_ptr();
+		if ( m_Links.count( etpPtr ) != 0 ) 
+		{
+			if (wasAdded) *wasAdded = false;
+			return m_Links[etpPtr];
+		}
+
+		// create fail
+		sptr<Link> link = Link::create(m_Network, etp, id);
+		if (!link)  
+		{
+			if (wasAdded) *wasAdded = false;
+			return nullptr;
+		}
+
+		// insert
+		m_Links[etpPtr] = link;
 		m_LinksAsArray.emplace_back( link );
+		if ( wasAdded ) *wasAdded = true;
 
 		return link;
 	}
 
-	MM_TS sptr<MiepMiep::Link> LinkManager::getLink(const IEndpoint& etp)
+	MM_TS sptr<Link> LinkManager::getLink(const IEndpoint& etp)
 	{
-		auto etpCpy = etp.getCopy();
 		scoped_lock lk(m_LinksMapMutex);
-		if ( m_Links.count( etpCpy ) != 0 ) return m_Links[etpCpy];
+		auto etpPtr = etp.to_ptr();
+		if ( m_Links.count( etpPtr ) != 0 ) 
+			return m_Links[etpPtr];
 		return nullptr;
 	}
 
@@ -62,7 +76,7 @@ namespace MiepMiep
 		{
 			if ( !exclude )
 			{
-				auto linkIt = m_Links.find( specific->getCopy() );
+				auto linkIt = m_Links.find( specific->to_ptr() );
 				if ( linkIt != m_Links.end() ) 
 				{
 					cb ( *linkIt->second );

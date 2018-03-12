@@ -32,7 +32,7 @@ namespace MiepMiep
 		// already listening
 		if ( m_Listening ) 
 		{
-			LOG( "Was listening on port %d. But start listening was called with new port: %d.", m_ListenPort, port );
+			LOG( "Was listening on port %d. But start listening was called with new port: %d.", (u16)m_ListenPort, port );
 			stopListen();
 		}
 
@@ -64,7 +64,7 @@ namespace MiepMiep
 
 	void Listener::stopListen()
 	{
-		LOG( "Stop listen was called. Old listen port was %d. ", m_ListenPort );
+		LOG( "Stop listen was called. Old listen port was %d. ", (u16)m_ListenPort );
 		scoped_lock lk(m_ListeningMutex);
 		if ( m_Socket )
 		{
@@ -84,25 +84,52 @@ namespace MiepMiep
 		m_MaxConnections = num;
 	}
 
-	MM_TS void Listener::setPassword(string& pw)
+	MM_TS void Listener::setPassword(const string& pw)
 	{
 		scoped_spinlock lk(m_PasswordLock);
 		m_Password = pw;
 	}
 
-	void Listener::handleSpecial(class BinSerializer& bs, const Endpoint& etp)
+	MM_TS string Listener::getPassword() const
+	{
+		scoped_spinlock lk(m_PasswordLock);
+		return m_Password;
+	}
+
+	MM_TS void Listener::reduceNumClientsByOne()
+	{
+		m_NumConnections--;
+		assert( m_NumConnections != (u32)~0 );
+	}
+
+	MM_TS void Listener::handleSpecial(class BinSerializer& bs, const Endpoint& etp)
 	{
 		u32 linkId;
 		__CHECKED( bs.read(linkId) );
 
-		sptr<Link> link = m_Network.getLink( etp );
+		bool added;
+		sptr<Link> link = m_Network.getOrAdd<LinkManager>()->getOrAdd( etp, &linkId, &added );
 		if ( !link )
 		{
-			// is new link
-			link = m_Network.getOrAdd<LinkManager>()->addLink( etp );
-			link->setOriginator( *this );
+			LOGW( "Failed to add link to %s.", etp.toIpAndPort().c_str() );
+			return;
 		}
 
-		link->receive( bs );
+		// if first time added
+		if ( added )
+		{
+			link->setOriginator( *this );
+			m_NumConnections++;
+		}
+
+		if ( link->id() == linkId )
+		{
+			link->receive( bs );
+		}
+		else
+		{
+			LOGW( "Packet for link was discarded as link id's did not match." );
+		}
 	}
+
 }

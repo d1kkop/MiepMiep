@@ -12,7 +12,7 @@ namespace MiepMiep
 	public:
 		LinkManager(Network& network);
 
-		MM_TS sptr<Link> addLink( const IEndpoint& etp );
+		MM_TS sptr<Link> getOrAdd( const IEndpoint& etp, u32* id, bool* wasAdded=nullptr );
 		MM_TS sptr<Link> getLink( const IEndpoint& etp );
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb, u32 clusterSize=0 );
 		MM_TS bool forLink( const IEndpoint* specific, bool exclude, const std::function<void (Link&)>& cb );
@@ -22,7 +22,7 @@ namespace MiepMiep
 
 	private:
 		mutex m_LinksMapMutex;
-		map<sptr<IEndpoint>, sptr<Link>, IEndpoint::stl_less> m_Links;
+		map<sptr<const IEndpoint>, sptr<Link>, IEndpoint::stl_less> m_Links;
 		vector<sptr<Link>> m_LinksAsArray;
 	};
 }

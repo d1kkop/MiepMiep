@@ -22,7 +22,7 @@ namespace MiepMiep
 	public:
 		RecvPacket() = default; // Auto zeroed, due to 'calloc'
 		RecvPacket(byte id, class BinSerializer& bs);
-		RecvPacket(byte id, u32 len);
+		RecvPacket(byte id, u32 len, byte flags);
 		RecvPacket(byte id, const byte* data, u32 len, byte flags);
 		RecvPacket(const RecvPacket& p);
 		RecvPacket(RecvPacket&& p) noexcept;
@@ -39,17 +39,11 @@ namespace MiepMiep
 	struct PacketInfo
 	{
 		u32  m_Sequence;
-		byte m_Flags;
+		byte m_ChannelAndFlags;
 	};
 
 	struct NormalSendPacket
 	{
-		NormalSendPacket(byte channel, byte id):
-			m_Channel(channel),
-			m_Id(id) { }
-
-		byte m_Channel;
-		byte m_Id;
 		BinSerializer m_PayLoad;
 	};
 
@@ -57,8 +51,8 @@ namespace MiepMiep
 	{
 		static bool createNormalPacket( vector<sptr<const struct NormalSendPacket>>& framgentsOut, byte compType, byte dataId, 
 										const BinSerializer** serializers, u32 numSerializers, byte channel, bool relay, bool sysBit, u32 fragmentSize );
-		static bool tryReassembleBigPacket(RecvPacket& finalPack, std::map<u32, RecvPacket>& fragments, u32 seq, u32& seqBegin, u32& seqEnd);
-		static RecvPacket reAssembleBigPacket(std::map<u32, RecvPacket>& fragments, u32 seqBegin, u32 seqEnd);
+		static bool tryReassembleBigPacket(sptr<const RecvPacket>& finalPack, std::map<u32, sptr<const RecvPacket>>& fragments, u32 seq, u32& seqBegin, u32& seqEnd);
+		static sptr<const RecvPacket> reAssembleBigPacket(std::map<u32, sptr<const RecvPacket>>& fragments, u32 seqBegin, u32 seqEnd);
 		static bool isSeqNewer( u32 incoming, u32 having );
 	};
 }

@@ -18,7 +18,23 @@ namespace MiepMiep
 	{
 	}
 
-	sptr<Link> Link::create(Network& network, const IEndpoint& other)
+	Link::~Link()
+	{
+		close();
+	}
+
+	MM_TS void Link::close()
+	{
+		scoped_spinlock lk(m_OriginatorMutex);
+		if ( m_Originator )
+		{
+			// For this , we make an exception, cast to non-const to reduce num clients on listeners by one
+			const_pointer_cast<Listener>( m_Originator )->reduceNumClientsByOne();
+			m_Originator.reset();
+		}
+	}
+
+	sptr<Link> Link::create(Network& network, const IEndpoint& other, u32* id)
 	{
 		sptr<ISocket> sock = ISocket::create();
 		if (!sock) return nullptr;
@@ -40,8 +56,13 @@ namespace MiepMiep
 
 		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
 		link->m_RemoteEtp = other.getCopy();
-		link->m_Id = rand();
+		if ( id ) 
+			link->m_Id = *id;
+		else
+			link->m_Id = rand();
 		link->m_Socket = sock;
+
+		LOG( "Created new link to %s with id %d.", link->m_RemoteEtp->toIpAndPort().c_str(), link->m_Id );
 
 		return link;
 	}
@@ -74,43 +95,48 @@ namespace MiepMiep
 
 	MM_TS void Link::receive(BinSerializer& bs)
 	{
-		byte streamId;
+		byte compType;
 		PacketInfo pi;
 
-		__CHECKED( bs.read(streamId) );
-		__CHECKED( bs.read(pi.m_Flags) );
 		__CHECKED( bs.read(pi.m_Sequence) );
+		__CHECKED( bs.read(compType) );
+		__CHECKED( bs.read(pi.m_ChannelAndFlags) );
+		
 
-		byte channel = pi.m_Flags & MM_CHANNEL_MASK;
-		EComponentType et = (EComponentType) streamId;
+		byte channel = pi.m_ChannelAndFlags & MM_CHANNEL_MASK;
+		EComponentType et = (EComponentType) compType;
 
 		switch ( et )
 		{
-		case EComponentType::ReliableRecv:
+		case EComponentType::ReliableSend:
 			getOrAdd<ReliableRecv>(channel)->receive( bs, pi );
 			break;
 
-		case EComponentType::UnreliableRecv:
+		case EComponentType::UnreliableSend:
 			getOrAdd<UnreliableRecv>(channel)->receive( bs );
 			break;
 
-		case EComponentType::ReliableNewRecv:
+		case EComponentType::ReliableNewSend:
 			getOrAdd<ReliableNewRecv>()->receive( bs );
 			break;
 
 			// -- Acks --
 
-		case EComponentType::ReliableAckRecv:
+		case EComponentType::ReliableAckSend:
 			getOrAdd<ReliableAckRecv>()->receive( bs );
 			break;
 
-		case EComponentType::ReliableNewAckRecv:
+		case EComponentType::ReliableNewAckSend:
 			getOrAdd<ReliableNewestAckRecv>()->receive( bs );
+			break;
+
+		default:
+			LOGW( "Unknown stream type %d detected. Packet ignored.", (u32)et );
 			break;
 		}
 	}
 
-	MM_TS void Link::send(const NormalSendPacket& pack)
+	MM_TS void Link::send(const byte* data, u32 length)
 	{
 		if ( !m_Socket )
 		{
@@ -118,19 +144,8 @@ namespace MiepMiep
 			return;
 		}
 
-		assert( pack.m_PayLoad.length()+4 <= MM_MAX_SENDSIZE );
-
-		// The linkID is specific to each id, all other data in the packet is shared by all links.
-		// Before send, print linkID after a copy of the data.
-		byte finalData[MM_MAX_SENDSIZE];
-		*(u32*)finalData = Util::htonl(m_Id);
-		Platform::memCpy( finalData + 4, MM_MAX_SENDSIZE-4, pack.m_PayLoad.data(), pack.m_PayLoad.length() );
-
-		i32 err;
-		ESendResult res = m_Socket->send( static_cast<const Endpoint&>( *m_RemoteEtp ), 
-										  finalData,
-										  pack.m_PayLoad.length()+4, 
-										  &err );
+		i32 err = 0;
+		ESendResult res = m_Socket->send( static_cast<const Endpoint&>( *m_RemoteEtp ), data, length, &err );
 
 		if ( err != 0 && ESendResult::Error==res ) /* ignore err if socket gets closed */
 		{

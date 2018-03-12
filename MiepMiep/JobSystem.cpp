@@ -130,11 +130,8 @@ namespace MiepMiep
 		m_Closing = true;
 		m_QueueCv.notify_all();
 		m_JobsMutex.unlock();
-		for ( auto& wt :  m_WorkerThreads )
-		{
-			wt->stop();
-		}
 		m_WorkerThreads.clear();
+		scoped_lock lk(m_JobsMutex);
 		while ( !m_GlobalQueue.empty() ) m_GlobalQueue.pop();
 	}
 

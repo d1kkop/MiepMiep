@@ -125,6 +125,15 @@ namespace MiepMiep
 		return true;
 	}
 
+	bool BinSerializer::write64(u64 b)
+	{
+		growTo(m_WritePos + 8);
+		if ( m_WritePos + 8 > m_MaxSize ) return false;
+		*(u64*)(pr_data() + m_WritePos) = Util::htonll(b);
+		m_WritePos += 8;
+		return true;
+	}
+
 	bool BinSerializer::read8(byte& b)
 	{
 		if ( m_ReadPos + 1 > m_WritePos ) return false;
@@ -145,6 +154,14 @@ namespace MiepMiep
 		if ( m_ReadPos + 4 > m_WritePos ) return false;
 		b = Util::ntohl(*(u32*)(pr_data() + m_ReadPos));
 		m_ReadPos += 4;
+		return true;
+	}
+
+	bool BinSerializer::read64(u64& b)
+	{
+		if ( m_ReadPos + 8 > m_WritePos ) return false;
+		b = Util::ntohll(*(u64*)(pr_data() + m_ReadPos));
+		m_ReadPos += 8;
 		return true;
 	}
 

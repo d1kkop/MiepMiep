@@ -36,8 +36,14 @@ namespace MiepMiep
 		LinkState(Link& link);
 		static EComponentType compType() { return EComponentType::LinkState; }
 
-		bool connect(const string& pw, const MetaData& md=MetaData());
-		void acceptConnect();
+		/*	Returns only true if current state is 'unknown'.
+			When state is 'unknown', state is changed to 'conneecting' and true is returend. */
+		MM_TS bool connect(const string& pw, const MetaData& md=MetaData());
+
+		/*	Returns only true if current state is 'unknown.' 
+			Only when the state is 'unknown', the connection becomes 'connected'. */
+		MM_TS bool acceptConnect();
+
 
 		EConnectState m_State;
 		EDisconnectReason m_DiscReason;

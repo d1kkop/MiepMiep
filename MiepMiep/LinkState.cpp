@@ -3,6 +3,7 @@
 #include "Platform.h"
 #include "LinkManager.h"
 #include "Rpc.h"
+#include "Listener.h"
 #include "NetworkListeners.h"
 #include "PerThreadDataProvider.h"
 
@@ -41,17 +42,82 @@ namespace MiepMiep
 		}
 	}
 
-	MM_RPC( linkStateConnect, string, MetaData )
+	MM_RPC( linkStatePasswordFail )
 	{
 		auto& nw = toNetwork(network);
 		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
 		if ( link )
 		{
-			if ( link->has<LinkState>() )
-			{
-				link->callRpc<linkStateAlreadyConnected>();
-				return;
-			}
+			link->pushEvent<EventConnectResult>( EConnectResult::InvalidPassword );
+		}
+	}
+
+	MM_RPC( linkStateMaxClientsReached )
+	{
+		auto& nw = toNetwork(network);
+		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
+		if ( link )
+		{
+			link->pushEvent<EventConnectResult>( EConnectResult::MaxConnectionsReached );
+		}
+	}
+
+	MM_RPC( linkStateAccepted )
+	{
+		auto& nw = toNetwork(network);
+		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
+		if ( link )
+		{
+			link->pushEvent<EventConnectResult>( EConnectResult::Fine );
+		}
+	}
+
+	// [Pw, meta]
+	MM_RPC( linkStateConnect, string, MetaData )
+	{
+		auto& nw = toNetwork(network);
+		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
+		if ( !link ) return;
+			
+		// Early out: if linkstate is added, it was already connected.
+		if ( link->has<LinkState>() )
+		{
+			link->callRpc<linkStateAlreadyConnected>();
+			return;
+		}
+
+		auto originator = link->getOriginator();
+		if ( !originator )
+		{
+			LOGC( "Found link has no originator, invalid behaviour detected!." );
+			return;
+		}
+
+		// Password fail
+		const string& pw = get<0>(tp);
+		if ( originator->getPassword() != pw )
+		{
+			link->callRpc<linkStatePasswordFail>();
+			return;
+		}
+			
+		// Max clients reached
+		if ( originator->getNumClients() >= originator->getMaxClients() )
+		{
+			link->callRpc<linkStateMaxClientsReached>();
+			return;
+		}
+
+		// All fine, send accepted 
+		bool wasAccepted = link->getOrAdd<LinkState>()->acceptConnect();
+		if ( wasAccepted )
+		{
+			link->callRpc<linkStateAccepted>();
+		}
+		else
+		{
+			// Note: 'acceptConnect' is mutual exclusive, so if called multiple times from recipient, it will still only accept once.
+			link->callRpc<linkStateAlreadyConnected>();
 		}
 	}
 
@@ -63,7 +129,7 @@ namespace MiepMiep
 	{
 	}
 
-	bool LinkState::connect(const string& pw, const MetaData& md)
+	MM_TS bool LinkState::connect(const string& pw, const MetaData& md)
 	{
 		// Check state
 		{
@@ -79,8 +145,21 @@ namespace MiepMiep
 		return m_Link.callRpc<linkStateConnect, string, MetaData>( pw, md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
 	}
 
-	void LinkState::acceptConnect()
+	MM_TS bool LinkState::acceptConnect()
 	{
+		// Check state
+		{
+			scoped_spinlock lk(m_StateMutex);
+			if ( m_State != EConnectState::Unknown )
+			{
+				LOGW( "Can only accept if state is set to 'Unknown." );
+				return false;
+			}
+			m_State = EConnectState::Connected;
+		}
+
+		// Any other state (also if already connected, return false).
+		return true;
 	}
 
 }

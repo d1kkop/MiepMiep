@@ -12,7 +12,7 @@ namespace MiepMiep
 	SocketSet::~SocketSet()
 	= default;
 
-	MM_TS MM_DECLSPEC_INTERN bool SocketSet::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler)
+	MM_TS bool SocketSet::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler)
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
@@ -23,7 +23,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	MM_TS MM_DECLSPEC_INTERN void SocketSet::removeSocket(const sptr<const ISocket>& sock)
+	MM_TS void SocketSet::removeSocket(const sptr<const ISocket>& sock)
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
@@ -32,7 +32,7 @@ namespace MiepMiep
 		#endif
 	}
 
-	MM_TS MM_DECLSPEC_INTERN bool SocketSet::hasSocket(const sptr<const ISocket>& sock) const
+	MM_TS bool SocketSet::hasSocket(const sptr<const ISocket>& sock) const
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET

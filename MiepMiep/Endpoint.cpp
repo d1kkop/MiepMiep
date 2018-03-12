@@ -27,6 +27,11 @@ namespace MiepMiep
 		return static_pointer_cast<IEndpoint>( etp );
 	}
 
+	MM_TS sptr<Endpoint> Endpoint::getCopyDerived() const
+	{
+		return static_pointer_cast<Endpoint>( getCopy() );
+	}
+
 	bool IEndpoint::operator==(const IEndpoint& other) const
 	{
 		const Endpoint& a = static_cast<const Endpoint&>(*this);
@@ -34,11 +39,11 @@ namespace MiepMiep
 		return a==b;
 	}
 
-	bool IEndpoint::stl_less::operator()(const sptr<IEndpoint>& left, const sptr<IEndpoint>& right) const
+	bool IEndpoint::stl_less::operator()(const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right) const
 	{
 		const Endpoint& a = static_cast<const Endpoint&>(*left);
 		const Endpoint& b = static_cast<const Endpoint&>(*right);
-		return Endpoint::compareLess(a, b);
+		return Endpoint::compareLess(a, b) < 0;
 	}
 
 	sptr<IEndpoint> IEndpoint::to_ptr()
