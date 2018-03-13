@@ -1,4 +1,6 @@
 #include "LinkManager.h"
+#include "Link.h"
+#include "Endpoint.h"
 #include "Util.h"
 
 

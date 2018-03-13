@@ -1,15 +1,15 @@
 #pragma once
 
-#include "MiepMiep.h"
 #include "Memory.h"
 #include "Component.h"
-#include "Endpoint.h"
+#include "MiepMiep.h"
 using namespace std;
 
 
 namespace MiepMiep
 {
 	class Link;
+	class Endpoint;
 
 	enum class ENetworkError
 	{
@@ -131,15 +131,4 @@ namespace MiepMiep
 		return static_cast<Network&>(t);
 	}
 
-
-	// ------------ ParentNetwork -----------------------------------------------
-
-	class ParentNetwork
-	{
-	public:
-		ParentNetwork(Network& network):
-			m_Network(network) { }
-
-		Network& m_Network;
-	};
 }

@@ -26,6 +26,8 @@
     <ClCompile Include="MasterJoinData.cpp" />
     <ClCompile Include="NetworkListeners.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
+    <ClCompile Include="ParentLink.cpp" />
+    <ClCompile Include="ParentNetwork.cpp" />
     <ClCompile Include="PerThreadDataProvider.cpp" />
     <ClCompile Include="Endpoint.cpp" />
     <ClCompile Include="Group.cpp" />
@@ -49,10 +51,6 @@
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="SocketSet.cpp" />
     <ClCompile Include="SocketSetManager.cpp" />
-    <ClCompile Include="Text32.cpp" />
-    <ClCompile Include="Text64.cpp" />
-    <ClCompile Include="U16.cpp" />
-    <ClCompile Include="U32.cpp" />
     <ClCompile Include="UnreliableRecv.cpp" />
     <ClCompile Include="UnreliableSend.cpp" />
     <ClCompile Include="Util.cpp" />
@@ -67,6 +65,8 @@
     <ClInclude Include="MasterJoinData.h" />
     <ClInclude Include="NetworkListeners.h" />
     <ClInclude Include="PacketHandler.h" />
+    <ClInclude Include="ParentLink.h" />
+    <ClInclude Include="ParentNetwork.h" />
     <ClInclude Include="PerThreadDataProvider.h" />
     <ClInclude Include="ReliableAckRecv.h" />
     <ClInclude Include="ReliableAckSend.h" />

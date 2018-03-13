@@ -1,12 +1,15 @@
 #pragma once
 
-#include "Network.h"
-#include "SocketSet.h"
-#include "PacketHandler.h"
+#include "Memory.h"
+#include "Component.h"
+#include "ParentNetwork.h"
 
 
 namespace MiepMiep
 {
+	class ISocket;
+	class SocketSet;
+	class IPacketHandler;
 	class SocketSetManager;
 
 	class ReceptionThread: public ITraceable

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "ReliableNewestAckRecv.h"
 
 namespace MiepMiep

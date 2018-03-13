@@ -1,4 +1,5 @@
 #include "NetworkListeners.h"
+#include "Endpoint.h"
 #include <algorithm>
 
 
@@ -25,6 +26,15 @@ namespace MiepMiep
 			e->process();
 		}
 		m_Events.clear();
+	}
+
+
+	// --------- EventBase --------------------------------------------------------------------------------------
+
+	EventBase::EventBase(const IEndpoint& remote):
+		m_Endpoint(remote.to_ptr())
+	{
+
 	}
 
 }

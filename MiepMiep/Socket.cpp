@@ -318,8 +318,8 @@ namespace MiepMiep
 		if ( m_Socket == INVALID_SOCKET )
 			return ESendResult::SocketClosed;
 
-		const void* addr = endPoint.getLowLevelAddr();
-		u32 addrSize	 = endPoint.getLowLevelAddrSize();
+		const byte* addr	= endPoint.getLowLevelAddr();
+		u32 addrSize		= endPoint.getLowLevelAddrSize();
 
 		if ( SOCKET_ERROR == sendto( m_Socket, ( const char* ) data, len, 0, (const sockaddr*)addr, addrSize ) )
 		{

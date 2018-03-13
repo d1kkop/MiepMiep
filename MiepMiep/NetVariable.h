@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MiepMiep.h"
+#include "Common.h"
 #include "Threading.h"
 #include <cassert>
 #include <mutex>
@@ -11,12 +11,16 @@ using namespace std;
 
 namespace MiepMiep
 {
+	class Group;
+	class NetVar;
+
+
 	class NetVariable
 	{
 	public:
-		NetVariable(class NetVar& userVar, byte* data, u32 size);
+		NetVariable(NetVar& userVar, byte* data, u32 size);
 		~NetVariable();
-		MM_TS void initialize(class Group* g, EVarControl initVarControl, byte bit);
+		MM_TS void initialize(Group* g, EVarControl initVarControl, byte bit);
 
 		// Set on initialization (through constructor, no locks required).
 		byte* data()			{ return m_Data; }	
@@ -46,9 +50,9 @@ namespace MiepMiep
 
 	private:
 		// All these initialized upon creation.
-		class NetVar& m_UserVar;
+		NetVar& m_UserVar;
 		mutable SpinLock m_GroupMutex;
-		class Group* m_Group;
+		Group* m_Group;
 		byte* m_Data;
 		const u32 m_Size;
 		byte m_Bit;

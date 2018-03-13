@@ -56,18 +56,6 @@
     <ClCompile Include="Link.cpp">
       <Filter>Link</Filter>
     </ClCompile>
-    <ClCompile Include="U32.cpp">
-      <Filter>Variables</Filter>
-    </ClCompile>
-    <ClCompile Include="U16.cpp">
-      <Filter>Variables</Filter>
-    </ClCompile>
-    <ClCompile Include="Text32.cpp">
-      <Filter>Variables</Filter>
-    </ClCompile>
-    <ClCompile Include="Text64.cpp">
-      <Filter>Variables</Filter>
-    </ClCompile>
     <ClCompile Include="Network.cpp">
       <Filter>Network</Filter>
     </ClCompile>
@@ -163,6 +151,12 @@
     </ClCompile>
     <ClCompile Include="LinkStats.cpp">
       <Filter>Link\Components\Link</Filter>
+    </ClCompile>
+    <ClCompile Include="ParentNetwork.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="ParentLink.cpp">
+      <Filter>Link</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,6 +285,12 @@
     </ClInclude>
     <ClInclude Include="LinkStats.h">
       <Filter>Link\Components\Link</Filter>
+    </ClInclude>
+    <ClInclude Include="ParentNetwork.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="ParentLink.h">
+      <Filter>Link</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

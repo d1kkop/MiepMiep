@@ -1,12 +1,30 @@
 #include "GroupCollection.h"
+#include "Link.h"
+#include "Network.h"
+#include "Variables.h"
 #include "LinkManager.h"
 #include "ReliableSend.h"
 #include "JobSystem.h"
 #include "PerThreadDataProvider.h"
+#include "Group.h"
+#include "BinSerializer.h"
+#include "Platform.h"
 
 
 namespace MiepMiep
 {
+	// ------- RPC ------------------------------------------------------------------------------------------
+
+	MM_RPC(createGroup, string, u32, BinSerializer)
+	{
+		/* INetwork& network */
+		/* const IEndpoint* etp */
+		assert( etp != nullptr );
+		Network& nw = static_cast<Network&>(network);
+		nw.createRemoteGroup( get<0>(tp), get<1>(tp), get<2>(tp), *etp );
+	}
+
+
 	// ------- GroupCollection ------------------------------------------------------------------------------------------
 
 	GroupCollection::GroupCollection()
@@ -54,7 +72,18 @@ namespace MiepMiep
 
 	// ------- GroupCollectionLink ------------------------------------------------------------------------------------------
 
-	void GroupCollectionLink::msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData )
+
+	Link* GroupCollectionLink::link() const
+	{
+		return &m_Link;
+	}
+
+	Network& GroupCollectionLink::network() const
+	{
+		return link()->m_Network;
+	}
+
+	void GroupCollectionLink::msgGroupCreate(const string& typeName, u32 groupId, const BinSerializer& initData)
 	{
 		// Only send group create on this link.
 		m_Link.callRpc<createGroup, string, u32, BinSerializer>
@@ -67,13 +96,24 @@ namespace MiepMiep
 
 	// ------- GroupCollectionNetwork ------------------------------------------------------------------------------------------
 
+
+	Link* GroupCollectionNetwork::link() const
+	{
+		return nullptr;
+	}
+
+	Network& GroupCollectionNetwork::network() const
+	{
+		return m_Network;
+	}
+
 	MM_TS void GroupCollectionNetwork::msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData )
 	{
 		// Send group create to all.
-		inetwork().callRpc<createGroup, string, u32, BinSerializer>
+		network().callRpc2<createGroup, string, u32, BinSerializer>
 			(
 				typeName, groupId, initData, false, 
-				nullptr, false, true, true, 
+				nullptr, false, true, true, true,
 				MM_VG_CHANNEL, nullptr
 			);
 	}

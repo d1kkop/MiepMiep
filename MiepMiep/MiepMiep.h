@@ -11,8 +11,24 @@ namespace MiepMiep
 
 	enum class EPacketType : byte
 	{
-		RPC = 0,
+		RPC,
 		UserOffsetStart
+	};
+
+	enum class EConnectResult : byte
+	{
+		Fine,
+		Timedout,
+		InvalidPassword,
+		MaxConnectionsReached,
+		AlreadyConnected
+	};
+
+	enum class EDisconnectReason : byte
+	{
+		Closed,
+		Kicked,
+		Lost
 	};
 	
 	enum class EListenCallResult
@@ -33,22 +49,6 @@ namespace MiepMiep
 	{
 		Fine,
 		AlreadyJoined
-	};
-
-	enum class EConnectResult
-	{
-		Fine,
-		Timedout,
-		InvalidPassword,
-		MaxConnectionsReached,
-		AlreadyConnected
-	};
-
-	enum class EDisconnectReason
-	{
-		Closed,
-		Kicked,
-		Lost
 	};
 
 	enum class ESendCallResult
@@ -95,19 +95,16 @@ namespace MiepMiep
 		MM_TS virtual sptr<IEndpoint> getCopy() const = 0;
 
 		MM_TS bool operator==( const IEndpoint& other ) const;
-		MM_TS bool operator==( const sptr<IEndpoint>& other )	const		{ return *this == *other; }
+		MM_TS bool operator==( const sptr<IEndpoint>& other ) const			{ return *this == *other; }
 		MM_TS bool operator!=( const IEndpoint& other ) const				{ return !(*this == other); }
 		MM_TS bool operator!=( const sptr<IEndpoint>& other )				{ return !(*this == *other); }
 
-		struct stl_less
-		{
-			bool operator()( const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right ) const;
-		};
+		MM_TS virtual bool write(class BinSerializer& bs) const = 0;
+		MM_TS virtual bool read(class BinSerializer& bs) = 0;
 
 		MM_TS sptr<IEndpoint> to_ptr();
 		MM_TS sptr<const IEndpoint> to_ptr() const;
 	};
-
 
 	class MM_DECLSPEC INetwork
 	{

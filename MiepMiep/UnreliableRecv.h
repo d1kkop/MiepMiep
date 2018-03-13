@@ -1,10 +1,14 @@
 #pragma once
 
-#include "Link.h"
+#include "Memory.h"
+#include "Component.h"
+#include "ParentLink.h"
 
 
 namespace MiepMiep
 {
+	class Link;
+
 	class UnreliableRecv: public ParentLink, public IComponent, public ITraceable
 	{
 	public:

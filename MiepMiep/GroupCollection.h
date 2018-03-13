@@ -1,15 +1,20 @@
 #pragma once
 
-#include "Group.h"
 #include "Memory.h"
 #include "Component.h"
-#include "Link.h"
-#include "Network.h"
-#include "Rpc.h"
+#include "ParentLink.h"
+#include "ParentNetwork.h"
 
 
 namespace MiepMiep
 {
+	class Link;
+	class Group;
+	class Network;
+	class INetwork;
+	class NetVariable;
+
+
 	class GroupCollection: public IComponent, public ITraceable
 	{
 	public:
@@ -21,7 +26,6 @@ namespace MiepMiep
 
 		virtual Link* link() const = 0;
 		virtual Network& network() const = 0;
-		INetwork& inetwork() const { return static_cast<INetwork&>(network()); }
 		virtual void msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData ) = 0;
 
 	protected:
@@ -40,8 +44,8 @@ namespace MiepMiep
 
 		static EComponentType compType() { return EComponentType::GroupCollectionLink; }
 
-		Link* link() const override { return &m_Link; }
-		Network& network() const override { return link()->m_Network; }
+		Link* link() const override;
+		Network& network() const override;
 		void msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData ) override;
 	};
 
@@ -54,20 +58,10 @@ namespace MiepMiep
 
 		static EComponentType compType() { return EComponentType::GroupCollectionNetwork; }
 
-		Link* link() const override { return nullptr; }
-		Network& network() const override { return m_Network; }
+		Link* link() const override;
+		Network& network() const override;
 		void msgGroupCreate( const string& typeName, u32 groupId, const BinSerializer& initData ) override;
 	};
-
-
-	MM_RPC(createGroup, string, u32, BinSerializer)
-	{
-		/* INetwork& network */
-		/* const IEndpoint* etp */
-		assert( etp != nullptr );
-		Network& nw = static_cast<Network&>(network);
-		nw.createRemoteGroup( get<0>(tp), get<1>(tp), get<2>(tp), *etp );
-	}
 }
 
 

@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Memory.h"
 #include "Component.h"
-#include "Endpoint.h"
-#include "Network.h"
-#include "Threading.h"
-#include "Socket.h"
 #include "PacketHandler.h"
 
 
 namespace MiepMiep
 {
+	class IEndpoint;
+	class ISocket;
+	class Network;
+	class Link;
+
 	// ------------ Link -----------------------------------------------
 
 	class Link: public ComponentCollection, public IPacketHandler
@@ -25,7 +25,7 @@ namespace MiepMiep
 		MM_TS const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
 		MM_TS const ISocket& socket() const { return *m_Socket; }
 		MM_TS const Listener* originator() const { return m_Originator.get(); }
-		MM_TS const char* ipAndPort() const { return m_RemoteEtp->toIpAndPort().c_str(); }
+		MM_TS const char* ipAndPort() const;
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );
@@ -93,15 +93,4 @@ namespace MiepMiep
 	{
 		return m_Network.getOrAdd<T, Args...>(idx, args...);
 	}
-
-	// ------------ ParentLink -----------------------------------------------
-
-	class ParentLink
-	{
-	public:
-		ParentLink(Link& link):
-			m_Link(link) { }
-			
-		Link& m_Link;
-	};
 }

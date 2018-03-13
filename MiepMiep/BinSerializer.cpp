@@ -2,6 +2,7 @@
 #include "Memory.h"
 #include "Platform.h"
 #include "Util.h"
+#include "Endpoint.h"
 #include <cassert>
 
 
@@ -12,14 +13,16 @@ namespace MiepMiep
 	BinSerializer::BinSerializer():
 		m_Owns(false),
 		m_OrigPtr(nullptr),
-		m_OrigSize(0)
+		m_DataPtr(nullptr),
+		m_OrigSize(0),
+		m_MaxSize(0)
 	{
 		reset();
 	}
 
-	BinSerializer::BinSerializer(const BinSerializer& other)
+	BinSerializer::BinSerializer(const BinSerializer& other):
+		BinSerializer()
 	{
-		reset();
 		write(other.data(), other.length());
 	}
 
@@ -67,7 +70,7 @@ namespace MiepMiep
 			m_OrigPtr  = m_DataPtr;
 			m_OrigSize = m_MaxSize;
 		}
-		m_DataPtr  = (byte*) streamIn;
+		m_DataPtr  = scc<byte*>( streamIn );
 		m_WritePos = writePos;
 		m_MaxSize = buffSize;
 		m_ReadPos = 0;
@@ -111,7 +114,7 @@ namespace MiepMiep
 	{
 		growTo(m_WritePos + 2);
 		if ( m_WritePos + 2 > m_MaxSize ) return false;
-		*(u16*)(pr_data() + m_WritePos) = Util::htons(b);
+		*rp<u16*>(pr_data() + m_WritePos) = Util::htons(b);
 		m_WritePos += 2;
 		return true;
 	}
@@ -120,7 +123,7 @@ namespace MiepMiep
 	{
 		growTo(m_WritePos + 4);
 		if ( m_WritePos + 4 > m_MaxSize ) return false;
-		*(u32*)(pr_data() + m_WritePos) = Util::htonl(b);
+		*rp<u32*>(pr_data() + m_WritePos) = Util::htonl(b);
 		m_WritePos += 4;
 		return true;
 	}
@@ -129,7 +132,7 @@ namespace MiepMiep
 	{
 		growTo(m_WritePos + 8);
 		if ( m_WritePos + 8 > m_MaxSize ) return false;
-		*(u64*)(pr_data() + m_WritePos) = Util::htonll(b);
+		*rp<u64*>(pr_data() + m_WritePos) = Util::htonll(b);
 		m_WritePos += 8;
 		return true;
 	}
@@ -144,7 +147,7 @@ namespace MiepMiep
 	bool BinSerializer::read16(u16& b)
 	{
 		if ( m_ReadPos + 2 > m_WritePos ) return false;
-		b = Util::ntohs(*(u16*)(pr_data() + m_ReadPos));
+		b = Util::ntohs(*rp<u16*>(pr_data() + m_ReadPos));
 		m_ReadPos += 2;
 		return true;
 	}
@@ -152,7 +155,7 @@ namespace MiepMiep
 	bool BinSerializer::read32(u32& b)
 	{
 		if ( m_ReadPos + 4 > m_WritePos ) return false;
-		b = Util::ntohl(*(u32*)(pr_data() + m_ReadPos));
+		b = Util::ntohl(*rp<u32*>(pr_data() + m_ReadPos));
 		m_ReadPos += 4;
 		return true;
 	}
@@ -160,7 +163,7 @@ namespace MiepMiep
 	bool BinSerializer::read64(u64& b)
 	{
 		if ( m_ReadPos + 8 > m_WritePos ) return false;
-		b = Util::ntohll(*(u64*)(pr_data() + m_ReadPos));
+		b = Util::ntohll(*rp<u64*>(pr_data() + m_ReadPos));
 		m_ReadPos += 8;
 		return true;
 	}
@@ -189,6 +192,31 @@ namespace MiepMiep
 		return true;
 	}
 
+	u32 BinSerializer::getMaxSize() const
+	{
+		return m_MaxSize;
+	}
+
+	u32 BinSerializer::getRead() const
+	{
+		return m_ReadPos;
+	}
+
+	u32 BinSerializer::getWrite() const
+	{
+		return m_WritePos;
+	}
+
+	u32 BinSerializer::length() const
+	{
+		return getWrite();
+	}
+
+	const byte* BinSerializer::data() const
+	{
+		return sc<const byte*>( pr_data() );
+	}
+
 	byte* BinSerializer::pr_data() const
 	{
 		return m_DataPtr;
@@ -204,5 +232,75 @@ namespace MiepMiep
 		Platform::copy(pNew, m_DataPtr, m_WritePos);
 		releaseN(m_DataPtr);
 		m_DataPtr = pNew;
+	}
+
+
+	// -- Templates
+
+	template <typename T> bool BinSerializer::read(T& val)					{ return read(&val, sizeof(T)); }
+	template <> bool BinSerializer::read(bool& b)							{ return read8((byte&)b); }
+	template <> bool BinSerializer::read(byte& b)							{ return read8(b); }
+	template <> bool BinSerializer::read(u16& b)							{ return read16(b); }
+	template <> bool BinSerializer::read(u32& b)							{ return read32(b); }
+	template <> bool BinSerializer::read(u64& b)							{ return read64(b); }
+	template <> bool BinSerializer::read(char& b)							{ return read8((byte&)b); }
+	template <> bool BinSerializer::read(i16& b)							{ return read16((u16&)b); }
+	template <> bool BinSerializer::read(i32& b)							{ return read32((u32&)b); }
+	template <> bool BinSerializer::read(i64& b)							{ return read64((u64&)b); }
+	template <> bool BinSerializer::read(BinSerializer& other)				{ return other.write(data(), length()); }
+	template <> bool BinSerializer::read(IEndpoint& b)						{ return b.read(*this); }
+	template <> bool BinSerializer::read(std::string& b) 
+	{
+		char buff[TempBuffSize];
+		u16 k=0;
+		do
+		{
+			if (k==TempBuffSize || m_ReadPos>=m_WritePos) return false;
+			buff[k]=m_DataPtr[m_ReadPos++];
+		} while (buff[k++]!='\0');
+		b = buff;
+		return true;
+	}
+	template <> bool BinSerializer::read(MetaData& b) 
+	{ 
+		u32 mlen;
+		if (!read(mlen)) return false;
+		std::string key, value;
+		for (u16 i=0; i<mlen; i++)
+		{
+			if ( !read(key) )   return false;
+			if ( !read(value) ) return false;
+			b.insert(make_pair(key, value));
+		}
+		return true;
+	}
+
+	template <typename T> bool BinSerializer::write(const T& val)			{ return write(&val, sizeof(T)); }
+	template <> bool BinSerializer::write(const bool& b)					{ return write8((byte)b); }
+	template <> bool BinSerializer::write(const byte& b)					{ return write8(b); }
+	template <> bool BinSerializer::write(const u16& b)						{ return write16(b); }
+	template <> bool BinSerializer::write(const u32& b)						{ return write32(b); }
+	template <> bool BinSerializer::write(const u64& b)						{ return write64(b); }
+	template <> bool BinSerializer::write(const char& b)					{ return write8(b); }
+	template <> bool BinSerializer::write(const i16& b)						{ return write16(b); }
+	template <> bool BinSerializer::write(const i32& b)						{ return write32(b); }
+	template <> bool BinSerializer::write(const i64& b)						{ return write64((i64&)b); }
+	template <> bool BinSerializer::write(const BinSerializer& other)		{ return write(other.data(), other.length()); }
+	template <> bool BinSerializer::write(const IEndpoint& b)				{ return b.write(*this); }
+	template <> bool BinSerializer::write(const std::string& b)
+	{
+		if ( b.length() > TempBuffSize-1 ) return false;
+		return write((const byte*)b.c_str(), (u16)b.length()+1);
+	}
+	template <> bool BinSerializer::write(const MetaData& b)
+	{
+		if ( b.size() > UINT32_MAX ) return false;
+		if ( !write<u32>((u32)b.size()) ) return false;
+		for ( auto& kvp : b ) 
+		{
+			if ( !write(kvp.first) )  return false;
+			if ( !write(kvp.second) ) return false;
+		}
+		return true;
 	}
 }

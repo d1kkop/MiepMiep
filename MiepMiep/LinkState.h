@@ -1,8 +1,9 @@
 #pragma once
 
+#include "ParentLink.h"
+#include "Threading.h"
 #include "Component.h"
 #include "Memory.h"
-#include "Link.h"
 
 
 namespace MiepMiep
@@ -13,13 +14,6 @@ namespace MiepMiep
 		Connecting,
 		Connected,
 		Disconnected
-	};
-
-	enum class EConnectFailReason
-	{
-		AlreadyConnected,
-		InvalidPassword,
-		MaxClientsReached
 	};
 
 
@@ -40,7 +34,6 @@ namespace MiepMiep
 
 		EConnectState m_State;
 		EDisconnectReason m_DiscReason;
-		EConnectFailReason m_ConnFailReason;
 		SpinLock m_StateMutex;
 	};
 }

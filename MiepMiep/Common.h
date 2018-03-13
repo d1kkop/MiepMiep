@@ -44,8 +44,12 @@ using namespace std;
 
 
 #define MM_TO_PTR( TYPE ) \
-	sptr<TYPE> to_ptr() { return ptr<TYPE>(); } \
-	sptr<const TYPE> to_ptr() const { return ptr<const TYPE>(); }
+	sptr<TYPE> to_ptr(); \
+	sptr<const TYPE> to_ptr() const;
+
+#define MM_TO_PTR_IMP( TYPE) \
+	sptr<TYPE> TYPE::to_ptr() { return ptr<TYPE>(); } \
+	sptr<const TYPE> TYPE::to_ptr() const { return ptr<const TYPE>(); }
 
 
 namespace MiepMiep
@@ -55,4 +59,12 @@ namespace MiepMiep
 	using rmutex		= recursive_mutex;
 	template <typename T> using wptr = weak_ptr<T>;
 	template <typename T> using uptr = unique_ptr<T>;
+
+	template <typename T, typename F>
+	inline T rp (F f) { return reinterpret_cast<T>(f); }
+
+	template <typename T, typename F>
+	inline T sc (F f) { return static_cast<T>(f); }
+	template <typename T, typename F>
+	inline T scc (F f) { return static_cast<T>(const_cast<T>(f)); }
 }

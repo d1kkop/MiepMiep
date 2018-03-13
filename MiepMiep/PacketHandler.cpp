@@ -1,5 +1,3 @@
-#pragma once
-
 #include "PacketHandler.h"
 #include "BinSerializer.h"
 #include "Common.h"
@@ -8,6 +6,7 @@
 #include "PerThreadDataProvider.h"
 #include "Util.h"
 #include "JobSystem.h"
+#include "Network.h"
 #include <iostream>
 
 

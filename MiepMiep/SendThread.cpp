@@ -1,9 +1,11 @@
 #include "SendThread.h"
 #include "Link.h"
+#include "Network.h"
 #include "LinkManager.h"
 #include "ReliableSend.h"
 #include "ReliableNewSend.h"
 #include "Util.h"
+#include "Platform.h"
 #include <cassert>
 using namespace chrono;
 
@@ -55,7 +57,7 @@ namespace MiepMiep
 				return;
 
 			u64 time = Util::abs_time();
-			auto lm =m_Network.get<LinkManager>();
+			auto lm = m_Network.get<LinkManager>();
 			if ( !lm )
 				continue;
 

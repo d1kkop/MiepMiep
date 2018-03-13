@@ -1,8 +1,12 @@
 #include "ReliableSend.h"
+#include "Network.h"
+#include "Link.h"
 #include "PerThreadDataProvider.h"
 #include "PacketHandler.h"
 #include "LinkStats.h"
 #include "Util.h"
+#include "Platform.h"
+#include "MiepMiep.h"
 
 
 namespace MiepMiep

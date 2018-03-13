@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Component.h"
-#include "Link.h"
+#include "Memory.h"
+#include "ParentLink.h"
 
 
 namespace MiepMiep

@@ -1,4 +1,5 @@
 #include "SocketSetManager.h"
+#include "SocketSet.h"
 #include <cassert>
 
 

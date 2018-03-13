@@ -23,13 +23,30 @@ namespace MiepMiep
 	sptr<IEndpoint> Endpoint::getCopy() const
 	{
 		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
-		memcpy((void*)etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
+		Platform::copy(etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
 		return static_pointer_cast<IEndpoint>( etp );
 	}
 
 	MM_TS sptr<Endpoint> Endpoint::getCopyDerived() const
 	{
 		return static_pointer_cast<Endpoint>( getCopy() );
+	}
+
+	MM_TS bool Endpoint::write(class BinSerializer& bs) const
+	{
+		u16 port = getPortNetworkOrder();
+		if (!bs.write(getLowLevelAddr(), getLowLevelAddrSize())) return false;
+		if (!bs.write(rp<const byte*>(&port), 2)) return false;
+		return true;
+	}
+
+	MM_TS bool Endpoint::read(class BinSerializer& bs)
+	{
+		u16 port = 0;
+		if (!bs.read(getLowLevelAddr(), getLowLevelAddrSize() ) ) return false;
+		if (!bs.read(rp<byte*>(&port), 2)) return false;
+		setPortFromNetworkOrder( port );
+		return true;
 	}
 
 	bool IEndpoint::operator==(const IEndpoint& other) const
@@ -39,7 +56,14 @@ namespace MiepMiep
 		return a==b;
 	}
 
-	bool IEndpoint::stl_less::operator()(const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right) const
+	bool IEndpoint_less::operator()( const IEndpoint& left, const IEndpoint& right ) const
+	{
+		const Endpoint& a = static_cast<const Endpoint&>(left);
+		const Endpoint& b = static_cast<const Endpoint&>(right);
+		return Endpoint::compareLess(a, b) < 0;
+	}
+
+	bool IEndpoint_less::operator()( const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right ) const
 	{
 		const Endpoint& a = static_cast<const Endpoint&>(*left);
 		const Endpoint& b = static_cast<const Endpoint&>(*right);
@@ -169,36 +193,42 @@ namespace MiepMiep
 		#if MM_SDLSOCKET
 			return m_IpAddress.port;
 		#elif MM_WIN32SOCKET
-			return m_SockAddr.Ipv4.sin_port;
+			if ( m_SockAddr.si_family == AF_INET )
+			{
+				return m_SockAddr.Ipv4.sin_port;
+			}
+			else
+			{
+				assert ( m_SockAddr.si_family == AF_INET6 );
+				return m_SockAddr.Ipv6.sin6_port;
+			}
 		#endif
 		return -1;
 	}
 
-	u32 Endpoint::getIpv4HostOrder() const
-	{
-		return Util::ntohl(getIpv4NetworkOrder());
-	}
-
-	u32 Endpoint::getIpv4NetworkOrder() const
-	{
-		#if MM_SDLSOCKET
-			return m_IpAddress.host;
-		#elif MM_WIN32SOCKET
-			return m_SockAddr.Ipv4.sin_addr.S_un.S_addr;
-		#endif
-		assert(0);
-		return -1;
-	}
-
-	const void* Endpoint::getLowLevelAddr() const
+	byte* Endpoint::getLowLevelAddr()
 	{
 		#if MM_SDLSOCKET
 			return &m_IpAddress;
 		#elif MM_WIN32SOCKET
-			return &m_SockAddr;
+			if ( m_SockAddr.si_family == AF_INET )
+			{
+				return rp<byte*>( &m_SockAddr.Ipv4.sin_addr.S_un.S_un_b.s_b1 );
+			}
+			else
+			{
+				assert( m_SockAddr.si_family == AF_INET6 );
+				return rp<byte*>( m_SockAddr.Ipv6.sin6_addr.u.Byte );
+			}
 		#endif
 		assert(0);
 		return nullptr;
+	}
+
+	const byte* Endpoint::getLowLevelAddr() const
+	{
+		return const_cast<Endpoint*>(this)->getLowLevelAddr();
+		//return const_cast<byte*>( getLowLevelAddr() );
 	}
 
 	u32 Endpoint::getLowLevelAddrSize() const
@@ -206,34 +236,54 @@ namespace MiepMiep
 		#if MM_SDLSOCKET
 			return sizeof(m_IpAddress);
 		#elif MM_WIN32SOCKET
-			return sizeof(m_SockAddr);
+			if ( m_SockAddr.si_family == AF_INET )
+			{
+				return sizeof( m_SockAddr.Ipv4.sin_addr );
+			}
+			else
+			{
+				assert( m_SockAddr.si_family == AF_INET6 );
+				return sizeof( m_SockAddr.Ipv6.sin6_addr );
+			}
 		#endif
 		assert(0);
 		return -1;
 	}
 
-	void Endpoint::setIpAndPortFromNetworkOrder(u32 ip, u16 port)
+	u32 Endpoint::getLowLevelWholeSize() const
 	{
-		#if MM_SDLSOCKET
-			m_IpAddress.host = ip;
-			m_IpAddress.port = port;
-		#elif MM_WIN32SOCKET
-			memset(&m_SockAddr, 0, sizeof(m_SockAddr));
-			m_SockAddr.Ipv4.sin_port = port;
-			m_SockAddr.Ipv4.sin_addr.S_un.S_addr = ip;
-			m_SockAddr.si_family = AF_INET;
-			m_SockAddr.Ipv4.sin_family = AF_INET;
-		#endif
-	}
-
-	void Endpoint::setIpAndPortFromHostOrder(u32 ip, u16 port)
-	{
-		setIpAndPortFromNetworkOrder(Util::htonl(ip), Util::htons(port));
+	#if MM_SDLSOCKET
+		return sizeof(m_IpAddress);
+	#elif MM_WIN32SOCKET
+		return sizeof(m_SockAddr);
+	#endif
+		assert(0);
+		return -1;
 	}
 
 	i32 Endpoint::compareLess(const Endpoint& a, const Endpoint& b)
 	{
 		return ::memcmp( a.getLowLevelAddr(), b.getLowLevelAddr(), a.getLowLevelAddrSize() ) ;
+	}
+
+	void Endpoint::setPortFromNetworkOrder(u16 port)
+	{
+	#if MM_SDLSOCKET
+		return sizeof(m_IpAddress);
+	#elif MM_WIN32SOCKET
+		if ( m_SockAddr.si_family == AF_INET )
+		{
+			m_SockAddr.Ipv4.sin_port = port;
+			return;
+		}
+		else
+		{
+			assert( m_SockAddr.si_family == AF_INET6 );
+			m_SockAddr.Ipv6.sin6_port = port;
+			return;
+		}
+	#endif
+		assert(0);
 	}
 
 }

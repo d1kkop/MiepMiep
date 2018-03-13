@@ -9,6 +9,7 @@
 #include "Threading.h"
 #include "PerThreadDataProvider.h"
 #include "Util.h"
+#include "Network.h"
 #include <thread>
 #include <mutex>
 #include <cassert>
@@ -74,7 +75,7 @@ UTESTBEGIN(SocketSetTest)
 	assert( res == EListenOnSocketsResult::NoSocketsInSet );
 
 	
-	Network& nw = static_cast<Network&>( *network ) ;
+	Network& nw = toNetwork( *network ) ;
 	sptr<UnitTestPacketHandler> handler = reserve_sp<UnitTestPacketHandler, Network&>( MM_FL, nw );
 
 	constexpr auto kThreads=50;

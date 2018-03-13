@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NetVariable.h"
+#include "BinSerializer.h"
 #include "Memory.h"
 #include <vector>
 #include <cassert>
@@ -9,6 +9,8 @@ using namespace std;
 
 namespace MiepMiep
 {
+	class NetVar;
+	class NetVariable;
 	class GroupCollection;
 
 

@@ -18,6 +18,9 @@ namespace MiepMiep
 		MM_TS string toIpAndPort() const override;
 		MM_TS sptr<IEndpoint> getCopy() const override;
 		MM_TS sptr<Endpoint> getCopyDerived() const;
+
+		MM_TS bool write(class BinSerializer& bs) const override;
+		MM_TS bool read(class BinSerializer& bs) override;
 		
 		bool operator==( const Endpoint& other ) const;
 		bool operator==( const sptr<Endpoint>& other )	const		{ return *this == *other; }
@@ -26,20 +29,17 @@ namespace MiepMiep
 
 		u16 getPortHostOrder() const;
 		u16 getPortNetworkOrder() const;
-		u32 getIpv4HostOrder() const;
-		u32 getIpv4NetworkOrder() const;
 
-		// Returns ptr to actual host data for compatability with BSD
-		const void* getLowLevelAddr() const;
-
-		// Returns size of lowLevel ptr
+		// Either ipv4 or ipv6
+		byte* getLowLevelAddr();
+		const byte* getLowLevelAddr() const;
 		u32 getLowLevelAddrSize() const;
+		u32 getLowLevelWholeSize() const;
 
-		void setIpAndPortFromNetworkOrder( u32 ip, u16 port ); // network order is big endian
-		void setIpAndPortFromHostOrder( u32 ip, u16 port );
 
 		// STL compare less
 		static i32 compareLess( const Endpoint& a, const Endpoint& b );
+		void setPortFromNetworkOrder(u16 port);
 
 	private:
 		#if MM_SDLSOCKET

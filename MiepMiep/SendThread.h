@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Network.h"
+#include "Memory.h"
+#include "Component.h"
+#include "ParentNetwork.h"
 
 
 namespace MiepMiep

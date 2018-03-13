@@ -1,12 +1,15 @@
 #pragma once
 
-#include "Link.h"
+#include "Memory.h"
 #include "Component.h"
-#include "Network.h"
+#include "ParentNetwork.h"
 
 
 namespace MiepMiep
 {
+	class Link;
+
+
 	class LinkManager: public ParentNetwork, public IComponent, public ITraceable
 	{
 	public:
@@ -22,7 +25,7 @@ namespace MiepMiep
 
 	private:
 		mutex m_LinksMapMutex;
-		map<sptr<const IEndpoint>, sptr<Link>, IEndpoint::stl_less> m_Links;
+		map<sptr<const IEndpoint>, sptr<Link>, IEndpoint_less> m_Links;
 		vector<sptr<Link>> m_LinksAsArray;
 	};
 }

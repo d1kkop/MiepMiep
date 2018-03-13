@@ -26,11 +26,6 @@
 
 namespace MiepMiep
 {
-	class INetwork;
-	class BinSerializer;
-	class IEndpoint;
-	class IDeliveryTrace;
-	enum class ESendCallResult;
 	using byte = unsigned char;
 	using i16  = short;
 	using i32  = long;
@@ -38,9 +33,33 @@ namespace MiepMiep
 	using u16  = unsigned short;
 	using u32  = unsigned long;
 	using u64  = unsigned long long;
+
+	class IEndpoint;
+	class INetwork;
+	class BinSerializer;
+	class IDeliveryTrace;
+	class IConnectionListener;
+
+	enum class EPacketType : byte;
+	enum class EConnectResult : byte;
+	enum class EDisconnectReason : byte;
+
+	enum class EVarControl;
+	enum class ESendResult;
+	enum class EChangeOwnerCallResult;
+	enum class ESendCallResult;
+	enum class EListenCallResult;
+	enum class EJoinServerCallResult;
+	enum class ERegisterServerCallResult;
+
 	using MetaData = std::map<std::string, std::string>;
 	template <typename T> using sptr = std::shared_ptr<T>;
 
+	struct IEndpoint_less
+	{
+		bool operator()( const IEndpoint& left, const IEndpoint& right ) const;
+		bool operator()( const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right ) const;
+	};
 
 
 	// ---- !! FOR INTERNAL USE ONLY !! ------

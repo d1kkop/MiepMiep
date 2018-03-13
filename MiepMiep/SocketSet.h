@@ -1,14 +1,16 @@
 #pragma once
 
-#include "Common.h"
 #include "Memory.h"
-#include "Socket.h"
-#include "PacketHandler.h"
+#include "Platform.h"
 using namespace std;
 
 
 namespace MiepMiep
 {
+	class ISocket;
+	class IPacketHandler;
+
+
 	enum class EListenOnSocketsResult
 	{
 		Fine,
@@ -16,8 +18,6 @@ namespace MiepMiep
 		NoSocketsInSet,
 		Error
 	};
-
-	using PacketHandler = std::function<void (sptr<const ISocket>&)>;
 
 
 	class SocketSet: public ITraceable

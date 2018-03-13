@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Types.h"
-#include "BinSerializer.h"
 #include <functional>
 
 

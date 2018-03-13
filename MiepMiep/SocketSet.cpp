@@ -1,4 +1,6 @@
 #include "SocketSet.h"
+#include "Socket.h"
+#include "PacketHandler.h"
 #include <algorithm>
 #include <cassert>
 using namespace std;

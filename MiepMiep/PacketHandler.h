@@ -1,10 +1,18 @@
 #pragma once
 
-#include "Network.h"
+#include "ParentNetwork.h"
+#include "BinSerializer.h"
+#include "Common.h"
+#include "Memory.h"
+#include <vector>
 
 
 namespace MiepMiep
 {
+	class BinSerializer;
+	class Network;
+
+
 	class IPacketHandler: public ParentNetwork, public ITraceable
 	{
 	public:

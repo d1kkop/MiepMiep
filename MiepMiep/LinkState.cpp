@@ -1,4 +1,6 @@
 #include "LinkState.h"
+#include "Network.h"
+#include "Link.h"
 #include "GroupCollection.h"
 #include "Platform.h"
 #include "LinkManager.h"
@@ -6,6 +8,8 @@
 #include "Listener.h"
 #include "NetworkListeners.h"
 #include "PerThreadDataProvider.h"
+#include "MiepMiep.h"
+#include "Endpoint.h"
 
 
 namespace MiepMiep
@@ -91,7 +95,7 @@ namespace MiepMiep
 		{
 			bool isRelayed = (*etp == link->remoteEtp()); // If etp is not remoteEtp, then msg is relayed.
 			EDisconnectReason reason = get<0>(tp) ? EDisconnectReason::Kicked : EDisconnectReason::Closed;
-			link->pushEvent<EventDisconnect>( reason );
+			link->pushEvent<EventDisconnect>( reason, isRelayed );
 			LOG( "Link to %s (id %d) ignored, already connected.", link->ipAndPort(), link->id() );
 		}
 	}

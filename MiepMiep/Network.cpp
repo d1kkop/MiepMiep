@@ -1,4 +1,5 @@
 #include "Network.h"
+#include "Link.h"
 #include "LinkState.h"
 #include "LinkManager.h"
 #include "Platform.h"
@@ -13,6 +14,7 @@
 #include "SendThread.h"
 #include "SocketSetManager.h"
 #include "Listener.h"
+#include "Endpoint.h"
 
 
 namespace MiepMiep

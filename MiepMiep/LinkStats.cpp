@@ -1,5 +1,6 @@
 #include "LinkStats.h"
 
+
 namespace MiepMiep
 {
 	LinkStats::LinkStats(Link& link):
@@ -9,6 +10,4 @@ namespace MiepMiep
 		m_ResendLatencyMultiplier(MM_MIN_RESEND_LATENCY_MP)
 	{
 	}
-
-
 }

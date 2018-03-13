@@ -1,11 +1,15 @@
 #pragma once
 
-#include "Link.h"
-#include <list>
+#include "Memory.h"
+#include "Component.h"
+#include "ParentLink.h"
 
 
 namespace MiepMiep
 {
+	class Link;
+	struct NormalSendPacket;
+
 
 	class ReliableSend: public ParentLink, public IComponent, public ITraceable
 	{

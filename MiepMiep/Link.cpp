@@ -1,14 +1,17 @@
 #include "Link.h"
+#include "Network.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
 #include "Listener.h"
+#include "Endpoint.h"
+#include "Socket.h"
 #include "ReliableRecv.h"
 #include "UnreliableRecv.h"
 #include "ReliableNewRecv.h"
 #include "ReliableAckRecv.h"
 #include "ReliableNewestAckRecv.h"
-#include "Util.h"
 #include "SocketSetManager.h"
+#include "Util.h"
 
 
 namespace MiepMiep
@@ -83,6 +86,11 @@ namespace MiepMiep
 
 		LOG( "Created new link to %s with id %d.", link->m_RemoteEtp->toIpAndPort().c_str(), link->m_Id );
 		return link;
+	}
+
+	MM_TS const char* Link::ipAndPort() const
+	{
+		return m_RemoteEtp->toIpAndPort().c_str();
 	}
 
 	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
@@ -171,4 +179,5 @@ namespace MiepMiep
 		}
 	}
 
+	MM_TO_PTR_IMP( Link )
 }

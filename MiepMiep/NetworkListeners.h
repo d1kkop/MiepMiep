@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Network.h"
-#include "Group.h"
-#include "Platform.h"
+#include "Component.h"
+#include "Memory.h"
+#include "ParentNetwork.h"
 #include <algorithm>
 
 
@@ -111,8 +111,7 @@ namespace MiepMiep
 
 	struct EventBase : IEvent
 	{
-		EventBase(const IEndpoint& remote):
-			m_Endpoint(remote.to_ptr()) { }
+		EventBase(const IEndpoint& remote);
 
 		sptr<const IEndpoint> m_Endpoint;
 	};

@@ -1,5 +1,6 @@
 #include "Group.h"
 #include "Variables.h"
+#include "NetVariable.h"
 #include "GroupCollection.h"
 
 
@@ -75,4 +76,5 @@ namespace MiepMiep
 		return m_GroupCollection.network();
 	}
 
+	MM_TO_PTR_IMP( Group )
 }

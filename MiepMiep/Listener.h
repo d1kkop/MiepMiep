@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Network.h"
+#include "Component.h"
 #include "Threading.h"
-#include "Socket.h"
 #include "PacketHandler.h"
 
 
 namespace MiepMiep
 {
-	// -------- NetworkListeners --------------------------------------------------------------------------------------------
+	class ISocket;
+
 
 	class Listener: public IComponent, public IPacketHandler
 	{

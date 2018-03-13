@@ -1,9 +1,8 @@
 #pragma once
 
-
 #include "Component.h"
 #include "Memory.h"
-#include "Network.h"
+#include "ParentNetwork.h"
 #include <functional>
 #include <thread>
 #include <queue>
