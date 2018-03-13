@@ -69,12 +69,12 @@ namespace MiepMiep
 			listener = getOrAdd<Listener>(i);
 		}
 		assert( listener );
+		listener->setPassword( pw );
+		listener->setMaxConnections( maxConnections );
 		if ( !listener->startOrRestartListening( port )) 
 		{
 			return EListenCallResult::SocketError;
 		}
-		listener->setPassword( pw );
-		listener->setMaxConnections( maxConnections );
 		return EListenCallResult::Fine;
 	}
 
@@ -101,7 +101,7 @@ namespace MiepMiep
 	{
 		sptr<LinkManager> lm = getOrAdd<LinkManager>();
 		bool added;
-		sptr<Link> link = lm->getOrAdd( masterEtp, nullptr, &added );
+		sptr<Link> link = lm->getOrAdd( masterEtp, nullptr, nullptr, &added );
 		if (!added) // Returns nullptr if already added, link otherwise.
 		{
 			return ERegisterServerCallResult::AlreadyRegistered;

@@ -39,6 +39,7 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::AlreadyConnected );
+			LOG( "Link to %s (id %d) ignored, already connected.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
 		}
 	}
 
@@ -49,6 +50,7 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::InvalidPassword );
+			LOG( "Link to %s (id %d) ignored, invalid password.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
 		}
 	}
 
@@ -59,6 +61,7 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::MaxConnectionsReached );
+			LOG( "Link to %s (id %d) ignored, max connections reached.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
 		}
 	}
 
@@ -69,6 +72,7 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::Fine );
+			LOG( "Link to %s (id %d) accepted.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
 		}
 	}
 
@@ -86,7 +90,7 @@ namespace MiepMiep
 			return;
 		}
 
-		auto originator = link->getOriginator();
+		auto originator = link->originator();
 		if ( !originator )
 		{
 			LOGC( "Found link has no originator, invalid behaviour detected!." );

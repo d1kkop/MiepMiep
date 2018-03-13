@@ -12,7 +12,7 @@ namespace MiepMiep
 	public:
 		LinkManager(Network& network);
 
-		MM_TS sptr<Link> getOrAdd( const IEndpoint& etp, u32* id, bool* wasAdded=nullptr );
+		MM_TS sptr<Link> getOrAdd( const IEndpoint& etp, u32* id, const class Listener* originator, bool* wasAdded=nullptr );
 		MM_TS sptr<Link> getLink( const IEndpoint& etp );
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb, u32 clusterSize=0 );
 		MM_TS bool forLink( const IEndpoint* specific, bool exclude, const std::function<void (Link&)>& cb );

@@ -54,7 +54,6 @@ class UnitTestPacketHandler: public IPacketHandler
 {
 public:
 	UnitTestPacketHandler(Network& nw):
-		ParentNetwork(nw),
 		IPacketHandler(nw) { }
 
 	void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override

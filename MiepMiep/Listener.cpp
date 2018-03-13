@@ -7,7 +7,6 @@
 namespace MiepMiep
 {
 	Listener::Listener(Network& network):
-		ParentNetwork(network),
 		IPacketHandler(network),
 		m_ListenPort(-1),
 		m_Listening(false)
@@ -108,17 +107,17 @@ namespace MiepMiep
 		__CHECKED( bs.read(linkId) );
 
 		bool added;
-		sptr<Link> link = m_Network.getOrAdd<LinkManager>()->getOrAdd( etp, &linkId, &added );
+		sptr<Link> link = m_Network.getOrAdd<LinkManager>()->getOrAdd( etp, &linkId, this, &added );
 		if ( !link )
 		{
 			LOGW( "Failed to add link to %s.", etp.toIpAndPort().c_str() );
 			return;
 		}
 
-		// if first time added
+		// If first time added, increment num connections on listener.
+		// If link leaves, it will reduce the count by 1 from its destructor.
 		if ( added )
 		{
-			link->setOriginator( *this );
 			m_NumConnections++;
 		}
 
@@ -128,7 +127,7 @@ namespace MiepMiep
 		}
 		else
 		{
-			LOGW( "Packet for link was discarded as link id's did not match." );
+			LOGW( "Listener: Packet for link was discarded as link id's did not match." );
 		}
 	}
 

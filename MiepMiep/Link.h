@@ -6,29 +6,30 @@
 #include "Network.h"
 #include "Threading.h"
 #include "Socket.h"
+#include "PacketHandler.h"
 
 
 namespace MiepMiep
 {
 	// ------------ Link -----------------------------------------------
 
-	class Link: public ParentNetwork, public ComponentCollection, public ITraceable
+	class Link: public ComponentCollection, public IPacketHandler
 	{
 	public:
 		Link(Network& network);
 		~Link() override;
-		MM_TS void close();
-		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp, u32* id);
+		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp, u32* id, const class Listener* originator);
 
-		void setOriginator( const class Listener& listener );
-		const class Listener* getOriginator() const;
-
-		u32 id() const { return m_Id; }
-		const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
-		const ISocket& socket() const { return *m_Socket; }
+		// These are thread safe because they are set from constructor and never changed afterwards.
+		MM_TS u32 id() const { return m_Id; }
+		MM_TS const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
+		MM_TS const ISocket& socket() const { return *m_Socket; }
+		MM_TS const Listener* originator() const { return m_Originator.get(); }
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );
+
+		MM_TS void handleSpecial( class BinSerializer& bs, const class Endpoint& etp ) override;
 
 		template <typename T, typename ...Args>
 		MM_TS ESendCallResult callRpc(Args... args, bool localCall=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr);
@@ -48,11 +49,12 @@ namespace MiepMiep
 		MM_TS void receive( BinSerializer& bs );
 		MM_TS void send( const byte* data, u32 length );
 
+		MM_TO_PTR( Link )
+
 	private:
 		u32 m_Id;
 		sptr<const class IEndpoint> m_RemoteEtp;
-		sptr<ISocket> m_Socket;
-		mutable SpinLock m_OriginatorMutex;
+		sptr<const class ISocket> m_Socket;
 		sptr<const class Listener> m_Originator;
 	};
 

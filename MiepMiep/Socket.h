@@ -55,6 +55,9 @@ namespace MiepMiep
 		bool isBlocking() const { return m_Blocking; }
 		IPProto getIpProtocol() const { return m_IpProto; }
 
+		virtual sptr<ISocket> to_ptr() = 0;
+		virtual sptr<const ISocket> to_ptr() const = 0;
+
 	protected:
 		bool m_Open;
 		bool m_Bound;
@@ -94,6 +97,9 @@ namespace MiepMiep
 		bool equal(const ISocket& other) const override;
 		ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err) const override;
 		ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endPoint, i32* err ) const override;
+
+		sptr<ISocket> to_ptr() override;
+		sptr<const ISocket> to_ptr() const override;
 
 		SOCKET getSock() const  { return m_Socket; }
 

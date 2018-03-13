@@ -10,7 +10,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS sptr<Link> LinkManager::getOrAdd(const IEndpoint& etp, u32* id, bool* wasAdded)
+	MM_TS sptr<Link> LinkManager::getOrAdd(const IEndpoint& etp, u32* id, const Listener* originator, bool* wasAdded)
 	{
 		scoped_lock lk(m_LinksMapMutex);
 
@@ -22,7 +22,7 @@ namespace MiepMiep
 		}
 
 		// create fail
-		sptr<Link> link = Link::create(m_Network, etp, id);
+		sptr<Link> link = Link::create(m_Network, etp, id, originator);
 		if (!link)  
 		{
 			if (wasAdded) *wasAdded = false;

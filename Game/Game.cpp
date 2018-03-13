@@ -41,7 +41,7 @@ namespace MyGame
 
 		m_Network->addConnectionListener( this );
 		
-		m_Network->startListen( 27002 );
+		m_Network->startListen( 27002, "my first pw" );
 
 		/*
 		m_Network->callRpc<myFirstRpc, i32, i32>( 5, 10, true );

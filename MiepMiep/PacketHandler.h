@@ -5,7 +5,7 @@
 
 namespace MiepMiep
 {
-	class IPacketHandler: public virtual ParentNetwork, public ITraceable
+	class IPacketHandler: public ParentNetwork, public ITraceable
 	{
 	public:
 		IPacketHandler(Network& network);

@@ -10,7 +10,7 @@ namespace MiepMiep
 {
 	// -------- NetworkListeners --------------------------------------------------------------------------------------------
 
-	class Listener: public virtual ParentNetwork, public IComponent, public IPacketHandler
+	class Listener: public IComponent, public IPacketHandler
 	{
 	public:
 		Listener(Network& network);
@@ -26,6 +26,8 @@ namespace MiepMiep
 		// All packets are handled here first after they have been converted from raw to binStream.
 		MM_TS void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override;
 
+		// These are thread safe because they are either set only from constructor once or they are atomic values.
+		MM_TS const ISocket& socket() const { return *m_Socket; }
 		MM_TS u16 getPort() const{ return m_ListenPort; }
 		MM_TS u32 getMaxClients() const { return m_MaxConnections; }
 		MM_TS u32 getNumClients() const { return m_NumConnections; }

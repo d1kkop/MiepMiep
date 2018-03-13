@@ -353,5 +353,15 @@ namespace MiepMiep
 		return ERecvResult::Succes;
 	}
 
-	#endif
+	sptr<ISocket> BSDSocket::to_ptr()
+	{
+		return static_pointer_cast<ISocket>( static_cast<BSDSocket&>(*this).ptr<BSDSocket>() );
+	}
+
+	sptr<const ISocket> BSDSocket::to_ptr() const
+	{
+		return static_pointer_cast<const ISocket>( static_cast<const BSDSocket&>(*this).ptr<const BSDSocket>() );
+	}
+
+#endif
 }

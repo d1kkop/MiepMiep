@@ -8,77 +8,81 @@
 #include "ReliableAckRecv.h"
 #include "ReliableNewestAckRecv.h"
 #include "Util.h"
+#include "SocketSetManager.h"
 
 
 namespace MiepMiep
 {
 
 	Link::Link(Network& network):
-		ParentNetwork(network)
+		IPacketHandler(network)
 	{
 	}
 
 	Link::~Link()
 	{
-		close();
-	}
-
-	MM_TS void Link::close()
-	{
-		scoped_spinlock lk(m_OriginatorMutex);
-		if ( m_Originator )
+		if ( m_Originator ) 
 		{
-			// For this , we make an exception, cast to non-const to reduce num clients on listeners by one
+			// NOTE: Do not remove socket from socket set, as socket was borroed from originator (listener).
 			const_pointer_cast<Listener>( m_Originator )->reduceNumClientsByOne();
-			m_Originator.reset();
+		}
+		else
+		{
+			// Remove socket from set, if socket set manager is still alive (might be closing).
+			auto ss = m_Network.get<SocketSetManager>();
+			if ( ss )
+			{
+				ss->removeSocket( m_Socket );
+			}
 		}
 	}
 
-	sptr<Link> Link::create(Network& network, const IEndpoint& other, u32* id)
+	sptr<Link> Link::create(Network& network, const IEndpoint& other, u32* id, const Listener* originator)
 	{
-		sptr<ISocket> sock = ISocket::create();
-		if (!sock) return nullptr;
+		assert( !(id || originator) || (id && originator) );
 
-		i32 err;
-		sock->open(IPProto::Ipv4, false, &err);
-		if ( err != 0 )
+		// If called from 'connect' call, we initiate a new socket on a 'random' port
+		// else, a socket is obtained from the originator (listener).
+		sptr<ISocket> sock;
+		if ( id == nullptr )
 		{
-			LOGW( "Socket open error %d, cannot create link.", err );
-			return nullptr;
-		}
+			sock = ISocket::create();
+			if (!sock) return nullptr;
 
-		sock->bind(0, &err);
-		if ( err != 0 )
-		{
-			LOGW( "Socket bind error %d, cannot create link.", err );
-			return nullptr;
+			i32 err;
+			sock->open(IPProto::Ipv4, false, &err);
+			if ( err != 0 )
+			{
+				LOGW( "Socket open error %d, cannot create link.", err );
+				return nullptr;
+			}
+
+			sock->bind(0, &err);
+			if ( err != 0 )
+			{
+				LOGW( "Socket bind error %d, cannot create link.", err );
+				return nullptr;
+			}
 		}
 
 		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
 		link->m_RemoteEtp = other.getCopy();
-		if ( id ) 
+		if ( id ) // Created from 'listen'
+		{
 			link->m_Id = *id;
-		else
+			link->m_Socket = originator->socket().to_ptr();
+			link->m_Originator = originator->to_ptr();
+		}
+		else // Created from 'connect'
+		{
 			link->m_Id = rand();
-		link->m_Socket = sock;
+			link->m_Socket = sock;
+			// add socket to set and receive data directly in the link
+			link->m_Network.getOrAdd<SocketSetManager>()->addSocket( link->m_Socket, link->to_ptr() );
+		}
 
 		LOG( "Created new link to %s with id %d.", link->m_RemoteEtp->toIpAndPort().c_str(), link->m_Id );
-
 		return link;
-	}
-
-	void Link::setOriginator(const Listener& listener)
-	{
-		scoped_spinlock lk(m_OriginatorMutex);
-		// Should only be set ever once.
-		assert( !m_Originator );
-		m_Originator = listener.to_ptr();
-	}
-
-	const Listener* Link::getOriginator() const
-	{
-		scoped_spinlock lk(m_OriginatorMutex);
-		return m_Originator.get();
 	}
 
 	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
@@ -93,6 +97,21 @@ namespace MiepMiep
 		
 	}
 
+	MM_TS void Link::handleSpecial(class BinSerializer& bs, const class Endpoint& etp)
+	{
+		u32 linkId;
+		__CHECKED( bs.read(linkId) );
+
+		if ( m_Id == linkId )
+		{
+			receive( bs );
+		}
+		else
+		{
+			LOGW( "Packet for link was discarded as link id's did not match." );
+		}
+	}
+
 	MM_TS void Link::receive(BinSerializer& bs)
 	{
 		byte compType;
@@ -101,7 +120,6 @@ namespace MiepMiep
 		__CHECKED( bs.read(pi.m_Sequence) );
 		__CHECKED( bs.read(compType) );
 		__CHECKED( bs.read(pi.m_ChannelAndFlags) );
-		
 
 		byte channel = pi.m_ChannelAndFlags & MM_CHANNEL_MASK;
 		EComponentType et = (EComponentType) compType;
