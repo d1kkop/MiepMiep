@@ -15,13 +15,6 @@ namespace MiepMiep
 		Disconnected
 	};
 
-	enum class EDisconnectReason
-	{
-		Kicked,
-		Closed,
-		Lost
-	};
-
 	enum class EConnectFailReason
 	{
 		AlreadyConnected,

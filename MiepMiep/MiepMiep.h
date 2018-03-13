@@ -44,6 +44,12 @@ namespace MiepMiep
 		AlreadyConnected
 	};
 
+	enum class EDisconnectReason
+	{
+		Closed,
+		Kicked,
+		Lost
+	};
 
 	enum class ESendCallResult
 	{
@@ -71,8 +77,10 @@ namespace MiepMiep
 	class MM_DECLSPEC IConnectionListener
 	{
 	public:
-		virtual void onConnectResult( INetwork& network, const IEndpoint& etp, EConnectResult res ) { }
-		virtual void onOwnerChanged( INetwork& network, const IEndpoint& etp, const IEndpoint* newOwner, NetVar& variable ) { }
+		virtual void onConnectResult( INetwork& network, const IEndpoint& sender, EConnectResult res ) { }
+		virtual void onNewConnection( INetwork& network, const IEndpoint& sender, bool isRelayed ) { }
+		virtual void onDisconnect( INetwork& network, const IEndpoint& sender, EDisconnectReason reason, bool isRelayed ) { }
+		virtual void onOwnerChanged( INetwork& network, const IEndpoint& sender, const IEndpoint* newOwner, NetVar& variable ) { }
 	};
 
 
@@ -127,8 +135,8 @@ namespace MiepMiep
 		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener ) = 0;
 		MM_TS virtual void removeConnectionListener( const IConnectionListener* connectionListener ) = 0;
 
-		MM_TS virtual ESendCallResult sendReliable( byte id, const BinSerializer* serializers, u32 numSerializers=1, const IEndpoint* specific=nullptr, bool exclude=false, bool buffer=false, 
-													bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
+		MM_TS virtual ESendCallResult sendReliable( byte id, const BinSerializer* serializers, u32 numSerializers=1, const IEndpoint* specific=nullptr, 
+												    bool exclude=false, bool buffer=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
 
 
 		MM_TS static void setLogSettings( bool logToFile=true, bool logToIde=true );

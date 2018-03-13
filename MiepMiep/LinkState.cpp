@@ -29,8 +29,74 @@ namespace MiepMiep
 		EConnectResult m_Result;
 	};
 
+	struct EventNewConnection : EventBase
+	{
+		EventNewConnection(const IEndpoint& remote, bool isRelayed):
+			EventBase(remote),
+			m_IsRelayed(isRelayed) { }
+
+		void process() override
+		{
+			m_NetworkListener->processEvents<IConnectionListener>( [this] (IConnectionListener* l) 
+			{
+				l->onNewConnection( *m_Network, *m_Endpoint, m_IsRelayed );
+			});
+		}
+
+		bool m_IsRelayed;
+	};
+
+	struct EventDisconnect : EventBase
+	{
+		EventDisconnect(const IEndpoint& remote, EDisconnectReason reason, bool isRelayed):
+			EventBase(remote),
+			m_IsRelayed(isRelayed),
+			m_Reason(reason) { }
+
+		void process() override
+		{
+			m_NetworkListener->processEvents<IConnectionListener>( [this] (IConnectionListener* l) 
+			{
+				l->onDisconnect( *m_Network, *m_Endpoint, m_Reason, m_IsRelayed );
+			});
+		}
+
+		bool m_IsRelayed;
+		EDisconnectReason m_Reason;
+	};
+
 
 	// ------ Rpc --------------------------------------------------------------------------------
+
+	/* New connection and disconnect. */
+
+	MM_RPC( linkStateNewConnection )
+	{
+		auto& nw = toNetwork(network);
+		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
+		if ( link )
+		{
+			bool isRelayed = true; // Because comes in through rpc, event is always relayed.
+			link->pushEvent<EventNewConnection>( isRelayed );
+			LOG( "New incoming connection to %s (id %d).", link->ipAndPort(), link->id() );
+		}
+	}
+
+	// [ bool : wasKicked ]
+	MM_RPC( linkStateDisconnect, bool )
+	{
+		auto& nw = toNetwork(network);
+		sptr<Link> link = nw.getLink( static_cast<const Endpoint&>(*etp) );
+		if ( link )
+		{
+			bool isRelayed = (*etp == link->remoteEtp()); // If etp is not remoteEtp, then msg is relayed.
+			EDisconnectReason reason = get<0>(tp) ? EDisconnectReason::Kicked : EDisconnectReason::Closed;
+			link->pushEvent<EventDisconnect>( reason );
+			LOG( "Link to %s (id %d) ignored, already connected.", link->ipAndPort(), link->id() );
+		}
+	}
+
+	/* Connection results */
 
 	MM_RPC( linkStateAlreadyConnected )
 	{
@@ -39,7 +105,7 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::AlreadyConnected );
-			LOG( "Link to %s (id %d) ignored, already connected.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
+			LOG( "Link to %s (id %d) ignored, already connected.", link->ipAndPort(), link->id() );
 		}
 	}
 
@@ -50,7 +116,7 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::InvalidPassword );
-			LOG( "Link to %s (id %d) ignored, invalid password.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
+			LOG( "Link to %s (id %d) ignored, invalid password.", link->ipAndPort(), link->id() );
 		}
 	}
 
@@ -61,7 +127,7 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::MaxConnectionsReached );
-			LOG( "Link to %s (id %d) ignored, max connections reached.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
+			LOG( "Link to %s (id %d) ignored, max connections reached.", link->ipAndPort(), link->id() );
 		}
 	}
 
@@ -72,9 +138,11 @@ namespace MiepMiep
 		if ( link )
 		{
 			link->pushEvent<EventConnectResult>( EConnectResult::Fine );
-			LOG( "Link to %s (id %d) accepted.", link->remoteEtp().toIpAndPort().c_str(), link->id() );
+			LOG( "Link to %s (id %d) accepted.", link->ipAndPort(), link->id() );
 		}
 	}
+
+	/* Incoming connect atempt */
 
 	// [Pw, meta]
 	MM_RPC( linkStateConnect, string, MetaData )
@@ -116,7 +184,8 @@ namespace MiepMiep
 		bool wasAccepted = link->getOrAdd<LinkState>()->acceptConnect();
 		if ( wasAccepted )
 		{
-			link->callRpc<linkStateAccepted>();
+			link->callRpc<linkStateAccepted>(); // To recipient directly
+			nw.callRpc2<linkStateNewConnection>( false, &link->remoteEtp(), true ); // To all others except recipient
 		}
 		else
 		{

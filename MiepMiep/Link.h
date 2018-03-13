@@ -25,6 +25,7 @@ namespace MiepMiep
 		MM_TS const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
 		MM_TS const ISocket& socket() const { return *m_Socket; }
 		MM_TS const Listener* originator() const { return m_Originator.get(); }
+		MM_TS const char* ipAndPort() const { return m_RemoteEtp->toIpAndPort().c_str(); }
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );
@@ -54,8 +55,8 @@ namespace MiepMiep
 	private:
 		u32 m_Id;
 		sptr<const class IEndpoint> m_RemoteEtp;
-		sptr<const class ISocket> m_Socket;
-		sptr<const class Listener> m_Originator;
+		sptr<const class ISocket>   m_Socket;
+		sptr<const class Listener>  m_Originator;
 	};
 
 
