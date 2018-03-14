@@ -9,6 +9,7 @@ namespace MiepMiep
 	{
 	public:
 		ParentNetwork(Network& network);
+
 		Network& m_Network;
 	};
 }

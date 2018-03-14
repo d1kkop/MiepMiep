@@ -8,16 +8,19 @@ using namespace std;
 
 namespace MiepMiep
 {
-	class Endpoint: public IEndpoint, public ITraceable
+	class ISocket;
+
+	class Endpoint: public IAddress, public ITraceable
 	{
 	public:
 		MM_TS static sptr<Endpoint> createEmpty();
+		MM_TS static sptr<Endpoint> createSource( const ISocket& sock, i32* errOut = nullptr );
 		MM_TS static sptr<Endpoint> resolve( const string& name, u16 port, i32* errOut=nullptr );
 		MM_TS static sptr<Endpoint> fromIpAndPort( const string& ipAndPort, i32* errOut=nullptr );
 
 		// IEndpoint
 		MM_TS const char* toIpAndPort() const override;
-		MM_TS sptr<IEndpoint> getCopy() const override;
+		MM_TS sptr<IAddress> getCopy() const override;
 		MM_TS sptr<Endpoint> getCopyDerived() const;
 
 		MM_TS bool write(class BinSerializer& bs) const override;

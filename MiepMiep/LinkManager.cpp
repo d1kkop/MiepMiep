@@ -12,7 +12,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS sptr<Link> LinkManager::getOrAdd(const IEndpoint& etp, u32* id, const Listener* originator, bool* wasAdded)
+	MM_TS sptr<Link> LinkManager::getOrAdd(const IAddress& etp, u32* id, const Listener* originator, bool* wasAdded)
 	{
 		scoped_lock lk(m_LinksMapMutex);
 
@@ -25,7 +25,7 @@ namespace MiepMiep
 
 		// create fail
 		sptr<Link> link = Link::create(m_Network, etp, id, originator);
-		if (!link)  
+		if (!link)
 		{
 			if (wasAdded) *wasAdded = false;
 			return nullptr;
@@ -39,7 +39,7 @@ namespace MiepMiep
 		return link;
 	}
 
-	MM_TS sptr<Link> LinkManager::getLink(const IEndpoint& etp)
+	MM_TS sptr<Link> LinkManager::getLink(const IAddress& etp)
 	{
 		scoped_lock lk(m_LinksMapMutex);
 		auto etpPtr = etp.to_ptr();
@@ -70,7 +70,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS bool LinkManager::forLink(const IEndpoint* specific, bool exclude, const std::function<void(Link&)>& cb)
+	MM_TS bool LinkManager::forLink(const IAddress* specific, bool exclude, const std::function<void(Link&)>& cb)
 	{
 		bool wasSentAtLeastOnce = false;
 		scoped_lock lk(m_LinksMapMutex);
@@ -89,7 +89,7 @@ namespace MiepMiep
 			{
 				for ( auto& link : m_LinksAsArray )
 				{
-					if ( link->remoteEtp() == *specific ) 
+					if ( link->destination() == *specific ) 
 						continue; // skip this one
 					cb ( *link );
 				}

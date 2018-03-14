@@ -41,7 +41,7 @@ namespace MiepMiep
 		m_Variables.clear();
 	}
 
-	MM_TS void Group::setNewOwnership(byte varIdx, const IEndpoint* newOwner)
+	MM_TS void Group::setNewOwnership(byte varIdx, const IAddress* newOwner)
 	{
 		scoped_lock lk(m_VariablesMutex);
 		m_Variables[varIdx]->setNewOwner( newOwner );

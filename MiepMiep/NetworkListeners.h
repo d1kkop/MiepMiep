@@ -115,9 +115,9 @@ namespace MiepMiep
 
 	struct EventBase : IEvent
 	{
-		EventBase(const IEndpoint& remote);
+		EventBase(const ILink& link);
 
-		sptr<const IEndpoint> m_Endpoint;
+		sptr<const ILink> m_Link;
 	};
 
 }

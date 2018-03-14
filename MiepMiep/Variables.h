@@ -34,11 +34,11 @@ namespace MiepMiep
 
 
 		/*	Returns the remote owner of this endpoint or nullptr if owned here. */
-		MM_TS sptr<IEndpoint> getOwner() const;
+		MM_TS sptr<IAddress> getOwner() const;
 
 
 		/*	Change ownership of this variable. Is only allowed if we own the variable. */
-		MM_TS EChangeOwnerCallResult changeOwner( const IEndpoint& etp );
+		MM_TS EChangeOwnerCallResult changeOwner( const IAddress& etp );
 
 
 		/*	Specifies how this variable is controlled.

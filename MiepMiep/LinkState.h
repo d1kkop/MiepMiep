@@ -8,7 +8,7 @@
 
 namespace MiepMiep
 {
-	enum class EConnectState
+	enum class ELinkState
 	{
 		Unknown,
 		Connecting,
@@ -31,9 +31,10 @@ namespace MiepMiep
 			Only when the state is 'unknown', the connection becomes 'connected'. */
 		MM_TS bool acceptConnect();
 
+		MM_TS ELinkState state() const;
 
-		EConnectState m_State;
+		ELinkState m_State;
 		EDisconnectReason m_DiscReason;
-		SpinLock m_StateMutex;
+		mutable SpinLock m_StateMutex;
 	};
 }

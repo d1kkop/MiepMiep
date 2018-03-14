@@ -20,7 +20,7 @@ namespace MiepMiep
 
 
 #define MM_RPC(name, ...) \
-inline void rpc_tuple_##name( INetwork& network, const IEndpoint* etp, const std::tuple<__VA_ARGS__>& tp ); \
+inline void rpc_tuple_##name( INetwork& network, const ILink* link, const std::tuple<__VA_ARGS__>& tp ); \
 struct name { \
 inline static const char* rpcName() { return #name; } \
 template <typename ...Args> \
@@ -36,14 +36,14 @@ inline static void rpc( INetwork& network, BinSerializer& bs, bool localCall ) /
 	if ( localCall ) rpc_tuple_##name( network, nullptr, std::tuple<>() ); \
 }};\
 extern "C" {\
-inline void MM_DLL_EXPORT rpc_dsr_##name(INetwork& network, const IEndpoint& etp, BinSerializer& bs)\
+inline void MM_DLL_EXPORT rpc_dsr_##name(INetwork& network, const ILink& link, BinSerializer& bs)\
 { \
 	std::tuple<__VA_ARGS__> tp; \
 	MiepMiep::serialize<0, std::tuple<__VA_ARGS__>, __VA_ARGS__>( bs, false, tp ); \
-	rpc_tuple_##name( network, &etp, tp ); \
+	rpc_tuple_##name( network, &link, tp ); \
 } \
 }\
-void rpc_tuple_##name(INetwork& network, const IEndpoint* etp, const std::tuple<__VA_ARGS__>& tp)
+void rpc_tuple_##name(INetwork& network, const ILink* link, const std::tuple<__VA_ARGS__>& tp)
 
 
 #define MM_VARGROUP(name, ...) \

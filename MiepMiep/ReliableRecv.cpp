@@ -13,12 +13,12 @@ namespace MiepMiep
 {
 	// ------ Event --------------------------------------------------------------------------------
 
-	using RpcFunc = void (*)( INetwork&, const IEndpoint&, BinSerializer& );
+	using RpcFunc = void (*)( INetwork&, const ILink&, BinSerializer& );
 
 	struct EventRpc : EventBase
 	{
-		EventRpc(const IEndpoint& remote, const RpcFunc& rpcFunc, const RecvPacket& pack):
-			EventBase(remote),
+		EventRpc(const ILink& link, const RpcFunc& rpcFunc, const RecvPacket& pack):
+			EventBase(link),
 			m_RpcFunc(rpcFunc),
 			m_Pack(pack)
 		{
@@ -31,7 +31,7 @@ namespace MiepMiep
 			m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
 			{
 				bs.setRead( 0 );
-				m_RpcFunc( *m_Network, *m_Endpoint, bs );
+				m_RpcFunc( *m_Network, *m_Link, bs );
 			});
 		}
 
@@ -162,7 +162,7 @@ namespace MiepMiep
 		bool isSystemCall = pack.m_Flags & MM_SYSTEM_BIT;
 		if ( isSystemCall || m_Link.m_Network.allowAsyncCallbacks() ) // call async always
 		{
-			rpcFunc ( m_Link.m_Network, m_Link.remoteEtp(), bs );
+			rpcFunc ( m_Link.m_Network, m_Link, bs );
 		}
 		else
 		{

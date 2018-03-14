@@ -18,8 +18,8 @@ namespace MiepMiep
 
 	struct EventOwnerChanged : EventBase
 	{
-		EventOwnerChanged(const IEndpoint& remote, const IEndpoint* newOwner, const Group& group, byte varIdx):
-			EventBase(remote),
+		EventOwnerChanged(const ILink& link, const IAddress* newOwner, const Group& group, byte varIdx):
+			EventBase(link),
 			m_NewOwner( newOwner ? newOwner->to_ptr() : nullptr ),
 			m_Group(group.to_ptr()),
 			m_VarBit(varIdx)
@@ -44,7 +44,7 @@ namespace MiepMiep
 				// Safe to obtain ref to userVar as we have acquired the variables-lock.
 				m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
 				{
-					l->onOwnerChanged( *m_Network, *m_Endpoint, *userVar, m_NewOwner.get() );
+					l->onOwnerChanged( *m_Link, *userVar, m_NewOwner.get() );
 				});
 
 				m_Group->unlockVariablesMutex();
@@ -57,7 +57,7 @@ namespace MiepMiep
 
 		byte m_VarBit;
 		sptr<const Group> m_Group;
-		sptr<const IEndpoint> m_NewOwner;
+		sptr<const IAddress> m_NewOwner;
 	};
 
 	// ---- RPC ------------------------------------------------------------
@@ -65,13 +65,7 @@ namespace MiepMiep
 	// ID, bit idx, Endpoint (as string)
 	MM_RPC(changeOwner, u32, byte, string)
 	{
-		auto& nw  = sc<Network&>(network);
-		sptr<Link> l = nw.getLink( sc<const Endpoint&>(*etp) );
-		if ( !l )
-		{
-			LOG( "Did not handle change owner RPC as link was not found." );
-			return;
-		}
+		RPC_BEGIN();
 
 		u32 netId = get<0>(tp);
 		sptr<Group> g = nw.getOrAdd<GroupCollectionNetwork>()->findGroup( netId );
@@ -86,16 +80,16 @@ namespace MiepMiep
 		if ( ipAndPort.empty() ) // we become owner
 		{
 			g->setNewOwnership( bit, nullptr );
-			l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte&>( nullptr, *g,  bit );
+			l.pushEvent<EventOwnerChanged, const IAddress*, Group&, byte&>( nullptr, *g,  bit );
 		}
 		else
 		{
 			i32 err;
-			sptr<IEndpoint> remoteEtp = IEndpoint::fromIpAndPort( ipAndPort, &err );
-			if ( remoteEtp && err == 0 )
+			sptr<IAddress> destination = IAddress::fromIpAndPort( ipAndPort, &err );
+			if ( destination && err == 0 )
 			{
-				g->setNewOwnership( bit, remoteEtp.get() );
-				l->pushEvent<EventOwnerChanged, const IEndpoint*, Group&, byte&>( remoteEtp.get(), *g,  bit );
+				g->setNewOwnership( bit, destination.get() );
+				l.pushEvent<EventOwnerChanged, const IAddress*, Group&, byte&>( destination.get(), *g,  bit );
 			}
 			else
 			{
@@ -117,12 +111,12 @@ namespace MiepMiep
 		delete p;
 	}
 
-	MM_TS sptr<IEndpoint> NetVar::getOwner() const
+	MM_TS sptr<IAddress> NetVar::getOwner() const
 	{
 		return p->getOwner();
 	}
 
-	MM_TS EChangeOwnerCallResult NetVar::changeOwner(const IEndpoint& etp)
+	MM_TS EChangeOwnerCallResult NetVar::changeOwner(const IAddress& etp)
 	{
 		return p->changeOwner( etp );
 	}
@@ -205,7 +199,7 @@ namespace MiepMiep
 		return m_Group->id();
 	}
 
-	MM_TS sptr<IEndpoint> NetVariable::getOwner() const
+	MM_TS sptr<IAddress> NetVariable::getOwner() const
 	{
 		scoped_spinlock lk(m_OwnershipMutex);
 		// Return copy because owner may be changed at any time while the caller is then reading from a 'volatile' IEndpoint.
@@ -244,7 +238,7 @@ namespace MiepMiep
 		m_Changed = false;
 	}
 
-	MM_TS EChangeOwnerCallResult NetVariable::changeOwner(const IEndpoint& etp)
+	MM_TS EChangeOwnerCallResult NetVariable::changeOwner(const IAddress& etp)
 	{
 		// Cannot change if we are the NOT owner.
 		if ( getOwner() ) return EChangeOwnerCallResult::NotOwned;
@@ -263,7 +257,7 @@ namespace MiepMiep
 		return (sendRes == ESendCallResult::Fine ? EChangeOwnerCallResult::Fine : EChangeOwnerCallResult::Fail );		
 	}
 
-	MM_TS void NetVariable::setNewOwner(const IEndpoint* etp)
+	MM_TS void NetVariable::setNewOwner(const IAddress* etp)
 	{
 		scoped_spinlock lk(m_OwnershipMutex);
 		if ( !etp )

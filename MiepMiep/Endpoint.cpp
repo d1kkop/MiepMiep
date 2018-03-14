@@ -1,4 +1,5 @@
 #include "Endpoint.h"
+#include "Socket.h"
 #include "Util.h"
 #include <cassert>
 using namespace std;
@@ -8,22 +9,22 @@ namespace MiepMiep
 {
 	// --- IEndpoint ---------------------------------------------------------------------------------------
 
-	sptr<IEndpoint> IEndpoint::createEmpty()
+	sptr<IAddress> IAddress::createEmpty()
 	{
 		return Endpoint::createEmpty();
 	}
 
-	sptr<IEndpoint> IEndpoint::resolve( const string& name, u16 port, i32* errOut )
+	sptr<IAddress> IAddress::resolve( const string& name, u16 port, i32* errOut )
 	{
 		return Endpoint::resolve( name, port, errOut );
 	}
 
-	sptr<IEndpoint> IEndpoint::fromIpAndPort( const string& ipAndPort, i32* errOut )
+	sptr<IAddress> IAddress::fromIpAndPort( const string& ipAndPort, i32* errOut )
 	{
 		return Endpoint::fromIpAndPort( ipAndPort );
 	}
 
-	sptr<IEndpoint> Endpoint::getCopy() const
+	sptr<IAddress> Endpoint::getCopy() const
 	{
 		return getCopyDerived();
 	}
@@ -47,38 +48,33 @@ namespace MiepMiep
 		return true;
 	}
 
-	bool IEndpoint::operator==(const IEndpoint& other) const
+	bool IAddress::operator==(const IAddress& other) const
 	{
 		const Endpoint& a = sc<const Endpoint&>(*this);
 		const Endpoint& b = sc<const Endpoint&>(other);
 		return a==b;
 	}
 
-	bool IEndpoint_less::operator()( const IEndpoint& left, const IEndpoint& right ) const
+	bool IEndpoint_less::operator()( const IAddress& left, const IAddress& right ) const
 	{
 		const Endpoint& a = sc<const Endpoint&>(left);
 		const Endpoint& b = sc<const Endpoint&>(right);
 		return Endpoint::compareLess(a, b) < 0;
 	}
 
-	bool IEndpoint_less::operator()( const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right ) const
+	bool IEndpoint_less::operator()( const sptr<const IAddress>& left, const sptr<const IAddress>& right ) const
 	{
 		const Endpoint& a = sc<const Endpoint&>(*left);
 		const Endpoint& b = sc<const Endpoint&>(*right);
 		return Endpoint::compareLess(a, b) < 0;
 	}
 
-	sptr<IEndpoint> IEndpoint::to_ptr()
+	sptr<IAddress> IAddress::to_ptr()
 	{
 		return sc<Endpoint&>(*this).ptr<Endpoint>();
 	}
 
-	sptr<IEndpoint> IEndpoint::to_ptr_nc() const
-	{
-		return sc<Endpoint&>(const_cast<IEndpoint&>(*this)).ptr<Endpoint>();
-	}
-
-	sptr<const IEndpoint> IEndpoint::to_ptr() const
+	sptr<const IAddress> IAddress::to_ptr() const
 	{
 		return sc<const Endpoint&>(*this).ptr<const Endpoint>();
 	}
@@ -91,7 +87,37 @@ namespace MiepMiep
 		return reserve_sp<Endpoint>(MM_FL);
 	}
 
-	sptr<Endpoint> Endpoint::resolve( const string& name, u16 port, i32* errorOut )
+	MM_TS sptr<Endpoint> Endpoint::createSource(const ISocket& sock, i32* errOut)
+	{
+		if ( errOut ) *errOut = 0;
+
+	#if MM_SDLSOCKET
+		// transforms port into network order
+		if ( 0 == SDLNet_ResolveHost( &m_IpAddress, name.c_str(), port ) )
+		{
+			return nullptr;
+		}
+	#elif MM_WIN32SOCKET
+
+		SOCKADDR_INET addr;
+		int addrNameLen = sizeof(addr);
+		const BSDSocket& bsdSock = sc<const BSDSocket&>(sock);
+		if ( 0 != getsockname(bsdSock.getSock(), (SOCKADDR*)&addr, &addrNameLen) )
+		{
+			if ( errOut ) *errOut = WSAGetLastError();
+			return nullptr;
+		}
+		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
+		Platform::memCpy( &etp->m_SockAddr, sizeof(etp->m_SockAddr), &addr, addrNameLen );
+		return etp;
+
+	#endif
+
+		assert(false);
+		return nullptr;
+	}
+
+	sptr<Endpoint> Endpoint::resolve(const string& name, u16 port, i32* errorOut)
 	{
 		if ( errorOut ) *errorOut = 0;
 
@@ -138,6 +164,7 @@ namespace MiepMiep
 			return nullptr;
 		#endif
 
+		assert(false);
 		return nullptr;
 	}
 

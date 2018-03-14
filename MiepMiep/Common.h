@@ -11,7 +11,6 @@ using namespace std;
 #define MM_FUNCTION __FUNCTION__
 #define MM_LINE		__LINE__
 #define MM_FL		MM_FUNCTION, MM_LINE
-#define MM_VARARGS	__VA_ARGS__
 #define MM_RPC_CHANNEL 0
 #define MM_VG_CHANNEL  0
 #define MM_SOCK_SELECT_TIMEOUT 100
@@ -52,11 +51,10 @@ using namespace std;
 	sptr<const TYPE> TYPE::to_ptr() const { return ptr<const TYPE>(); }
 
 #define RPC_BEGIN() \
-	assert(etp); \
-	if (!etp) { LOGW("Unexpectd local RPC call."); return; } \
+	assert(link); \
+	if (!link) { LOGW("Unexpectd local RPC call."); return; } \
 	auto& nw = toNetwork(network); \
-	sptr<Link> link = nw.getLink( sc<const Endpoint&>(*etp) ); \
-	if ( !link ) { return; }
+	auto& l  = sc<Link&>( const_cast<ILink&>(*link) )
 
 
 namespace MiepMiep

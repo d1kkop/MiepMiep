@@ -9,12 +9,15 @@
 #include "Threading.h"
 #include "PerThreadDataProvider.h"
 #include "Util.h"
+#include "LinkManager.h"
 #include "Network.h"
+#include "MiepMiep.h"
 #include <thread>
 #include <mutex>
 #include <cassert>
 using namespace std;
 using namespace chrono;
+using namespace MiepMiep;
 
 
 UTESTBEGIN(SocketTest)
@@ -288,10 +291,12 @@ UTESTBEGIN(RPCBigTest)
 	bs2.read(mdRead);
 	assert( mdRead == g_md );
 
-	sptr<INetwork> nw = INetwork::create();
-	sptr<IEndpoint> etp = IEndpoint::resolve( "localhost", 12203 );
+	sptr<INetwork> nw  = INetwork::create();
+	bool badded;
+	sptr<Link> link = sc<Network&>(*nw).getOrAdd<LinkManager>()->getOrAdd( *IAddress::resolve("localhost", 12203), nullptr, nullptr, &badded );
 	bs2.setRead(0);
-	rpc_dsr_MyRpcBigTest( *nw, *etp, bs2 );
+//	ILink* iLink = link.get();
+//	rpc_dsr_MyRpcBigTest( *nw, *iLink, bs2 );
 
 	return true;
 }

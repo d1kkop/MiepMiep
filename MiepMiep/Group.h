@@ -33,7 +33,7 @@ namespace MiepMiep
 		// Flag dirty when any of the variables inside the group get written/changed.
 		void markChanged();
 		MM_TS void unGroup();
-		MM_TS void setNewOwnership( byte varIdx, const IEndpoint* newOwner );
+		MM_TS void setNewOwnership( byte varIdx, const IAddress* newOwner );
 		MM_TS bool wasUngrouped() const;
 
 		// Within lock/unlock varMutex, other threads that are about to destuct variables will block as the destructor of the variable

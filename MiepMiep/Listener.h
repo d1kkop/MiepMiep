@@ -28,6 +28,7 @@ namespace MiepMiep
 
 		// These are thread safe because they are either set only from constructor once or they are atomic values.
 		MM_TS const ISocket& socket() const { return *m_Socket; }
+		MM_TS const IAddress& source() const { return *m_Source; }
 		MM_TS u16 getPort() const{ return m_ListenPort; }
 		MM_TS u32 getMaxClients() const { return m_MaxConnections; }
 		MM_TS u32 getNumClients() const { return m_NumConnections; }
@@ -41,6 +42,7 @@ namespace MiepMiep
 	private:
 		mutex m_ListeningMutex;
 		sptr<ISocket> m_Socket;
+		sptr<IAddress> m_Source;
 		bool m_Listening;
 		atomic_ushort  m_ListenPort;
 		atomic_uint m_MaxConnections;

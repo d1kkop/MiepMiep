@@ -5,6 +5,7 @@
 #include "Listener.h"
 #include "Endpoint.h"
 #include "Socket.h"
+#include "LinkState.h"
 #include "ReliableRecv.h"
 #include "UnreliableRecv.h"
 #include "ReliableNewRecv.h"
@@ -16,6 +17,19 @@
 
 namespace MiepMiep
 {
+	// -------- ILink ----------------------------------------------------------------------------------------------------
+
+	MM_TS sptr<ILink> ILink::to_ptr()
+	{
+		return sc<Link&>(*this).ptr<Link>();
+	}
+
+	MM_TS sptr<const ILink> ILink::to_ptr() const
+	{
+		return sc<const Link&>(*this).ptr<const Link>();
+	}
+
+	// -------- Link ----------------------------------------------------------------------------------------------------
 
 	Link::Link(Network& network):
 		IPacketHandler(network)
@@ -40,13 +54,14 @@ namespace MiepMiep
 		}
 	}
 
-	sptr<Link> Link::create(Network& network, const IEndpoint& remoteEtp, u32* id, const Listener* originator)
+	sptr<Link> Link::create(Network& network, const IAddress& destination, u32* id, const Listener* originator)
 	{
 		assert( !(id || originator) || (id && originator) );
 
 		// If called from 'connect' call, we initiate a new socket on a 'random' port
 		// else, a socket is obtained from the originator (listener).
 		sptr<ISocket> sock;
+		sptr<IAddress> source;
 		if ( id == nullptr )
 		{
 			sock = ISocket::create();
@@ -66,20 +81,30 @@ namespace MiepMiep
 				LOGW( "Socket bind error %d, cannot create link.", err );
 				return nullptr;
 			}
+
+			// Now try obtain local source address
+			source = Endpoint::createSource( *sock, &err );
+			if ( err != 0 )
+			{
+				LOGW( "Could not obtain local address from socket. Error: %d.", err );
+				return nullptr;
+			}
 		}
 
 		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
-		link->m_RemoteEtp = remoteEtp.getCopy();
+		link->m_Destination = destination.getCopy();
 		if ( id ) // Created from 'listen'
 		{
 			link->m_Id = *id;
 			link->m_Socket = originator->socket().to_ptr();
+			link->m_Source = originator->source().to_ptr();
 			link->m_Originator = originator->to_ptr();
 		}
 		else // Created from 'connect'
 		{
 			link->m_Id = rand();
 			link->m_Socket = sock;
+			link->m_Source = Endpoint::createSource( *sock );
 			// add socket to set and receive data directly in the link
 			link->m_Network.getOrAdd<SocketSetManager>()->addSocket( link->m_Socket, link->to_ptr() );
 		}
@@ -88,14 +113,20 @@ namespace MiepMiep
 		return link;
 	}
 
-	MM_TS const sptr<const IEndpoint>& Link::remoteEtp2() const
+	MM_TS INetwork& Link::network() const
 	{
-		return m_RemoteEtp;
+		return m_Network;
+	}
+
+	MM_TS bool Link::isConnected() const
+	{
+		auto ls = get<LinkState>();
+		return ls && ls->state() == ELinkState::Connected;
 	}
 
 	MM_TS const char* Link::ipAndPort() const
 	{
-		return m_RemoteEtp->toIpAndPort();
+		return m_Destination->toIpAndPort();
 	}
 
 	MM_TS const char* Link::info() const
@@ -183,7 +214,7 @@ namespace MiepMiep
 		}
 
 		i32 err = 0;
-		ESendResult res = m_Socket->send( sc<const Endpoint&>( *m_RemoteEtp ), data, length, &err );
+		ESendResult res = m_Socket->send( sc<const Endpoint&>( *m_Destination ), data, length, &err );
 	
 	//	thread_local static u32 kt=0;	
 	//	LOG( "Send ... %d", kt++ );

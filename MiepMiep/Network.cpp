@@ -99,7 +99,7 @@ namespace MiepMiep
 		return false;
 	}
 
-	MM_TS ERegisterServerCallResult Network::registerServer(const IEndpoint& masterEtp, const string& name, const string& pw, const MetaData& md)
+	MM_TS ERegisterServerCallResult Network::registerServer(const IAddress& masterEtp, const string& name, const string& pw, const MetaData& md)
 	{
 		sptr<LinkManager> lm = getOrAdd<LinkManager>();
 		bool added;
@@ -117,7 +117,7 @@ namespace MiepMiep
 		return ERegisterServerCallResult::Fine;
 	}
 
-	MM_TS EJoinServerCallResult Network::joinServer(const IEndpoint& masterEtp, const string& name, const string& pw, const MetaData& md)
+	MM_TS EJoinServerCallResult Network::joinServer(const IAddress& masterEtp, const string& name, const string& pw, const MetaData& md)
 	{
 		return EJoinServerCallResult::Fine;
 	}
@@ -140,24 +140,24 @@ namespace MiepMiep
 
 	}
 
-	MM_TS void Network::createRemoteGroup(const string& typeName, u32 netId, const BinSerializer& initData, const IEndpoint& etp)
+	MM_TS void Network::createRemoteGroup(const string& typeName, u32 netId, const BinSerializer& initData, const IAddress& etp)
 	{
 		void* vgCreatePtr = Platform::getPtrFromName((string("deserialize_") + typeName).c_str());
 		if ( vgCreatePtr )
 		{
-			using fptr = void (*)(INetwork&, const IEndpoint&, const BinSerializer&);
+			using fptr = void (*)(INetwork&, const IAddress&, const BinSerializer&);
 			((fptr)vgCreatePtr)( *this, etp, initData );
 		}
 	}
 
-	MM_TS ESendCallResult Network::sendReliable(byte id, const BinSerializer* bs, u32 numSerializers, const IEndpoint* specific, 
+	MM_TS ESendCallResult Network::sendReliable(byte id, const BinSerializer* bs, u32 numSerializers, const IAddress* specific, 
 												bool exclude, bool buffer, bool relay, byte channel, IDeliveryTrace* trace)
 	{
 		const BinSerializer* bs2 [] = { bs } ;
 		return sendReliable( id, bs2, numSerializers, specific, exclude, buffer, relay, false, channel, trace );
 	}
 
-	MM_TS ESendCallResult Network::sendReliable(byte id, const BinSerializer** bs, u32 numSerializers, const IEndpoint* specific,
+	MM_TS ESendCallResult Network::sendReliable(byte id, const BinSerializer** bs, u32 numSerializers, const IAddress* specific,
 												bool exclude, bool buffer, bool relay, bool systemBit, byte channel, IDeliveryTrace* trace)
 	{
 		vector<sptr<const NormalSendPacket>> packets;
@@ -169,7 +169,7 @@ namespace MiepMiep
 		return sendReliable( packets, specific, exclude, buffer, channel, trace );
 	}
 
-	MM_TS ESendCallResult Network::sendReliable(const vector<sptr<const NormalSendPacket>>& data, const IEndpoint* specific,
+	MM_TS ESendCallResult Network::sendReliable(const vector<sptr<const NormalSendPacket>>& data, const IAddress* specific,
 												bool exclude, bool buffer, byte channel, IDeliveryTrace* trace)
 	{
 		bool wasSent = getOrAdd<LinkManager>()->forLink( specific, exclude, [&, data](Link& link)

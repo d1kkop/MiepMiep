@@ -14,6 +14,6 @@ namespace MiepMiep
 
 	private:
 		string m_Name;
-		sptr<IEndpoint> m_Endpoint;
+		sptr<IAddress> m_Endpoint;
 	};
 }

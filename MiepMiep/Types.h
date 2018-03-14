@@ -34,7 +34,8 @@ namespace MiepMiep
 	using u32  = unsigned long;
 	using u64  = unsigned long long;
 
-	class IEndpoint;
+	class IAddress;
+	class ILink;
 	class INetwork;
 	class BinSerializer;
 	class IDeliveryTrace;
@@ -57,14 +58,14 @@ namespace MiepMiep
 
 	struct IEndpoint_less
 	{
-		bool operator()( const IEndpoint& left, const IEndpoint& right ) const;
-		bool operator()( const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right ) const;
+		bool operator()( const IAddress& left, const IAddress& right ) const;
+		bool operator()( const sptr<const IAddress>& left, const sptr<const IAddress>& right ) const;
 	};
 
 
 	// ---- !! FOR INTERNAL USE ONLY !! ------
 	MM_TS MM_DECLSPEC extern BinSerializer& priv_get_thread_serializer();
-	MM_TS MM_DECLSPEC extern ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& bs, const IEndpoint* specific, bool exclude, bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace); 
+	MM_TS MM_DECLSPEC extern ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& bs, const IAddress* specific, bool exclude, bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace); 
 	MM_TS MM_DECLSPEC extern void  priv_create_group(INetwork& nw, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace);
 	MM_TS MM_DECLSPEC extern void* priv_get_rpc_func(const std::string& name);
 }

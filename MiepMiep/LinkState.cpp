@@ -18,15 +18,15 @@ namespace MiepMiep
 
 	struct EventConnectResult : EventBase
 	{
-		EventConnectResult(const IEndpoint& remote, EConnectResult res):
-			EventBase(remote),
+		EventConnectResult(const ILink& link, EConnectResult res):
+			EventBase(link),
 			m_Result(res) { }
 
 		void process() override
 		{
 			m_NetworkListener->processEvents<IConnectionListener>( [this] (IConnectionListener* l) 
 			{
-				l->onConnectResult( *m_Network, *m_Endpoint, m_Result );
+				l->onConnectResult( *m_Link, m_Result );
 			});
 		}
 
@@ -35,37 +35,37 @@ namespace MiepMiep
 
 	struct EventNewConnection : EventBase
 	{
-		EventNewConnection(const IEndpoint& remote, const sptr<const IEndpoint> newEtp):
-			EventBase(remote),
-			m_NewEtp(newEtp) { }
+		EventNewConnection(const ILink& link, const IAddress& newAddr):
+			EventBase(link),
+			m_NewAddr(newAddr.to_ptr()) { }
 
 		void process() override
 		{
 			m_NetworkListener->processEvents<IConnectionListener>( [this] (IConnectionListener* l) 
 			{
-				l->onNewConnection( *m_Network, *m_Endpoint, m_NewEtp.get() );
+				l->onNewConnection( *m_Link, *m_NewAddr );
 			});
 		}
 
-		sptr<const IEndpoint> m_NewEtp;
+		sptr<const IAddress> m_NewAddr;
 	};
 
 	struct EventDisconnect : EventBase
 	{
-		EventDisconnect(const IEndpoint& remote, EDisconnectReason reason, const sptr<const IEndpoint>& discEtp):
-			EventBase(remote),
-			m_DiscEtp(discEtp),
+		EventDisconnect(const ILink& link, EDisconnectReason reason, const IAddress& discAddr):
+			EventBase(link),
+			m_DiscAddr(discAddr.to_ptr()),
 			m_Reason(reason) { }
 
 		void process() override
 		{
 			m_NetworkListener->processEvents<IConnectionListener>( [this] (IConnectionListener* l) 
 			{
-				l->onDisconnect( *m_Network, *m_Endpoint, m_Reason, m_DiscEtp.get() );
+				l->onDisconnect( *m_Link, m_Reason, *m_DiscAddr );
 			});
 		}
 
-		sptr<const IEndpoint> m_DiscEtp;
+		sptr<const IAddress> m_DiscAddr;
 		EDisconnectReason m_Reason;
 	};
 
@@ -75,20 +75,20 @@ namespace MiepMiep
 	/* New connection and disconnect. */
 
 	// [ endpoint : newEtp ]
-	MM_RPC( linkStateNewConnection, sptr<IEndpoint> )
+	MM_RPC( linkStateNewConnection, sptr<IAddress> )
 	{
 		RPC_BEGIN();
-		link->pushEvent<EventNewConnection>( get<0>(tp) );
-		LOG( "New incoming connection to %s.", link->info() );
+		l.pushEvent<EventNewConnection>( *get<0>(tp) );
+		LOG( "New incoming connection to %s.", l.info() );
 	}
 
 	// [ endpoint : discEtp,  bool : wasKicked ]
-	MM_RPC( linkStateDisconnect, sptr<IEndpoint>, bool )
+	MM_RPC( linkStateDisconnect, sptr<IAddress>, bool )
 	{
 		RPC_BEGIN();
 		EDisconnectReason reason = get<1>(tp) ? EDisconnectReason::Kicked : EDisconnectReason::Closed;
-		link->pushEvent<EventDisconnect>( reason, get<0>(tp) );
-		LOG( "Link to %s ignored, already connected.", link->info() );
+		l.pushEvent<EventDisconnect>( reason, *get<0>(tp) );
+		LOG( "Link to %s ignored, already connected.", l.info() );
 	}
 
 	/* Connection results */
@@ -96,29 +96,29 @@ namespace MiepMiep
 	MM_RPC( linkStateAlreadyConnected )
 	{
 		RPC_BEGIN();
-		link->pushEvent<EventConnectResult>( EConnectResult::AlreadyConnected );
-		LOG( "Link to %s ignored, already connected.", link->info() );
+		l.pushEvent<EventConnectResult>( EConnectResult::AlreadyConnected );
+		LOG( "Link to %s ignored, already connected.", l.info() );
 	}
 
 	MM_RPC( linkStatePasswordFail )
 	{
 		RPC_BEGIN();
-		link->pushEvent<EventConnectResult>( EConnectResult::InvalidPassword );
-		LOG( "Link to %s ignored, invalid password.", link->info() );
+		l.pushEvent<EventConnectResult>( EConnectResult::InvalidPassword );
+		LOG( "Link to %s ignored, invalid password.", l.info() );
 	}
 
 	MM_RPC( linkStateMaxClientsReached )
 	{
 		RPC_BEGIN();
-		link->pushEvent<EventConnectResult>( EConnectResult::MaxConnectionsReached );
-		LOG( "Link to %s ignored, max connections reached.", link->info() );
+		l.pushEvent<EventConnectResult>( EConnectResult::MaxConnectionsReached );
+		LOG( "Link to %s ignored, max connections reached.", l.info() );
 	}
 
 	MM_RPC( linkStateAccepted )
 	{
 		RPC_BEGIN();
-		link->pushEvent<EventConnectResult>( EConnectResult::Fine );
-		LOG( "Link to %s accepted.", link->info() );
+		l.pushEvent<EventConnectResult>( EConnectResult::Fine );
+		LOG( "Link to %s accepted.", l.info() );
 	}
 
 	/* Incoming connect atempt */
@@ -126,18 +126,16 @@ namespace MiepMiep
 	// [Pw, meta]
 	MM_RPC( linkStateConnect, string, MetaData )
 	{
-		auto& nw = toNetwork(network);
-		sptr<Link> link = nw.getLink( sc<const Endpoint&>(*etp) );
-		if ( !link ) return;
+		RPC_BEGIN();
 			
-		// Early out: if linkstate is added, it was already connected.
-		if ( link->has<LinkState>() )
+		// Early out: if linkstate is added, it was already connected. TODO is this correct?
+		if ( l.has<LinkState>() )
 		{
-			link->callRpc<linkStateAlreadyConnected>();
+			l.callRpc<linkStateAlreadyConnected>();
 			return;
 		}
 
-		auto originator = link->originator();
+		auto originator = l.originator();
 		if ( !originator )
 		{
 			LOGC( "Found link has no originator, invalid behaviour detected!." );
@@ -148,29 +146,30 @@ namespace MiepMiep
 		const string& pw = get<0>(tp);
 		if ( originator->getPassword() != pw )
 		{
-			link->callRpc<linkStatePasswordFail>();
+			l.callRpc<linkStatePasswordFail>();
 			return;
 		}
 			
 		// Max clients reached
 		if ( originator->getNumClients() >= originator->getMaxClients() )
 		{
-			link->callRpc<linkStateMaxClientsReached>();
+			l.callRpc<linkStateMaxClientsReached>();
 			return;
 		}
 
 		// All fine, send accepted 
-		bool wasAccepted = link->getOrAdd<LinkState>()->acceptConnect();
+		bool wasAccepted = l.getOrAdd<LinkState>()->acceptConnect();
 		if ( wasAccepted )
 		{
-			link->callRpc<linkStateAccepted>(); // To recipient directly
-			nw.callRpc2<linkStateNewConnection, sptr<IEndpoint>>( link->remoteEtp().to_ptr_nc() , false, &link->remoteEtp(), true /*excl*/ ); // To all others except recipient
-			link->pushEvent<EventNewConnection>( link->remoteEtp().to_ptr_nc() );
+			l.callRpc<linkStateAccepted>(); // To recipient directly
+			auto addrCopy = l.destination().getCopy();
+			nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( addrCopy , false, &l.destination(), true /*excl*/ ); // To all others except recipient
+			l.pushEvent<EventNewConnection>( *addrCopy );
 		}
 		else
 		{
 			// Note: 'acceptConnect' is mutual exclusive, so if called multiple times from recipient, it will still only accept once.
-			link->callRpc<linkStateAlreadyConnected>();
+			l.callRpc<linkStateAlreadyConnected>();
 		}
 	}
 
@@ -178,7 +177,7 @@ namespace MiepMiep
 
 	LinkState::LinkState(Link& link):
 		ParentLink(link),
-		m_State(EConnectState::Unknown)
+		m_State(ELinkState::Unknown)
 	{
 	}
 
@@ -187,12 +186,12 @@ namespace MiepMiep
 		// Check state
 		{
 			scoped_spinlock lk(m_StateMutex);
-			if ( m_State != EConnectState::Unknown )
+			if ( m_State != ELinkState::Unknown )
 			{
 				LOGW( "Can only connect if state is set to 'Unknown." );
 				return false;
 			}
-			m_State = EConnectState::Connecting;
+			m_State = ELinkState::Connecting;
 		}
 
 		return m_Link.callRpc<linkStateConnect, string, MetaData>( pw, md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
@@ -203,16 +202,22 @@ namespace MiepMiep
 		// Check state
 		{
 			scoped_spinlock lk(m_StateMutex);
-			if ( m_State != EConnectState::Unknown )
+			if ( m_State != ELinkState::Unknown )
 			{
 				LOGW( "Can only accept if state is set to 'Unknown." );
 				return false;
 			}
-			m_State = EConnectState::Connected;
+			m_State = ELinkState::Connected;
 		}
 
 		// Any other state (also if already connected, return false).
 		return true;
+	}
+
+	MM_TS ELinkState LinkState::state() const
+	{
+		scoped_spinlock lk(m_StateMutex);
+		return m_State;
 	}
 
 }

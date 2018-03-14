@@ -42,8 +42,8 @@ namespace MiepMiep
 
 	// --------- EventBase --------------------------------------------------------------------------------------
 
-	EventBase::EventBase(const IEndpoint& remote):
-		m_Endpoint(remote.to_ptr())
+	EventBase::EventBase(const ILink& link):
+		m_Link(link.to_ptr())
 	{
 
 	}

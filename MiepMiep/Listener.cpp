@@ -47,9 +47,17 @@ namespace MiepMiep
 			{
 				if ( m_Socket->bind( port, &err ) )
 				{
-					sptr<IPacketHandler> handler = ptr<IPacketHandler>();
-					m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>( m_Socket ), handler );
-					m_Listening = true;
+					m_Source = Endpoint::createSource( *m_Socket, &err );
+					if ( m_Source )
+					{
+						sptr<IPacketHandler> handler = ptr<IPacketHandler>();
+						m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>( m_Socket ), handler );
+						m_Listening = true;
+					}
+					else
+					{
+						LOGW( "Failed to determine local bound address, error: %d.", err );
+					}
 				}
 				else
 				{

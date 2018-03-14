@@ -77,37 +77,49 @@ namespace MiepMiep
 	class MM_DECLSPEC IConnectionListener
 	{
 	public:
-		virtual void onConnectResult( INetwork& network, const IEndpoint& sender, EConnectResult res ) { }
-		virtual void onNewConnection( INetwork& network, const IEndpoint& sender, const IEndpoint* relayedEtp ) { }
-		virtual void onDisconnect( INetwork& network, const IEndpoint& sender, EDisconnectReason reason, const IEndpoint* relayedEtp ) { }
-		virtual void onOwnerChanged( INetwork& network, const IEndpoint& sender, NetVar& variable, const IEndpoint* newOwner ) { }
+		virtual void onConnectResult( const ILink& link, EConnectResult res ) { }
+		virtual void onNewConnection( const ILink& link, const IAddress& remote ) { }
+		virtual void onDisconnect( const ILink& link, EDisconnectReason reason, const IAddress& remote ) { }
+		virtual void onOwnerChanged( const ILink& link, NetVar& variable, const IAddress* newOwner ) { }
 	};
 
 
-	/*	Do not use constructor directly. Use 'resolve' or 'fromIpAndPort'. */
-	class MM_DECLSPEC IEndpoint
+	class MM_DECLSPEC IAddress
 	{
 	public:
-		MM_TS static sptr<IEndpoint> createEmpty();
-		MM_TS static sptr<IEndpoint> resolve( const std::string& name, u16 port, i32* errOut=nullptr );
-		MM_TS static sptr<IEndpoint> fromIpAndPort( const std::string& ipAndPort, i32* errOut=nullptr );
+		MM_TS static sptr<IAddress> createEmpty();
+		MM_TS static sptr<IAddress> resolve( const std::string& name, u16 port, i32* errOut=nullptr );
+		MM_TS static sptr<IAddress> fromIpAndPort( const std::string& ipAndPort, i32* errOut=nullptr );
 
-		/*	Returns a 'static thread_local' buffer. DO NOT delete the returned buffer. */
+		/*	Returns a 'static thread_local' buffer. Do not delete the returned buffer. */
 		MM_TS virtual const char* toIpAndPort() const = 0;
-		MM_TS virtual sptr<IEndpoint> getCopy() const = 0;
+		MM_TS virtual sptr<IAddress> getCopy() const = 0;
 
-		MM_TS bool operator==( const IEndpoint& other ) const;
-		MM_TS bool operator==( const sptr<IEndpoint>& other ) const			{ return *this == *other; }
-		MM_TS bool operator!=( const IEndpoint& other ) const				{ return !(*this == other); }
-		MM_TS bool operator!=( const sptr<IEndpoint>& other )				{ return !(*this == *other); }
+		MM_TS bool operator==( const IAddress& other ) const;
+		MM_TS bool operator==( const sptr<IAddress>& other ) const			{ return *this == *other; }
+		MM_TS bool operator!=( const IAddress& other ) const				{ return !(*this == other); }
+		MM_TS bool operator!=( const sptr<IAddress>& other )				{ return !(*this == *other); }
 
 		MM_TS virtual bool write(class BinSerializer& bs) const = 0;
 		MM_TS virtual bool read(class BinSerializer& bs) = 0;
 
-		MM_TS sptr<IEndpoint> to_ptr();
-		MM_TS sptr<IEndpoint> to_ptr_nc() const;
-		MM_TS sptr<const IEndpoint> to_ptr() const;
+		MM_TS sptr<IAddress> to_ptr();
+		MM_TS sptr<const IAddress> to_ptr() const;
 	};
+
+
+	class MM_DECLSPEC ILink
+	{
+	public:
+		MM_TS virtual INetwork& network() const = 0;
+		MM_TS virtual const IAddress& destination() const = 0;
+		MM_TS virtual const IAddress& source() const = 0;
+		MM_TS virtual bool  isConnected() const = 0;
+
+		MM_TS sptr<ILink> to_ptr();
+		MM_TS sptr<const ILink> to_ptr() const;
+	};
+
 
 	class MM_DECLSPEC INetwork
 	{
@@ -121,11 +133,11 @@ namespace MiepMiep
 		MM_TS virtual EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 ) = 0;
 		MM_TS virtual bool stopListen( u16 port ) = 0;
 
-		MM_TS virtual ERegisterServerCallResult registerServer( const IEndpoint& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
-		MM_TS virtual EJoinServerCallResult joinServer( const IEndpoint& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
+		MM_TS virtual ERegisterServerCallResult registerServer( const IAddress& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
+		MM_TS virtual EJoinServerCallResult joinServer( const IAddress& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
 
 		template <typename T, typename ...Args> 
-		MM_TS ESendCallResult callRpc( Args... args, bool localCall=false, const IEndpoint* specific=nullptr, bool exclude=false, bool buffer=false, 
+		MM_TS ESendCallResult callRpc( Args... args, bool localCall=false, const IAddress* specific=nullptr, bool exclude=false, bool buffer=false, 
 									   bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr );
 
 		template <typename T, typename ...Args>
@@ -135,7 +147,7 @@ namespace MiepMiep
 		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener ) = 0;
 		MM_TS virtual void removeConnectionListener( const IConnectionListener* connectionListener ) = 0;
 
-		MM_TS virtual ESendCallResult sendReliable( byte id, const BinSerializer* serializers, u32 numSerializers=1, const IEndpoint* specific=nullptr, 
+		MM_TS virtual ESendCallResult sendReliable( byte id, const BinSerializer* serializers, u32 numSerializers=1, const IAddress* specific=nullptr, 
 												    bool exclude=false, bool buffer=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
 
 
@@ -144,7 +156,7 @@ namespace MiepMiep
 
 
 	template <typename T, typename ...Args>
-	MM_TS ESendCallResult INetwork::callRpc(Args... args, bool localCall, const IEndpoint* specific, 
+	MM_TS ESendCallResult INetwork::callRpc(Args... args, bool localCall, const IAddress* specific, 
 											bool exclude, bool buffer, bool relay, byte channel, IDeliveryTrace* trace)
 	{
 		auto& bs = priv_get_thread_serializer();

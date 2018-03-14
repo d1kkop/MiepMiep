@@ -256,14 +256,14 @@ namespace MiepMiep
 	template <> bool BinSerializer::read(i32& b)							{ return read32((u32&)b); }
 	template <> bool BinSerializer::read(i64& b)							{ return read64((u64&)b); }
 	template <> bool BinSerializer::read(BinSerializer& other)				{ return other.write(data(), length()); }
-	template <> bool BinSerializer::read(IEndpoint& b)						{ return b.read(*this); }
-	template <> bool BinSerializer::read(sptr<IEndpoint>& b)
+	template <> bool BinSerializer::read(IAddress& b)						{ return b.read(*this); }
+	template <> bool BinSerializer::read(sptr<IAddress>& b)
 	{
 		byte avabl;
 		if ( !read(avabl) ) return false;
 		if ( avabl )
 		{
-			b = IEndpoint::createEmpty();
+			b = IAddress::createEmpty();
 			return b->read(*this);
 		}
 		return true; // yet empty
@@ -305,9 +305,9 @@ namespace MiepMiep
 	template <> bool BinSerializer::write(const i32& b)						{ return write32(b); }
 	template <> bool BinSerializer::write(const i64& b)						{ return write64((i64&)b); }
 	template <> bool BinSerializer::write(const BinSerializer& other)		{ return write(other.data(), other.length()); }
-	template <> bool BinSerializer::write(const IEndpoint& b)				{ return b.write(*this); }
-	template <> bool BinSerializer::write(const sptr<IEndpoint>& b)			{ return write(const_pointer_cast<const IEndpoint>(b)); }
-	template <> bool BinSerializer::write(const sptr<const IEndpoint>& b)
+	template <> bool BinSerializer::write(const IAddress& b)				{ return b.write(*this); }
+	template <> bool BinSerializer::write(const sptr<IAddress>& b)			{ return write(const_pointer_cast<const IAddress>(b)); }
+	template <> bool BinSerializer::write(const sptr<const IAddress>& b)
 	{
 		if (!b) return write(false);
 		if (!write(true)) return false;

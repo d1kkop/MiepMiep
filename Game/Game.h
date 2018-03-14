@@ -15,7 +15,7 @@ namespace MyGame
 		void run();
 		void stop();
 
-		void onConnectResult( INetwork& network, const IEndpoint& etp, EConnectResult res ) override;
+		void onConnectResult( const ILink& link, EConnectResult res ) override;
 
 		sptr<INetwork> m_Network;
 	};

@@ -33,21 +33,21 @@ namespace MiepMiep
 		// INetwork
 		MM_TS EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 ) override;
 		MM_TS bool stopListen( u16 port ) override;
-		MM_TS ERegisterServerCallResult registerServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
-		MM_TS EJoinServerCallResult joinServer( const IEndpoint& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
+		MM_TS ERegisterServerCallResult registerServer( const IAddress& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
+		MM_TS EJoinServerCallResult joinServer( const IAddress& masterEtp, const string& serverName, const string& pw="", const MetaData& md=MetaData() ) override;
 
 		MM_TS void createGroupInternal( const string& typeName, const BinSerializer& initData, byte channel, IDeliveryTrace* trace );
 		MM_TS void destroyGroup( u32 groupId ) override;
 
-		MM_TS void createRemoteGroup( const string& typeName, u32 netId, const BinSerializer& initData, const IEndpoint& etp );
+		MM_TS void createRemoteGroup( const string& typeName, u32 netId, const BinSerializer& initData, const IAddress& etp );
 
-		MM_TS ESendCallResult sendReliable(byte id, const BinSerializer* bs, u32 numSerializers, const IEndpoint* specific, 
+		MM_TS ESendCallResult sendReliable(byte id, const BinSerializer* bs, u32 numSerializers, const IAddress* specific, 
 										   bool exclude, bool buffer, bool relay,
 										   byte channel, IDeliveryTrace* trace) override;
-		MM_TS ESendCallResult sendReliable(byte id, const BinSerializer** bs, u32 numSerializers, const IEndpoint* specific, 
+		MM_TS ESendCallResult sendReliable(byte id, const BinSerializer** bs, u32 numSerializers, const IAddress* specific, 
 										   bool exclude, bool buffer, bool relay, bool systemBit,
 										   byte channel, IDeliveryTrace* trace);
-		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const IEndpoint* specific, 
+		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const IAddress* specific, 
 										   bool exclude, bool buffer, byte channel, IDeliveryTrace* trace);
 
 		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
@@ -72,7 +72,7 @@ namespace MiepMiep
 
 		// Send rpc with system bit (true or false). Other than that, exactly same as Inetwork.callRpc
 		template <typename T, typename ...Args> 
-		MM_TS ESendCallResult callRpc2( Args... args, bool localCall=false, const IEndpoint* specific=nullptr, bool exclude=false, bool buffer=false, 
+		MM_TS ESendCallResult callRpc2( Args... args, bool localCall=false, const IAddress* specific=nullptr, bool exclude=false, bool buffer=false, 
 										bool relay=false, bool systemBit=true, byte channel=0, IDeliveryTrace* trace=nullptr );
 
 		bool allowAsyncCallbacks() const { return m_AllowAsyncCallbacks; }
@@ -115,7 +115,7 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS ESendCallResult MiepMiep::Network::callRpc2(Args... args, bool localCall, const IEndpoint* specific, 
+	MM_TS ESendCallResult MiepMiep::Network::callRpc2(Args... args, bool localCall, const IAddress* specific, 
 													  bool exclude, bool buffer, bool relay, bool systemBit,
 													  byte channel, IDeliveryTrace* trace)
 	{

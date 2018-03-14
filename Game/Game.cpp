@@ -47,7 +47,7 @@ namespace MyGame
 		m_Network->callRpc<myFirstRpc, i32, i32>( 5, 10, true );
 		m_Network->createGroup<myFirstVarGroup, string, bool>( "hello bartje k", true, true, 6 );*/
 
-		auto masterEtp = IEndpoint::resolve( "localhost", 27002 );
+		auto masterEtp = IAddress::resolve( "localhost", 27002 );
 
 		cout << masterEtp->toIpAndPort() << endl;
 
@@ -76,27 +76,27 @@ namespace MyGame
 			m_Network->removeConnectionListener( this );
 	}
 
-	void Game::onConnectResult(INetwork& network, const IEndpoint& etp, EConnectResult res)
+	void Game::onConnectResult(const ILink& link, EConnectResult res)
 	{
 		switch (res)
 		{
 		case MiepMiep::EConnectResult::Fine:
-			cout << "connected to: " << etp.toIpAndPort() << endl;
+			cout << "connected to: " << link.destination().toIpAndPort() << endl;
 			break;
 		case MiepMiep::EConnectResult::Timedout:
-			cout << "connecting to: " << etp.toIpAndPort() << " timed out." << endl;
+			cout << "connecting to: " << link.destination().toIpAndPort() << " timed out." << endl;
 			break;
 		case MiepMiep::EConnectResult::InvalidPassword:
-			cout << "connecting to: " << etp.toIpAndPort() << " invalid password." << endl;
+			cout << "connecting to: " << link.destination().toIpAndPort() << " invalid password." << endl;
 			break;
 		case MiepMiep::EConnectResult::MaxConnectionsReached:
-			cout << "connecting to: " << etp.toIpAndPort() << " max connections reached." << endl;
+			cout << "connecting to: " << link.destination().toIpAndPort() << " max connections reached." << endl;
 			break;
 		case MiepMiep::EConnectResult::AlreadyConnected:
-			cout << "connecting to: " << etp.toIpAndPort() << " already connected." << endl;
+			cout << "connecting to: " << link.destination().toIpAndPort() << " already connected." << endl;
 			break;
 		default:
-			cout << "connecting to: " << etp.toIpAndPort() << " unknown result returned!" << endl;
+			cout << "connecting to: " << link.destination().toIpAndPort() << " unknown result returned!" << endl;
 			break;
 		}
 	}

@@ -2,11 +2,12 @@
 
 #include "Component.h"
 #include "PacketHandler.h"
+#include "MiepMiep.h"
 
 
 namespace MiepMiep
 {
-	class IEndpoint;
+	class IAddress;
 	class ISocket;
 	class Network;
 	class Link;
@@ -14,19 +15,23 @@ namespace MiepMiep
 
 	// ------------ Link -----------------------------------------------
 
-	class Link: public ComponentCollection, public IPacketHandler
+	class Link: public ILink, public ComponentCollection, public IPacketHandler
 	{
 	public:
 		Link(Network& network);
 		~Link() override;
-		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp, u32* id, const Listener* originator);
+		MM_TS static sptr<Link> create(Network& network, const IAddress& destination, u32* id, const Listener* originator);
+
+		// ILink
+		MM_TS INetwork& network() const override;
+		MM_TS const IAddress& destination() const override { return *m_Destination; }
+		MM_TS const IAddress& source() const override { return /* TODO */ *m_Destination; }
+		MM_TS bool  isConnected() const override;
 
 		// These are thread safe because they are set from constructor and never changed afterwards.
 		MM_TS u32 id() const { return m_Id; }
-		MM_TS const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
 		MM_TS const ISocket& socket() const { return *m_Socket; }
 		MM_TS const Listener* originator() const { return m_Originator.get(); }
-		MM_TS const sptr<const IEndpoint>& remoteEtp2() const;
 		MM_TS const char* ipAndPort() const;
 		MM_TS const char* info() const;
 		
@@ -57,7 +62,8 @@ namespace MiepMiep
 
 	private:
 		u32 m_Id;
-		sptr<const class IEndpoint> m_RemoteEtp;
+		sptr<const class IAddress>  m_Destination;
+		sptr<const class IAddress>  m_Source;
 		sptr<const class ISocket>   m_Socket;
 		sptr<const class Listener>  m_Originator;
 	};
@@ -68,13 +74,13 @@ namespace MiepMiep
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., m_Network, bs, localCall);
-		return priv_send_rpc( m_Network, T::rpcName(), bs, &remoteEtp(), false, false, relay, true /* sys bit */, channel, trace );
+		return priv_send_rpc( m_Network, T::rpcName(), bs, &destination(), false, false, relay, true /* sys bit */, channel, trace );
 	}
 
 	template <typename T, typename ...Args>
 	MM_TS void Link::pushEvent(Args&&... args)
 	{
-		sptr<T> evt = make_shared<T>(remoteEtp(), args...);
+		sptr<T> evt = make_shared<T>(*this, args...);
 		sptr<IEvent> evtDown = static_pointer_cast<IEvent>(evt);
 		m_Network.getOrAdd<NetworkListeners>()->pushEvent( evtDown );
 	}
