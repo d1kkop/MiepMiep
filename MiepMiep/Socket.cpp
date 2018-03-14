@@ -205,7 +205,42 @@ namespace MiepMiep
 		m_Blocking = true;
 	}
 
-	bool BSDSocket::open(IPProto ipv, bool reuseAddr, i32* err)
+	#define  BSD_SOCK_NO_OPTION_MATCH -9999
+	bool setOption( SOCKET sock, i32 level, u32 option, bool on, i32* err )
+	{
+		assert( sock != INVALID_SOCKET );
+		if ( sock == INVALID_SOCKET )
+			return false;
+
+		//  try set
+		DWORD bOption = (on ? TRUE : FALSE);
+		if (SOCKET_ERROR == setsockopt(sock, level, option, (char*)&bOption, sizeof(DWORD)))
+		{
+		#if MM_PLATFORM_WINDOWS
+			if (err) *err = GetLastError();
+		#endif
+			return false;
+		}
+		// check if set as requested
+		DWORD bOptionOut = 0;
+		int optSize = sizeof(bOptionOut);
+		if (SOCKET_ERROR == getsockopt(sock, level, option, (char*)&bOptionOut, &optSize))
+		{
+		#if MM_PLATFORM_WINDOWS
+			if (err) *err = GetLastError();
+		#endif
+			return false;
+		}
+		// check now
+		if ( bOption != bOptionOut )
+		{
+			if (*err) *err = BSD_SOCK_NO_OPTION_MATCH;
+			return false;
+		}
+		return true;
+	}
+
+	bool BSDSocket::open(IPProto ipv, const SocketOptions& options, i32* err)
 	{
 		if ( err ) *err = 0;
 
@@ -221,20 +256,19 @@ namespace MiepMiep
 		m_Socket = socket( (ipv == IPProto::Ipv4 ? AF_INET : AF_INET6), SOCK_DGRAM, IPPROTO_UDP) ;
 		if (m_Socket == INVALID_SOCKET)
 		{
-			#if MM_PLATFORM_WINDOWS
-				if ( err ) *err = GetLastError();
-			#endif
-			return false;
+		#if MM_PLATFORM_WINDOWS
+			if ( err ) *err = GetLastError();
+		#endif
+		return false;
 		}
 
-		BOOL bReuseAddr = reuseAddr ? TRUE : FALSE;
-		if ( SOCKET_ERROR == setsockopt(m_Socket, SOL_SOCKET, SO_REUSEADDR, (char*)&bReuseAddr, sizeof(BOOL)) )
-		{
-			#if MM_PLATFORM_WINDOWS
-				if ( err ) *err = GetLastError();
-			#endif
+		// reuse addr
+		if ( !setOption( m_Socket, SOL_SOCKET, SO_REUSEADDR, options.m_ReuseAddr, err ) )
 			return false;
-		}
+
+		// dont fragment
+		if ( !setOption( m_Socket, IPPROTO_IP, IP_DONTFRAGMENT, options.m_DontFragment, err ) )
+			return false;
 
 		m_Open = true;
 		return true;

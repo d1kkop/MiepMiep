@@ -68,7 +68,7 @@ namespace MiepMiep
 			if (!sock) return nullptr;
 
 			i32 err;
-			sock->open(IPProto::Ipv4, false, &err);
+			sock->open(IPProto::Ipv4, SocketOptions(), &err);
 			if ( err != 0 )
 			{
 				LOGW( "Socket open error %d, cannot create link.", err );

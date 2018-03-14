@@ -27,6 +27,18 @@ namespace MiepMiep
 		SocketClosed
 	};
 
+	struct SocketOptions
+	{
+		SocketOptions() :
+			m_ReuseAddr(false),
+			m_DontFragment(true)
+		{
+		}
+
+		bool m_ReuseAddr;
+		bool m_DontFragment;
+	};
+
 
 	class ISocket
 	{
@@ -41,7 +53,7 @@ namespace MiepMiep
 		bool operator!=(const ISocket& right) const { return !(*this==right); }
 
 		// Interface
-		virtual bool open(IPProto ipProto = IPProto::Ipv4, bool reuseAddr=false, i32* err=nullptr) = 0;
+		virtual bool open(IPProto ipProto = IPProto::Ipv4, const SocketOptions& options=SocketOptions(), i32* err=nullptr) = 0;
 		virtual bool bind(u16 port, i32* err=nullptr) = 0;
 		virtual void close() = 0;
 		virtual bool equal(const ISocket& other) const = 0;
@@ -90,7 +102,7 @@ namespace MiepMiep
 	public:
 		BSDSocket();
 
-		bool open(IPProto ipProto, bool reuseAddr, i32* err) override;
+		bool open(IPProto ipProto, const SocketOptions& options, i32* err) override;
 		bool bind(u16 port, i32* err) override;
 		void close() override;
 		bool equal(const ISocket& other) const override;

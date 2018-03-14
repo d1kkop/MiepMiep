@@ -25,25 +25,25 @@ UTESTBEGIN(SocketTest)
 	sptr<ISocket> sock = ISocket::create();
 	i32 err;
 	assert( sock && "sock create" );
-	assert( sock->open( IPProto::Ipv4, true, &err ) && "sock open" );
+	assert( sock->open( IPProto::Ipv4, SocketOptions(), &err ) && "sock open" );
 	assert( sock->bind( 27001, &err ) && "sock bind" );
 
 	// should not be rebindable
 	sptr<ISocket> sock2 = ISocket::create();
 	assert( sock2 && "sock create" );
-	assert( sock2->open( IPProto::Ipv4, false, &err ) && "sock open" );
+	assert( sock2->open( IPProto::Ipv4, SocketOptions(), &err ) && "sock open" );
 	assert( !sock2->bind( 27001, &err ) && "sock bind" );
 	assert( sock2->isOpen() && !sock2->isBound() ); // should be open but not bound
 
 	// should be rebindable
 	sptr<ISocket> sock3 = ISocket::create();
 	assert( sock3 && "sock create" );
-	assert( sock3->open( IPProto::Ipv4, true, &err ) && "sock open" );
+	assert( sock3->open( IPProto::Ipv4, SocketOptions(), &err ) && "sock open" );
 	assert( sock3->bind( 27001, &err ) && "sock bind" );
 
 	sptr<ISocket> sock4 = ISocket::create();
 	assert( sock4 && "sock create" );
-	assert( sock4->open( IPProto::Ipv4, false, &err ) && "sock open" );
+	assert( sock4->open( IPProto::Ipv4, SocketOptions(), &err ) && "sock open" );
 	assert( sock4->bind( 27005, &err ) && "sock bind" );
 	assert( sock4->isOpen() && sock4->isBound() && "not both bound and open");
 

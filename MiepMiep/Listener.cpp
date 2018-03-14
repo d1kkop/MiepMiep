@@ -43,7 +43,7 @@ namespace MiepMiep
 		if ( m_Socket )
 		{
 			i32 err;
-			if (m_Socket->open(IPProto::Ipv4, false, &err))
+			if (m_Socket->open(IPProto::Ipv4, SocketOptions(), &err))
 			{
 				if ( m_Socket->bind( port, &err ) )
 				{
