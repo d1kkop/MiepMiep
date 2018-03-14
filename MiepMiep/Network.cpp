@@ -101,9 +101,9 @@ namespace MiepMiep
 
 	MM_TS ERegisterServerCallResult Network::registerServer(const IAddress& masterEtp, const string& name, const string& pw, const MetaData& md)
 	{
-		sptr<LinkManager> lm = getOrAdd<LinkManager>();
 		bool added;
-		sptr<Link> link = lm->getOrAdd( masterEtp, nullptr, nullptr, &added );
+		sptr<LinkManager> lm = getOrAdd<LinkManager>();
+		sptr<Link> link = lm->getOrAdd( SocketAddrPair( nullptr, masterEtp ), nullptr, nullptr, &added );
 		if (!added) // Returns nullptr if already added, link otherwise.
 		{
 			return ERegisterServerCallResult::AlreadyRegistered;
@@ -112,7 +112,7 @@ namespace MiepMiep
 		{
 			link->getOrAdd<MasterJoinData>()->setName( name );
 			link->getOrAdd<MasterJoinData>()->setMetaData( md );
-			link->getOrAdd<LinkState>()->connect( pw, md ); // TODO , where put md
+			link->getOrAdd<LinkState>()->connect( pw, md ); // TODO, where put md
 		});
 		return ERegisterServerCallResult::Fine;
 	}
@@ -200,11 +200,11 @@ namespace MiepMiep
 		Memory::printUntracedMemory();
 	}
 
-	MM_TS sptr<Link> Network::getLink(const Endpoint& etp) const
+	MM_TS sptr<Link> Network::getLink(const SocketAddrPair& sap) const
 	{
 		sptr<LinkManager> lm = get<LinkManager>();
 		if (!lm) return nullptr;
-		return lm->getLink(etp);
+		return lm->getLink(sap);
 	}
 
 }

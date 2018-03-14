@@ -95,6 +95,7 @@ namespace MiepMiep
 		MM_TS virtual const char* toIpAndPort() const = 0;
 		MM_TS virtual sptr<IAddress> getCopy() const = 0;
 
+		MM_TS bool operator< ( const IAddress& other ) const;
 		MM_TS bool operator==( const IAddress& other ) const;
 		MM_TS bool operator==( const sptr<IAddress>& other ) const			{ return *this == *other; }
 		MM_TS bool operator!=( const IAddress& other ) const				{ return !(*this == other); }
@@ -106,7 +107,6 @@ namespace MiepMiep
 		MM_TS sptr<IAddress> to_ptr();
 		MM_TS sptr<const IAddress> to_ptr() const;
 	};
-
 
 	class MM_DECLSPEC ILink
 	{

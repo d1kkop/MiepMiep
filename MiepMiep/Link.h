@@ -3,6 +3,7 @@
 #include "Component.h"
 #include "PacketHandler.h"
 #include "MiepMiep.h"
+#include "LinkManager.h"
 
 
 namespace MiepMiep
@@ -34,6 +35,7 @@ namespace MiepMiep
 		MM_TS const Listener* originator() const { return m_Originator.get(); }
 		MM_TS const char* ipAndPort() const;
 		MM_TS const char* info() const;
+		MM_TS SocketAddrPair extractSocketAddrPair() const;
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );

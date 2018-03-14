@@ -49,6 +49,7 @@ namespace MiepMiep
 		static sptr<ISocket> create();
 		virtual ~ISocket();
 
+		bool operator< (const ISocket& right) const;
 		bool operator==(const ISocket& right) const;
 		bool operator!=(const ISocket& right) const { return !(*this==right); }
 
@@ -56,6 +57,7 @@ namespace MiepMiep
 		virtual bool open(IPProto ipProto = IPProto::Ipv4, const SocketOptions& options=SocketOptions(), i32* err=nullptr) = 0;
 		virtual bool bind(u16 port, i32* err=nullptr) = 0;
 		virtual void close() = 0;
+		virtual bool less(const ISocket& other) const = 0;
 		virtual bool equal(const ISocket& other) const = 0;
 		virtual ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err=nullptr ) const = 0;
 		virtual ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endpointOut, i32* err=nullptr ) const = 0; // buffSize in, received size out
@@ -105,6 +107,7 @@ namespace MiepMiep
 		bool open(IPProto ipProto, const SocketOptions& options, i32* err) override;
 		bool bind(u16 port, i32* err) override;
 		void close() override;
+		bool less(const ISocket& other) const override;
 		bool equal(const ISocket& other) const override;
 		ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err) const override;
 		ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endPoint, i32* err ) const override;

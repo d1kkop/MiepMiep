@@ -7,7 +7,7 @@ using namespace std;
 
 namespace MiepMiep
 {
-	// --- IEndpoint ---------------------------------------------------------------------------------------
+	// --- IAddress ---------------------------------------------------------------------------------------
 
 	sptr<IAddress> IAddress::createEmpty()
 	{
@@ -24,28 +24,11 @@ namespace MiepMiep
 		return Endpoint::fromIpAndPort( ipAndPort );
 	}
 
-	sptr<IAddress> Endpoint::getCopy() const
+	MM_TS bool IAddress::operator<(const IAddress& other) const
 	{
-		return getCopyDerived();
-	}
-
-	MM_TS sptr<Endpoint> Endpoint::getCopyDerived() const
-	{
-		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
-		Platform::copy(etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
-		return etp;
-	}
-
-	MM_TS bool Endpoint::write(class BinSerializer& bs) const
-	{
-		if (!bs.write(getLowLevelAddr(), getLowLevelAddrSize())) return false;
-		return true;
-	}
-
-	MM_TS bool Endpoint::read(class BinSerializer& bs)
-	{
-		if (!bs.read(getLowLevelAddr(), getLowLevelAddrSize() ) ) return false;
-		return true;
+		const Endpoint& a = sc<const Endpoint&>(*this);
+		const Endpoint& b = sc<const Endpoint&>(other);
+		return a < b;
 	}
 
 	bool IAddress::operator==(const IAddress& other) const
@@ -59,14 +42,14 @@ namespace MiepMiep
 	{
 		const Endpoint& a = sc<const Endpoint&>(left);
 		const Endpoint& b = sc<const Endpoint&>(right);
-		return Endpoint::compareLess(a, b) < 0;
+		return a < b;
 	}
 
 	bool IEndpoint_less::operator()( const sptr<const IAddress>& left, const sptr<const IAddress>& right ) const
 	{
 		const Endpoint& a = sc<const Endpoint&>(*left);
 		const Endpoint& b = sc<const Endpoint&>(*right);
-		return Endpoint::compareLess(a, b) < 0;
+		return a < b;
 	}
 
 	sptr<IAddress> IAddress::to_ptr()
@@ -221,9 +204,38 @@ namespace MiepMiep
 		return "";
 	}
 
+	sptr<IAddress> Endpoint::getCopy() const
+	{
+		return getCopyDerived();
+	}
+
+	MM_TS sptr<Endpoint> Endpoint::getCopyDerived() const
+	{
+		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
+		Platform::copy(etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
+		return etp;
+	}
+
+	MM_TS bool Endpoint::write(class BinSerializer& bs) const
+	{
+		if (!bs.write(getLowLevelAddr(), getLowLevelAddrSize())) return false;
+		return true;
+	}
+
+	MM_TS bool Endpoint::read(class BinSerializer& bs)
+	{
+		if (!bs.read(getLowLevelAddr(), getLowLevelAddrSize() ) ) return false;
+		return true;
+	}
+
+	bool Endpoint::operator<(const Endpoint& other) const
+	{
+		return ::memcmp(getLowLevelAddr(), other.getLowLevelAddr(), getLowLevelAddrSize()) < 0;
+	}
+
 	bool Endpoint::operator==(const Endpoint& other) const
 	{
-		return compareLess(*this, other) == 0;
+		return ::memcmp(getLowLevelAddr(), other.getLowLevelAddr(), getLowLevelAddrSize()) == 0;
 	}
 
 	u16 Endpoint::getPortHostOrder() const
@@ -268,24 +280,6 @@ namespace MiepMiep
 		#endif
 		assert(0);
 		return -1;
-	}
-
-	i32 Endpoint::compareLess(const Endpoint& a, const Endpoint& b)
-	{
-		return ::memcmp( a.getLowLevelAddr(), b.getLowLevelAddr(), a.getLowLevelAddrSize() ) ;
-	}
-
-	void Endpoint::setPortFromNetworkOrder(u16 port)
-	{
-	#if MM_SDLSOCKET
-		m_IpAddress.port = port;
-		return;
-	#elif MM_WIN32SOCKET
-		m_SockAddr.Ipv4.sin_port = port;
-		return;
-	#endif
-		assert(0);
-		return;
 	}
 
 }

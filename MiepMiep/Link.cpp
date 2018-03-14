@@ -136,6 +136,11 @@ namespace MiepMiep
 		return buff;
 	}
 
+	MM_TS SocketAddrPair Link::extractSocketAddrPair() const
+	{
+		return SocketAddrPair( *m_Socket, *m_Destination );
+	}
+
 	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
 	{
 		auto& varVec = PerThreadDataProvider::getConstructedVariables();

@@ -119,7 +119,8 @@ namespace MiepMiep
 		__CHECKED( bs.read(linkId) );
 
 		bool added;
-		sptr<Link> link = m_Network.getOrAdd<LinkManager>()->getOrAdd( etp, &linkId, this, &added );
+		SocketAddrPair sap( m_Socket.get(), etp ); 
+		sptr<Link> link = m_Network.getOrAdd<LinkManager>()->getOrAdd( sap, &linkId, this, &added );
 		if ( !link )
 		{
 			LOGW( "Failed to add link to %s.", etp.toIpAndPort() );

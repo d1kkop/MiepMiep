@@ -32,6 +32,11 @@ namespace MiepMiep
 		Platform::shutdown();
 	}
 
+	bool ISocket::operator<(const ISocket& right) const
+	{
+		return this->less( right );
+	}
+
 	bool ISocket::operator==(const ISocket& right) const
 	{
 		return this->equal(right);
@@ -337,6 +342,12 @@ namespace MiepMiep
 		}
 		m_Open  = false;
 		m_Bound = false;
+	}
+
+	bool BSDSocket::less(const ISocket& other) const
+	{
+		const BSDSocket& b = sc<const BSDSocket&>(other);
+		return (this->m_Socket < b.m_Socket);
 	}
 
 	bool BSDSocket::equal(const ISocket& other) const

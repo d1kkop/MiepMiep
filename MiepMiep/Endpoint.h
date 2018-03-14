@@ -26,6 +26,7 @@ namespace MiepMiep
 		MM_TS bool write(class BinSerializer& bs) const override;
 		MM_TS bool read(class BinSerializer& bs) override;
 		
+		bool operator< ( const Endpoint& other) const;
 		bool operator==( const Endpoint& other ) const;
 		bool operator==( const sptr<Endpoint>& other )	const		{ return *this == *other; }
 		bool operator!=( const Endpoint& other ) const				{ return !(*this == other); }
@@ -38,11 +39,6 @@ namespace MiepMiep
 		byte* getLowLevelAddr();
 		const byte* getLowLevelAddr() const;
 		u32 getLowLevelAddrSize() const;
-
-
-		// STL compare less
-		static i32 compareLess( const Endpoint& a, const Endpoint& b );
-		void setPortFromNetworkOrder(u16 port);
 
 	private:
 		#if MM_SDLSOCKET

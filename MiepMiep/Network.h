@@ -10,6 +10,7 @@ namespace MiepMiep
 {
 	class Link;
 	class Endpoint;
+	struct SocketAddrPair;
 
 	enum class ENetworkError
 	{
@@ -58,7 +59,7 @@ namespace MiepMiep
 		MM_TS MM_DECLSPEC static void printMemoryLeaks();
 
 		// Gets, checks or adds directly in a link in the network -> linkManagerComponent.
-		MM_TS sptr<Link> getLink(const Endpoint& etp) const;
+		MM_TS sptr<Link> getLink(const SocketAddrPair& sap) const;
 		template <typename T>
 		MM_TS bool hasOnLink(const Endpoint& etp, u32 idx=0) const;
 		template <typename T>

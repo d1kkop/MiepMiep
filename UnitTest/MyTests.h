@@ -293,7 +293,7 @@ UTESTBEGIN(RPCBigTest)
 
 	sptr<INetwork> nw  = INetwork::create();
 	bool badded;
-	sptr<Link> link = sc<Network&>(*nw).getOrAdd<LinkManager>()->getOrAdd( *IAddress::resolve("localhost", 12203), nullptr, nullptr, &badded );
+	sptr<Link> link = sc<Network&>(*nw).getOrAdd<LinkManager>()->getOrAdd( SocketAddrPair( nullptr, *IAddress::resolve("localhost", 12203) ), nullptr, nullptr, &badded );
 	bs2.setRead(0);
 //	ILink* iLink = link.get();
 //	rpc_dsr_MyRpcBigTest( *nw, *iLink, bs2 );
