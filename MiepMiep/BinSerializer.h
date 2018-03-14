@@ -12,6 +12,7 @@ namespace MiepMiep
 	{
 	public:
 		BinSerializer();
+		BinSerializer(const byte* streamIn, u32 buffSize, u32 writePos, bool copyData=false, bool ownsData=false);
 		BinSerializer(const BinSerializer& other);
 		BinSerializer(BinSerializer&& other) noexcept;
 		BinSerializer& operator=(const BinSerializer& other);
@@ -19,7 +20,7 @@ namespace MiepMiep
 		~BinSerializer();
 
 		void reset();
-		void resetTo(const byte* streamIn, u32 buffSize, u32 writePos);
+		void resetTo(const byte* streamIn, u32 buffSize, u32 writePos, bool copyData=false, bool ownsData=false);
 		void copyAsRaw(byte*& ptr, u32& len);
 
 		bool setRead(u32 r);
@@ -50,7 +51,9 @@ namespace MiepMiep
 		template <> bool write(const i32& b);
 		template <> bool write(const i64& b);
 		template <> bool write(const BinSerializer& other);
-		template <> bool write(const class IEndpoint& b);
+		template <> bool write(const IEndpoint& b);
+		template <> bool write(const sptr<IEndpoint>& b);
+		template <> bool write(const sptr<const IEndpoint>& b);
 		template <> bool write(const std::string& b);
 		template <> bool write(const MetaData& b);
 		
@@ -65,7 +68,8 @@ namespace MiepMiep
 		template <> bool read(i32& b);
 		template <> bool read(i64& b);
 		template <> bool read(BinSerializer& other);
-		template <> bool read(class IEndpoint& b);
+		template <> bool read(IEndpoint& b);
+		template <> bool read(sptr<IEndpoint>& b);
 		template <> bool read(std::string& b);
 		template <> bool read(MetaData& b);
 
@@ -87,10 +91,10 @@ namespace MiepMiep
 		void growTo(u32 maxSize);
 
 	private:
-		byte* m_DataPtr, * m_OrigPtr;
+		byte* m_DataPtr;
 		u32   m_WritePos;
 		u32   m_ReadPos;
-		u32   m_MaxSize, m_OrigSize;
+		u32   m_MaxSize;
 		bool  m_Owns;
 	};
 }

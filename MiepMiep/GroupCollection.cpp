@@ -20,7 +20,7 @@ namespace MiepMiep
 		/* INetwork& network */
 		/* const IEndpoint* etp */
 		assert( etp != nullptr );
-		Network& nw = static_cast<Network&>(network);
+		Network& nw = sc<Network&>(network);
 		nw.createRemoteGroup( get<0>(tp), get<1>(tp), get<2>(tp), *etp );
 	}
 

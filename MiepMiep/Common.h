@@ -51,20 +51,27 @@ using namespace std;
 	sptr<TYPE> TYPE::to_ptr() { return ptr<TYPE>(); } \
 	sptr<const TYPE> TYPE::to_ptr() const { return ptr<const TYPE>(); }
 
+#define RPC_BEGIN() \
+	assert(etp); \
+	if (!etp) { LOGW("Unexpectd local RPC call."); return; } \
+	auto& nw = toNetwork(network); \
+	sptr<Link> link = nw.getLink( sc<const Endpoint&>(*etp) ); \
+	if ( !link ) { return; }
+
 
 namespace MiepMiep
 {
 	using scoped_lock   = lock_guard<mutex>;
 	using rscoped_lock  = lock_guard<recursive_mutex>;
 	using rmutex		= recursive_mutex;
+
 	template <typename T> using wptr = weak_ptr<T>;
 	template <typename T> using uptr = unique_ptr<T>;
 
 	template <typename T, typename F>
-	inline T rp (F f) { return reinterpret_cast<T>(f); }
-
+	inline T rc (F&& f) { return reinterpret_cast<T>(f); }
 	template <typename T, typename F>
-	inline T sc (F f) { return static_cast<T>(f); }
+	inline T sc (F&& f) { return static_cast<T>(f); }
 	template <typename T, typename F>
-	inline T scc (F f) { return static_cast<T>(const_cast<T>(f)); }
+	inline T scc (F&& f) { return static_cast<T>(const_cast<T>(f)); }
 }

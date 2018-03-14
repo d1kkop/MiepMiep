@@ -307,7 +307,7 @@ namespace MiepMiep
 
 	bool BSDSocket::equal(const ISocket& other) const
 	{
-		const BSDSocket& b = static_cast<const BSDSocket&>(other);
+		const BSDSocket& b = sc<const BSDSocket&>(other);
 		return (this->m_Socket == b.m_Socket) && (this->m_Socket != INVALID_SOCKET);
 	}
 
@@ -355,12 +355,12 @@ namespace MiepMiep
 
 	sptr<ISocket> BSDSocket::to_ptr()
 	{
-		return static_pointer_cast<ISocket>( static_cast<BSDSocket&>(*this).ptr<BSDSocket>() );
+		return sc<BSDSocket&>(*this).ptr<BSDSocket>();
 	}
 
 	sptr<const ISocket> BSDSocket::to_ptr() const
 	{
-		return static_pointer_cast<const ISocket>( static_cast<const BSDSocket&>(*this).ptr<const BSDSocket>() );
+		return sc<const BSDSocket&>(*this).ptr<const BSDSocket>();
 	}
 
 #endif

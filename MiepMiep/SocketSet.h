@@ -39,6 +39,8 @@ namespace MiepMiep
 		MM_TS void rebuildSocketArrayIfNecessary();
 
 	private:
+		bool m_IsDirty;
+		bool m_Closing;
 		mutable mutex m_SetMutex;
 
 	#if MM_SDLSOCKET

@@ -41,10 +41,10 @@ namespace MiepMiep
 					return;
 				}
 
-				// Safe to obtain ref to userVar as we have acquired variables the lock.
+				// Safe to obtain ref to userVar as we have acquired the variables-lock.
 				m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
 				{
-					l->onOwnerChanged( *m_Network, *m_Endpoint, m_NewOwner.get(), *userVar );
+					l->onOwnerChanged( *m_Network, *m_Endpoint, *userVar, m_NewOwner.get() );
 				});
 
 				m_Group->unlockVariablesMutex();
@@ -65,8 +65,8 @@ namespace MiepMiep
 	// ID, bit idx, Endpoint (as string)
 	MM_RPC(changeOwner, u32, byte, string)
 	{
-		auto& nw  = static_cast<Network&>(network);
-		sptr<Link> l = nw.getLink( static_cast<const Endpoint&>(*etp) );
+		auto& nw  = sc<Network&>(network);
+		sptr<Link> l = nw.getLink( sc<const Endpoint&>(*etp) );
 		if ( !l )
 		{
 			LOG( "Did not handle change owner RPC as link was not found." );

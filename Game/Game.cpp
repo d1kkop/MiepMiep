@@ -37,7 +37,7 @@ namespace MyGame
 
 	bool Game::init()
 	{
-		m_Network = INetwork::create();
+		m_Network = INetwork::create( true );
 
 		m_Network->addConnectionListener( this );
 		
@@ -49,12 +49,14 @@ namespace MyGame
 
 		auto masterEtp = IEndpoint::resolve( "localhost", 27002 );
 
+		cout << masterEtp->toIpAndPort() << endl;
+
 		MetaData md;
 
-		for ( i32 i=0; i<1000; i++ )
-		{
-			md[ to_string(i) ] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string(i);
-		}
+		//for ( i32 i=0; i<1000; i++ )
+		//{
+		//	md[ to_string(i) ] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string(i);
+		//}
 
 		m_Network->registerServer( *masterEtp, "myFirstGame", "my first pw", md );
 		m_Network->joinServer( *masterEtp, "myFirstGame" );

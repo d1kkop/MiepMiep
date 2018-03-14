@@ -19,36 +19,47 @@ namespace MiepMiep
 
 	void IPacketHandler::handle(const sptr<const class ISocket>& sock)
 	{
-		auto sThis = ptr<IPacketHandler>();
-		m_Network.get<JobSystem>()->addJob( [=]()
-		{
-			byte buff[MM_MAX_RECVSIZE];
-			u32 rawSize = MM_MAX_RECVSIZE; // buff size in
-			Endpoint etp;
-			i32 err;
-			ERecvResult res = sock->recv( buff, rawSize, etp, &err );
+		// Do the inital recv immediately (not in a seperate thread) because
+		// doing it in a seperate thread will make 'select' return immediately again as the data
+		// is not yet 'received' (pulled) due to the new (async) job being later with recv than the next
+		// cal to 'select'.
 
-			if ( err != 0 )
+		byte* buff = reserveN<byte>(MM_FL, MM_MAX_RECVSIZE);
+		u32 rawSize = MM_MAX_RECVSIZE; // buff size in
+		Endpoint etp;
+		i32 err;
+		ERecvResult res = sock->recv( buff, rawSize, etp, &err );
+
+	//	LOG( "Received data from.. %s.", etp.toIpAndPort() );
+
+		if ( err != 0 )
+		{
+			LOGW( "Socket recv error: %d.", err );
+			releaseN(buff);
+			return;
+		}
+
+		if ( res == ERecvResult::Succes )
+		{
+			if ( rawSize >= MM_MIN_HDR_SIZE )
 			{
-				LOGW( "Socket recv error: %d.", err );
+				auto sthis = ptr<IPacketHandler>(); // get sptr so that job can safely work with packethandler
+				m_Network.get<JobSystem>()->addJob( [=]()
+				{
+					BinSerializer bs( buff, MM_MAX_RECVSIZE, rawSize, false, true );
+					sthis->handleSpecial( bs, *etp.getCopyDerived() );
+				});
+
+				// passed to thread-job
 				return;
 			}
-
-			if ( res == ERecvResult::Succes )
+			else
 			{
-				if ( rawSize >= MM_MIN_HDR_SIZE )
-				{
-					BinSerializer& bs = PerThreadDataProvider::getSerializer( false );
-					bs.resetTo( buff, rawSize, rawSize );
-					// thi etp is local, go to shared heap object
-					sThis->handleSpecial( bs, *etp.getCopyDerived() );
-				}
-				else
-				{
-					LOGW( "Received packet with less than %d bytes (= Hdr size), namely %d. Packet discarded.", MM_MIN_HDR_SIZE, rawSize );
-				}
+				LOGW( "Received packet with less than %d bytes (= Hdr size), namely %d. Packet discarded.", MM_MIN_HDR_SIZE, rawSize );
 			}
-		} );
+		}
+
+		releaseN(buff);
 	}
 
 
@@ -183,7 +194,7 @@ namespace MiepMiep
 					srIdx++;
 				}			
 			}
-			framgentsOut.emplace_back( const_pointer_cast<const NormalSendPacket>(sp) );
+			framgentsOut.emplace_back( sp );
 		} while (!quit);
 		return true; // jeej
 	}
@@ -247,7 +258,7 @@ namespace MiepMiep
 			curSeq++;
 		}
 
-		return const_pointer_cast<const RecvPacket>( finalPack );
+		return finalPack;
 	}
 
 	bool PacketHelper::isSeqNewer(u32 incoming, u32 having)

@@ -10,6 +10,7 @@ namespace MiepMiep
 	class ISocket;
 	class Network;
 	class Link;
+	class Listener;
 
 	// ------------ Link -----------------------------------------------
 
@@ -18,14 +19,16 @@ namespace MiepMiep
 	public:
 		Link(Network& network);
 		~Link() override;
-		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp, u32* id, const class Listener* originator);
+		MM_TS static sptr<Link> create(Network& network, const IEndpoint& remoteEtp, u32* id, const Listener* originator);
 
 		// These are thread safe because they are set from constructor and never changed afterwards.
 		MM_TS u32 id() const { return m_Id; }
 		MM_TS const IEndpoint& remoteEtp() const { return *m_RemoteEtp; }
 		MM_TS const ISocket& socket() const { return *m_Socket; }
 		MM_TS const Listener* originator() const { return m_Originator.get(); }
+		MM_TS const sptr<const IEndpoint>& remoteEtp2() const;
 		MM_TS const char* ipAndPort() const;
+		MM_TS const char* info() const;
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );

@@ -16,11 +16,11 @@ namespace MiepMiep
 	{
 		scoped_lock lk(m_LinksMapMutex);
 
-		auto etpPtr = etp.to_ptr();
-		if ( m_Links.count( etpPtr ) != 0 ) 
+		auto sEtp = etp.to_ptr();
+		if ( m_Links.count( sEtp ) != 0 ) 
 		{
 			if (wasAdded) *wasAdded = false;
-			return m_Links[etpPtr];
+			return m_Links[sEtp];
 		}
 
 		// create fail
@@ -32,7 +32,7 @@ namespace MiepMiep
 		}
 
 		// insert
-		m_Links[etpPtr] = link;
+		m_Links[sEtp->getCopy()] = link;
 		m_LinksAsArray.emplace_back( link );
 		if ( wasAdded ) *wasAdded = true;
 

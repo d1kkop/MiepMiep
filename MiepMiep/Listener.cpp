@@ -114,7 +114,7 @@ namespace MiepMiep
 		sptr<Link> link = m_Network.getOrAdd<LinkManager>()->getOrAdd( etp, &linkId, this, &added );
 		if ( !link )
 		{
-			LOGW( "Failed to add link to %s.", etp.toIpAndPort().c_str() );
+			LOGW( "Failed to add link to %s.", etp.toIpAndPort() );
 			return;
 		}
 

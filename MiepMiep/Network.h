@@ -128,7 +128,7 @@ namespace MiepMiep
 	template <typename T>
 	Network& toNetwork(T& t) 
 	{ 
-		return static_cast<Network&>(t);
+		return sc<Network&>(t);
 	}
 
 }

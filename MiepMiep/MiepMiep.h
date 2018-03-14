@@ -73,14 +73,14 @@ namespace MiepMiep
 	{
 	};
 
-
+	
 	class MM_DECLSPEC IConnectionListener
 	{
 	public:
 		virtual void onConnectResult( INetwork& network, const IEndpoint& sender, EConnectResult res ) { }
-		virtual void onNewConnection( INetwork& network, const IEndpoint& sender, bool isRelayed ) { }
-		virtual void onDisconnect( INetwork& network, const IEndpoint& sender, EDisconnectReason reason, bool isRelayed ) { }
-		virtual void onOwnerChanged( INetwork& network, const IEndpoint& sender, const IEndpoint* newOwner, NetVar& variable ) { }
+		virtual void onNewConnection( INetwork& network, const IEndpoint& sender, const IEndpoint* relayedEtp ) { }
+		virtual void onDisconnect( INetwork& network, const IEndpoint& sender, EDisconnectReason reason, const IEndpoint* relayedEtp ) { }
+		virtual void onOwnerChanged( INetwork& network, const IEndpoint& sender, NetVar& variable, const IEndpoint* newOwner ) { }
 	};
 
 
@@ -88,10 +88,12 @@ namespace MiepMiep
 	class MM_DECLSPEC IEndpoint
 	{
 	public:
+		MM_TS static sptr<IEndpoint> createEmpty();
 		MM_TS static sptr<IEndpoint> resolve( const std::string& name, u16 port, i32* errOut=nullptr );
 		MM_TS static sptr<IEndpoint> fromIpAndPort( const std::string& ipAndPort, i32* errOut=nullptr );
 
-		MM_TS virtual std::string toIpAndPort() const = 0;
+		/*	Returns a 'static thread_local' buffer. DO NOT delete the returned buffer. */
+		MM_TS virtual const char* toIpAndPort() const = 0;
 		MM_TS virtual sptr<IEndpoint> getCopy() const = 0;
 
 		MM_TS bool operator==( const IEndpoint& other ) const;
@@ -103,6 +105,7 @@ namespace MiepMiep
 		MM_TS virtual bool read(class BinSerializer& bs) = 0;
 
 		MM_TS sptr<IEndpoint> to_ptr();
+		MM_TS sptr<IEndpoint> to_ptr_nc() const;
 		MM_TS sptr<const IEndpoint> to_ptr() const;
 	};
 

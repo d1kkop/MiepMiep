@@ -24,7 +24,7 @@ inline void rpc_tuple_##name( INetwork& network, const IEndpoint* etp, const std
 struct name { \
 inline static const char* rpcName() { return #name; } \
 template <typename ...Args> \
-inline static void rpc( Args... args, INetwork& network, BinSerializer& bs, bool localCall )\
+inline static void rpc(Args... args, INetwork& network, BinSerializer& bs, bool localCall )\
 { \
 	std::tuple<Args...> tp(args...); \
 	MiepMiep::serialize<0, std::tuple<Args...>, Args...>( bs, true, tp ); \

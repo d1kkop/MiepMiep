@@ -126,7 +126,7 @@ namespace MiepMiep
 
 	MM_TS void ReliableRecv::handlePacket(const RecvPacket& pack)
 	{
-		EPacketType pt = static_cast<EPacketType>( pack.m_Id );
+		EPacketType pt = sc<EPacketType>( pack.m_Id );
 		switch (pt)
 		{
 		case EPacketType::RPC:
@@ -158,7 +158,7 @@ namespace MiepMiep
 			return;
 		}
 		
-		auto rpcFunc = reinterpret_cast<RpcFunc>( rpcAddress );
+		auto rpcFunc = rc<RpcFunc>( rpcAddress );
 		bool isSystemCall = pack.m_Flags & MM_SYSTEM_BIT;
 		if ( isSystemCall || m_Link.m_Network.allowAsyncCallbacks() ) // call async always
 		{

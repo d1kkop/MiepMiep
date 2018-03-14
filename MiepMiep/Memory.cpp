@@ -31,7 +31,7 @@ namespace MiepMiep
 		for ( auto& kvp : m_Memory )
 		{
 			MemoryFootprint& mf = kvp.second;
-			Platform::log(ELogType::Message, "", 0, "Leak at: %s, line %d, size %d.", mf.func.c_str(), mf.line, mf.size);
+			Platform::log(ELogType::Message, "", 0, "!!** Leak at -->: %s, line %d, size %d. **!!", mf.func.c_str(), mf.line, mf.size);
 		}
 		if ( m_Memory.empty() )
 		{
@@ -43,7 +43,7 @@ namespace MiepMiep
 	ITraceable* Memory::trace(ITraceable* p, u64 size, char* fname, u64 line)
 	{
 		p->m_Ptr = sptr<ITraceable>( p );
-		trace( static_cast<void*>( p ), size, fname, line );
+		trace( sc<void*>( p ), size, fname, line );
 		return p;
 	}
 
@@ -66,7 +66,7 @@ namespace MiepMiep
 
 	void Memory::untrace(ITraceable* p)
 	{
-		bool removed = untrace( static_cast<void*>( p ) );
+		bool removed = untrace( sc<void*>( p ) );
 	//	assert( removed ); For stack allocated managed objects, this does not holds.
 	}
 

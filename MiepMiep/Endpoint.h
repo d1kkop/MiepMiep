@@ -11,11 +11,12 @@ namespace MiepMiep
 	class Endpoint: public IEndpoint, public ITraceable
 	{
 	public:
+		MM_TS static sptr<Endpoint> createEmpty();
 		MM_TS static sptr<Endpoint> resolve( const string& name, u16 port, i32* errOut=nullptr );
 		MM_TS static sptr<Endpoint> fromIpAndPort( const string& ipAndPort, i32* errOut=nullptr );
 
 		// IEndpoint
-		MM_TS string toIpAndPort() const override;
+		MM_TS const char* toIpAndPort() const override;
 		MM_TS sptr<IEndpoint> getCopy() const override;
 		MM_TS sptr<Endpoint> getCopyDerived() const;
 
@@ -34,7 +35,6 @@ namespace MiepMiep
 		byte* getLowLevelAddr();
 		const byte* getLowLevelAddr() const;
 		u32 getLowLevelAddrSize() const;
-		u32 getLowLevelWholeSize() const;
 
 
 		// STL compare less

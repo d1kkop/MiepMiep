@@ -1,5 +1,6 @@
 #include "NetworkListeners.h"
 #include "Endpoint.h"
+#include "Network.h"
 #include <algorithm>
 
 
@@ -14,8 +15,18 @@ namespace MiepMiep
 	{
 		event->m_NetworkListener = this;
 		event->m_Network = &m_Network;
-		scoped_lock lk(m_EventsMutex);
-		m_Events.emplace_back( event );
+
+		// In this case, immediately async call callback, otherwise push in list and have some other thread
+		// consume the events.
+		if ( m_Network.allowAsyncCallbacks() || event->m_IsSystemEvent )
+		{
+			event->process();
+		}
+		else
+		{
+			scoped_lock lk(m_EventsMutex);
+			m_Events.emplace_back( event );
+		}
 	}
 
 	MM_TS void NetworkListeners::processAll()

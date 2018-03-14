@@ -40,7 +40,7 @@ namespace MiepMiep
 		}
 	}
 
-	sptr<Link> Link::create(Network& network, const IEndpoint& other, u32* id, const Listener* originator)
+	sptr<Link> Link::create(Network& network, const IEndpoint& remoteEtp, u32* id, const Listener* originator)
 	{
 		assert( !(id || originator) || (id && originator) );
 
@@ -69,7 +69,7 @@ namespace MiepMiep
 		}
 
 		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
-		link->m_RemoteEtp = other.getCopy();
+		link->m_RemoteEtp = remoteEtp.getCopy();
 		if ( id ) // Created from 'listen'
 		{
 			link->m_Id = *id;
@@ -84,13 +84,25 @@ namespace MiepMiep
 			link->m_Network.getOrAdd<SocketSetManager>()->addSocket( link->m_Socket, link->to_ptr() );
 		}
 
-		LOG( "Created new link to %s with id %d.", link->m_RemoteEtp->toIpAndPort().c_str(), link->m_Id );
+		LOG( "Created new link to %s.", link->info() );
 		return link;
+	}
+
+	MM_TS const sptr<const IEndpoint>& Link::remoteEtp2() const
+	{
+		return m_RemoteEtp;
 	}
 
 	MM_TS const char* Link::ipAndPort() const
 	{
-		return m_RemoteEtp->toIpAndPort().c_str();
+		return m_RemoteEtp->toIpAndPort();
+	}
+
+	MM_TS const char* Link::info() const
+	{
+		static thread_local char buff[128];
+		Platform::formatPrint(buff, sizeof(buff), "%s (Id: %d)", ipAndPort(), m_Id);
+		return buff;
 	}
 
 	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
@@ -171,7 +183,10 @@ namespace MiepMiep
 		}
 
 		i32 err = 0;
-		ESendResult res = m_Socket->send( static_cast<const Endpoint&>( *m_RemoteEtp ), data, length, &err );
+		ESendResult res = m_Socket->send( sc<const Endpoint&>( *m_RemoteEtp ), data, length, &err );
+	
+	//	thread_local static u32 kt=0;	
+	//	LOG( "Send ... %d", kt++ );
 
 		if ( err != 0 && ESendResult::Error==res ) /* ignore err if socket gets closed */
 		{

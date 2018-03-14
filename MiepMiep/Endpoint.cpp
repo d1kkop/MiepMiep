@@ -8,80 +8,88 @@ namespace MiepMiep
 {
 	// --- IEndpoint ---------------------------------------------------------------------------------------
 
+	sptr<IEndpoint> IEndpoint::createEmpty()
+	{
+		return Endpoint::createEmpty();
+	}
+
 	sptr<IEndpoint> IEndpoint::resolve( const string& name, u16 port, i32* errOut )
 	{
-		sptr<Endpoint> etp = Endpoint::resolve( name, port, errOut );
-		return etp;
+		return Endpoint::resolve( name, port, errOut );
 	}
 
 	sptr<IEndpoint> IEndpoint::fromIpAndPort( const string& ipAndPort, i32* errOut )
 	{
-		sptr<Endpoint> etp = Endpoint::fromIpAndPort( ipAndPort );
-		return etp;
+		return Endpoint::fromIpAndPort( ipAndPort );
 	}
 
 	sptr<IEndpoint> Endpoint::getCopy() const
 	{
-		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
-		Platform::copy(etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
-		return static_pointer_cast<IEndpoint>( etp );
+		return getCopyDerived();
 	}
 
 	MM_TS sptr<Endpoint> Endpoint::getCopyDerived() const
 	{
-		return static_pointer_cast<Endpoint>( getCopy() );
+		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
+		Platform::copy(etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
+		return etp;
 	}
 
 	MM_TS bool Endpoint::write(class BinSerializer& bs) const
 	{
-		u16 port = getPortNetworkOrder();
 		if (!bs.write(getLowLevelAddr(), getLowLevelAddrSize())) return false;
-		if (!bs.write(rp<const byte*>(&port), 2)) return false;
 		return true;
 	}
 
 	MM_TS bool Endpoint::read(class BinSerializer& bs)
 	{
-		u16 port = 0;
 		if (!bs.read(getLowLevelAddr(), getLowLevelAddrSize() ) ) return false;
-		if (!bs.read(rp<byte*>(&port), 2)) return false;
-		setPortFromNetworkOrder( port );
 		return true;
 	}
 
 	bool IEndpoint::operator==(const IEndpoint& other) const
 	{
-		const Endpoint& a = static_cast<const Endpoint&>(*this);
-		const Endpoint& b = static_cast<const Endpoint&>(other);
+		const Endpoint& a = sc<const Endpoint&>(*this);
+		const Endpoint& b = sc<const Endpoint&>(other);
 		return a==b;
 	}
 
 	bool IEndpoint_less::operator()( const IEndpoint& left, const IEndpoint& right ) const
 	{
-		const Endpoint& a = static_cast<const Endpoint&>(left);
-		const Endpoint& b = static_cast<const Endpoint&>(right);
+		const Endpoint& a = sc<const Endpoint&>(left);
+		const Endpoint& b = sc<const Endpoint&>(right);
 		return Endpoint::compareLess(a, b) < 0;
 	}
 
 	bool IEndpoint_less::operator()( const sptr<const IEndpoint>& left, const sptr<const IEndpoint>& right ) const
 	{
-		const Endpoint& a = static_cast<const Endpoint&>(*left);
-		const Endpoint& b = static_cast<const Endpoint&>(*right);
+		const Endpoint& a = sc<const Endpoint&>(*left);
+		const Endpoint& b = sc<const Endpoint&>(*right);
 		return Endpoint::compareLess(a, b) < 0;
 	}
 
 	sptr<IEndpoint> IEndpoint::to_ptr()
 	{
-		return static_pointer_cast<IEndpoint>( static_cast<Endpoint&>(*this).ptr<Endpoint>() );
+		return sc<Endpoint&>(*this).ptr<Endpoint>();
+	}
+
+	sptr<IEndpoint> IEndpoint::to_ptr_nc() const
+	{
+		return sc<Endpoint&>(const_cast<IEndpoint&>(*this)).ptr<Endpoint>();
 	}
 
 	sptr<const IEndpoint> IEndpoint::to_ptr() const
 	{
-		return static_pointer_cast<const IEndpoint>( static_cast<const Endpoint&>(*this).ptr<const Endpoint>() );
+		return sc<const Endpoint&>(*this).ptr<const Endpoint>();
 	}
 
 
 	// --- Endpoint ---------------------------------------------------------------------------------------
+
+	MM_TS sptr<Endpoint> Endpoint::createEmpty()
+	{
+		return reserve_sp<Endpoint>(MM_FL);
+	}
 
 	sptr<Endpoint> Endpoint::resolve( const string& name, u16 port, i32* errorOut )
 	{
@@ -96,7 +104,6 @@ namespace MiepMiep
 		#elif MM_WIN32SOCKET
 			addrinfo hints;
 			addrinfo *addrInfo = nullptr;
-
 			memset(&hints, 0, sizeof(hints));
 
 			hints.ai_family   = AF_INET;
@@ -122,7 +129,7 @@ namespace MiepMiep
 			for (addrinfo* inf = addrInfo; inf != nullptr; inf = inf->ai_next)
 			{
 				sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
-				memcpy( &etp->m_SockAddr, inf->ai_addr, inf->ai_addrlen );
+				Platform::memCpy( &etp->m_SockAddr, sizeof(etp->m_SockAddr), inf->ai_addr, inf->ai_addrlen );
 				freeaddrinfo(addrInfo);
 				return etp;
 			}
@@ -130,13 +137,13 @@ namespace MiepMiep
 			freeaddrinfo(addrInfo);
 			return nullptr;
 		#endif
+
 		return nullptr;
 	}
 
 	sptr<Endpoint> Endpoint::fromIpAndPort(const string& ipAndPort, i32* errOut)
 	{
 		if ( errOut ) *errOut = -1;
-
 		for ( u64 i=ipAndPort.length(); i!=0; i-- )
 		{
 			if ( ipAndPort[i] == ':' )
@@ -152,7 +159,7 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	string Endpoint::toIpAndPort() const
+	const char* Endpoint::toIpAndPort() const
 	{
 		#if MM_SDLSOCKET
 			IPaddress iph;
@@ -170,9 +177,18 @@ namespace MiepMiep
 		#endif
 
 		#if MM_WIN32SOCKET
-			char ipBuff[128] = { 0 };
-			inet_ntop(m_SockAddr.si_family, (PVOID)&m_SockAddr.Ipv4, ipBuff, 128);
-			return string(ipBuff) + ":" + to_string(getPortHostOrder());
+			static thread_local char ipBuff[64] = { 0 };
+			if ( m_SockAddr.si_family == AF_INET )
+			{
+				inet_ntop(m_SockAddr.si_family, (PVOID)&m_SockAddr.Ipv4.sin_addr.s_addr, ipBuff, sizeof(ipBuff));
+			}
+			else
+			{
+				inet_ntop(m_SockAddr.si_family, (PVOID)&m_SockAddr.Ipv6.sin6_addr, ipBuff, sizeof(ipBuff));
+			}
+			static thread_local char ipAndPort[64] = { 0 };
+			Platform::formatPrint(ipAndPort, sizeof(ipAndPort), "%s:%d", ipBuff, getPortHostOrder());
+			return ipAndPort;
 		#endif
 
 		return "";
@@ -193,15 +209,8 @@ namespace MiepMiep
 		#if MM_SDLSOCKET
 			return m_IpAddress.port;
 		#elif MM_WIN32SOCKET
-			if ( m_SockAddr.si_family == AF_INET )
-			{
-				return m_SockAddr.Ipv4.sin_port;
-			}
-			else
-			{
-				assert ( m_SockAddr.si_family == AF_INET6 );
-				return m_SockAddr.Ipv6.sin6_port;
-			}
+			// How I understand it, it doesnt matter which one is picked, its all in a union and equally aligned. So pick one.
+			return m_SockAddr.Ipv4.sin_port;
 		#endif
 		return -1;
 	}
@@ -211,15 +220,7 @@ namespace MiepMiep
 		#if MM_SDLSOCKET
 			return &m_IpAddress;
 		#elif MM_WIN32SOCKET
-			if ( m_SockAddr.si_family == AF_INET )
-			{
-				return rp<byte*>( &m_SockAddr.Ipv4.sin_addr.S_un.S_un_b.s_b1 );
-			}
-			else
-			{
-				assert( m_SockAddr.si_family == AF_INET6 );
-				return rp<byte*>( m_SockAddr.Ipv6.sin6_addr.u.Byte );
-			}
+			return rc<byte*>(&m_SockAddr);
 		#endif
 		assert(0);
 		return nullptr;
@@ -236,27 +237,8 @@ namespace MiepMiep
 		#if MM_SDLSOCKET
 			return sizeof(m_IpAddress);
 		#elif MM_WIN32SOCKET
-			if ( m_SockAddr.si_family == AF_INET )
-			{
-				return sizeof( m_SockAddr.Ipv4.sin_addr );
-			}
-			else
-			{
-				assert( m_SockAddr.si_family == AF_INET6 );
-				return sizeof( m_SockAddr.Ipv6.sin6_addr );
-			}
+			return sizeof(m_SockAddr);
 		#endif
-		assert(0);
-		return -1;
-	}
-
-	u32 Endpoint::getLowLevelWholeSize() const
-	{
-	#if MM_SDLSOCKET
-		return sizeof(m_IpAddress);
-	#elif MM_WIN32SOCKET
-		return sizeof(m_SockAddr);
-	#endif
 		assert(0);
 		return -1;
 	}
@@ -269,21 +251,14 @@ namespace MiepMiep
 	void Endpoint::setPortFromNetworkOrder(u16 port)
 	{
 	#if MM_SDLSOCKET
-		return sizeof(m_IpAddress);
+		m_IpAddress.port = port;
+		return;
 	#elif MM_WIN32SOCKET
-		if ( m_SockAddr.si_family == AF_INET )
-		{
-			m_SockAddr.Ipv4.sin_port = port;
-			return;
-		}
-		else
-		{
-			assert( m_SockAddr.si_family == AF_INET6 );
-			m_SockAddr.Ipv6.sin6_port = port;
-			return;
-		}
+		m_SockAddr.Ipv4.sin_port = port;
+		return;
 	#endif
 		assert(0);
+		return;
 	}
 
 }

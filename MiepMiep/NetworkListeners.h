@@ -101,12 +101,16 @@ namespace MiepMiep
 	{
 		IEvent(): 
 			m_NetworkListener(nullptr),
-			m_Network(nullptr) { }
+			m_Network(nullptr),
+			m_IsSystemEvent(false)
+		{
+		}
 
 		virtual void process() = 0;
 
 		NetworkListeners* m_NetworkListener;
 		Network* m_Network;
+		bool m_IsSystemEvent;
 	};
 
 	struct EventBase : IEvent

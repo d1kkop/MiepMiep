@@ -1,42 +1,9 @@
-Tue Mar 13 01:05:56 2018 ------- New Session --------
-Tue Mar 13 01:05:56 2018 ----------------------------
-Tue Mar 13 01:05:56 2018 Created new link to 2.0.105.122:27002 with id 5037.
-Tue Mar 13 01:05:56 2018 Created new link to 2.0.235.38:60198 with id 5037.
-Tue Mar 13 01:05:56 2018 Received reliable seq: 0
-Tue Mar 13 01:05:56 2018 Received reliable seq: 1
-Tue Mar 13 01:05:56 2018 Received reliable seq: 2
-Tue Mar 13 01:05:56 2018 Received reliable seq: 3
-Tue Mar 13 01:05:56 2018 Received reliable seq: 4
-Tue Mar 13 01:05:56 2018 Received reliable seq: 5
-Tue Mar 13 01:05:56 2018 Received reliable seq: 6
-Tue Mar 13 01:05:56 2018 Received reliable seq: 7
-Tue Mar 13 01:05:56 2018 Received reliable seq: 8
-Tue Mar 13 01:05:56 2018 Received reliable seq: 9
-Tue Mar 13 01:05:56 2018 Received reliable seq: 10
-Tue Mar 13 01:05:56 2018 Received reliable seq: 11
-Tue Mar 13 01:05:56 2018 Received reliable seq: 12
-Tue Mar 13 01:05:56 2018 Received reliable seq: 13
-Tue Mar 13 01:05:56 2018 Received reliable seq: 14
-Tue Mar 13 01:05:56 2018 Received reliable seq: 15
-Tue Mar 13 01:05:56 2018 Received reliable seq: 16
-Tue Mar 13 01:05:56 2018 Received reliable seq: 17
-Tue Mar 13 01:05:56 2018 Received reliable seq: 18
-Tue Mar 13 01:05:56 2018 Received reliable seq: 19
-Tue Mar 13 01:05:56 2018 Received reliable seq: 20
-Tue Mar 13 01:05:56 2018 Received reliable seq: 21
-Tue Mar 13 01:05:56 2018 Received reliable seq: 22
-Tue Mar 13 01:05:56 2018 Received reliable seq: 23
-Tue Mar 13 01:05:56 2018 Received reliable seq: 24
-Tue Mar 13 01:05:56 2018 Received reliable seq: 25
-Tue Mar 13 01:05:56 2018 Received reliable seq: 26
-Tue Mar 13 01:05:56 2018 Received reliable seq: 27
-Tue Mar 13 01:05:56 2018 Received reliable seq: 28
-Tue Mar 13 01:05:56 2018 Received reliable seq: 29
-Tue Mar 13 01:05:56 2018 Received reliable seq: 30
-Tue Mar 13 01:05:56 2018 Received reliable seq: 31
-Tue Mar 13 01:05:56 2018 Received reliable seq: 32
-Tue Mar 13 01:05:56 2018 Received reliable seq: 33
-Tue Mar 13 01:06:02 2018 Received reliable seq: 0
-Tue Mar 13 01:06:10 2018 Link to 2.0.105.122:27002 (id 5037) accepted.
-Tue Mar 13 01:06:16 2018 Stop listen was called. Old listen port was 65535. 
-Tue Mar 13 01:06:16 2018 Leak at: MiepMiep::BinSerializer::growTo, line 203, size 69340.
+Wed Mar 14 01:21:27 2018 ------- New Session --------
+Wed Mar 14 01:21:27 2018 ----------------------------
+Wed Mar 14 01:21:27 2018 Created new link to 127.0.0.1:27002 (Id: 28080).
+Wed Mar 14 01:21:27 2018 Created new link to 127.0.0.1:54791 (Id: 28080).
+Wed Mar 14 01:21:27 2018 Received reliable seq: 0
+Wed Mar 14 01:21:27 2018 Received reliable seq: 0
+Wed Mar 14 01:21:38 2018 Link to 127.0.0.1:27002 (Id: 28080) accepted.
+Wed Mar 14 01:21:49 2018 Stop listen was called. Old listen port was 65535. 
+Wed Mar 14 01:21:49 2018 No memory leaks detected.

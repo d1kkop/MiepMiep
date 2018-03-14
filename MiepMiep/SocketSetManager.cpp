@@ -64,7 +64,7 @@ namespace MiepMiep
 
 			if ( err != 0 )
 			{
-				LOGW( "Listen on socket set returned error %d", err );
+				LOGW( "Listen on socket set returned error %d.", err );
 				continue;
 			}
 		}

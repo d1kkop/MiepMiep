@@ -11,13 +11,15 @@ namespace MiepMiep
 	// ------------ BinSerializer ------------------------------------------------------------------------------
 
 	BinSerializer::BinSerializer():
-		m_Owns(false),
-		m_OrigPtr(nullptr),
-		m_DataPtr(nullptr),
-		m_OrigSize(0),
-		m_MaxSize(0)
+		m_DataPtr(nullptr)
 	{
 		reset();
+	}
+
+	BinSerializer::BinSerializer(const byte* streamIn, u32 buffSize, u32 writePos, bool copyData, bool ownsData):
+		m_DataPtr(nullptr)
+	{
+		resetTo(streamIn, buffSize, writePos, copyData, ownsData);
 	}
 
 	BinSerializer::BinSerializer(const BinSerializer& other):
@@ -33,7 +35,6 @@ namespace MiepMiep
 
 	BinSerializer& BinSerializer::operator=(const BinSerializer& other)
 	{
-		reset();
 		write(other.data(), other.length());
 		return *this;
 	}
@@ -41,40 +42,48 @@ namespace MiepMiep
 	BinSerializer& BinSerializer::operator=(BinSerializer&& other) noexcept
 	{
 		Platform::copy( this, &other, 1 );
-		other.m_OrigPtr = nullptr;
+		other.m_DataPtr = nullptr;
 		return *this;
 	}
 
 	BinSerializer::~BinSerializer()
 	{
 		reset();
-		Memory::doDeleteN(m_DataPtr);
 	}
 
 	void BinSerializer::reset()
 	{
-		if (!m_Owns) 
+		if ( m_Owns )
 		{
-			m_MaxSize = m_OrigSize;
-			m_DataPtr = m_OrigPtr;
+			releaseN(m_DataPtr);
 		}
+		m_DataPtr  = nullptr;
 		m_WritePos = 0;
 		m_ReadPos  = 0;
+		m_MaxSize  = 0;
 		m_Owns = true;
 	}
 
-	void BinSerializer::resetTo(const byte* streamIn, u32 buffSize, u32 writePos)
+	void BinSerializer::resetTo(const byte* streamIn, u32 buffSize, u32 writePos, bool copyData, bool ownsData)
 	{
-		if ( m_Owns )
+		if ( m_Owns && !copyData )
 		{
-			m_OrigPtr  = m_DataPtr;
-			m_OrigSize = m_MaxSize;
+			Memory::doDeleteN(m_DataPtr);
+			m_DataPtr = nullptr;
 		}
-		m_DataPtr  = scc<byte*>( streamIn );
-		m_WritePos = writePos;
-		m_MaxSize = buffSize;
+		if ( !copyData )
+		{
+			m_DataPtr  = scc<byte*>( streamIn );
+			m_WritePos = writePos;
+			m_MaxSize  = buffSize;
+		}
+		else
+		{
+			Platform::memCpy(m_DataPtr, buffSize, streamIn, buffSize);
+			m_WritePos = writePos;
+		}
+		m_Owns = ownsData;
 		m_ReadPos = 0;
-		m_Owns = false;
 		assert(m_WritePos>=0 && m_WritePos<=m_MaxSize && m_DataPtr!=nullptr);
 	}
 
@@ -114,7 +123,7 @@ namespace MiepMiep
 	{
 		growTo(m_WritePos + 2);
 		if ( m_WritePos + 2 > m_MaxSize ) return false;
-		*rp<u16*>(pr_data() + m_WritePos) = Util::htons(b);
+		*rc<u16*>(pr_data() + m_WritePos) = Util::htons(b);
 		m_WritePos += 2;
 		return true;
 	}
@@ -123,7 +132,7 @@ namespace MiepMiep
 	{
 		growTo(m_WritePos + 4);
 		if ( m_WritePos + 4 > m_MaxSize ) return false;
-		*rp<u32*>(pr_data() + m_WritePos) = Util::htonl(b);
+		*rc<u32*>(pr_data() + m_WritePos) = Util::htonl(b);
 		m_WritePos += 4;
 		return true;
 	}
@@ -132,7 +141,7 @@ namespace MiepMiep
 	{
 		growTo(m_WritePos + 8);
 		if ( m_WritePos + 8 > m_MaxSize ) return false;
-		*rp<u64*>(pr_data() + m_WritePos) = Util::htonll(b);
+		*rc<u64*>(pr_data() + m_WritePos) = Util::htonll(b);
 		m_WritePos += 8;
 		return true;
 	}
@@ -147,7 +156,7 @@ namespace MiepMiep
 	bool BinSerializer::read16(u16& b)
 	{
 		if ( m_ReadPos + 2 > m_WritePos ) return false;
-		b = Util::ntohs(*rp<u16*>(pr_data() + m_ReadPos));
+		b = Util::ntohs(*rc<u16*>(pr_data() + m_ReadPos));
 		m_ReadPos += 2;
 		return true;
 	}
@@ -155,7 +164,7 @@ namespace MiepMiep
 	bool BinSerializer::read32(u32& b)
 	{
 		if ( m_ReadPos + 4 > m_WritePos ) return false;
-		b = Util::ntohl(*rp<u32*>(pr_data() + m_ReadPos));
+		b = Util::ntohl(*rc<u32*>(pr_data() + m_ReadPos));
 		m_ReadPos += 4;
 		return true;
 	}
@@ -163,7 +172,7 @@ namespace MiepMiep
 	bool BinSerializer::read64(u64& b)
 	{
 		if ( m_ReadPos + 8 > m_WritePos ) return false;
-		b = Util::ntohll(*rp<u64*>(pr_data() + m_ReadPos));
+		b = Util::ntohll(*rc<u64*>(pr_data() + m_ReadPos));
 		m_ReadPos += 8;
 		return true;
 	}
@@ -225,7 +234,6 @@ namespace MiepMiep
 	void BinSerializer::growTo(u32 requiredSize)
 	{
 		if (!m_Owns || requiredSize <= m_MaxSize) return;
-		assert(requiredSize > 0);
 		m_MaxSize = u32(((requiredSize * 1.2f)/16) * 16 + 16);
 		assert(m_MaxSize > requiredSize);
 		byte* pNew = reserveN<byte>(MM_FL, m_MaxSize);
@@ -249,6 +257,17 @@ namespace MiepMiep
 	template <> bool BinSerializer::read(i64& b)							{ return read64((u64&)b); }
 	template <> bool BinSerializer::read(BinSerializer& other)				{ return other.write(data(), length()); }
 	template <> bool BinSerializer::read(IEndpoint& b)						{ return b.read(*this); }
+	template <> bool BinSerializer::read(sptr<IEndpoint>& b)
+	{
+		byte avabl;
+		if ( !read(avabl) ) return false;
+		if ( avabl )
+		{
+			b = IEndpoint::createEmpty();
+			return b->read(*this);
+		}
+		return true; // yet empty
+	}
 	template <> bool BinSerializer::read(std::string& b) 
 	{
 		char buff[TempBuffSize];
@@ -287,6 +306,14 @@ namespace MiepMiep
 	template <> bool BinSerializer::write(const i64& b)						{ return write64((i64&)b); }
 	template <> bool BinSerializer::write(const BinSerializer& other)		{ return write(other.data(), other.length()); }
 	template <> bool BinSerializer::write(const IEndpoint& b)				{ return b.write(*this); }
+	template <> bool BinSerializer::write(const sptr<IEndpoint>& b)			{ return write(const_pointer_cast<const IEndpoint>(b)); }
+	template <> bool BinSerializer::write(const sptr<const IEndpoint>& b)
+	{
+		if (!b) return write(false);
+		if (!write(true)) return false;
+		return b->write(*this);
+	}
+
 	template <> bool BinSerializer::write(const std::string& b)
 	{
 		if ( b.length() > TempBuffSize-1 ) return false;
