@@ -1,9 +1,9 @@
-Wed Mar 14 01:21:27 2018 ------- New Session --------
-Wed Mar 14 01:21:27 2018 ----------------------------
-Wed Mar 14 01:21:27 2018 Created new link to 127.0.0.1:27002 (Id: 28080).
-Wed Mar 14 01:21:27 2018 Created new link to 127.0.0.1:54791 (Id: 28080).
-Wed Mar 14 01:21:27 2018 Received reliable seq: 0
-Wed Mar 14 01:21:27 2018 Received reliable seq: 0
-Wed Mar 14 01:21:38 2018 Link to 127.0.0.1:27002 (Id: 28080) accepted.
-Wed Mar 14 01:21:49 2018 Stop listen was called. Old listen port was 65535. 
-Wed Mar 14 01:21:49 2018 No memory leaks detected.
+Wed Mar 14 01:25:45 2018 ------- New Session --------
+Wed Mar 14 01:25:45 2018 ----------------------------
+Wed Mar 14 01:25:45 2018 Created new link to 127.0.0.1:27002 (Id: 28922).
+Wed Mar 14 01:25:45 2018 Created new link to 127.0.0.1:63166 (Id: 28922).
+Wed Mar 14 01:25:45 2018 Received reliable seq: 0
+Wed Mar 14 01:25:45 2018 Received reliable seq: 0
+Wed Mar 14 01:25:45 2018 Link to 127.0.0.1:27002 (Id: 28922) accepted.
+Wed Mar 14 01:25:45 2018 Received reliable seq: 1
+Wed Mar 14 01:25:51 2018 New incoming connection to 127.0.0.1:63166 (Id: 28922).

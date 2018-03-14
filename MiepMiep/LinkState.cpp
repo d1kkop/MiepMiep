@@ -164,7 +164,7 @@ namespace MiepMiep
 		if ( wasAccepted )
 		{
 			link->callRpc<linkStateAccepted>(); // To recipient directly
-		//	nw.callRpc2<linkStateNewConnection, sptr<IEndpoint>>( link->remoteEtp().to_ptr_nc() , false, &link->remoteEtp(), true /*excl*/ ); // To all others except recipient
+			nw.callRpc2<linkStateNewConnection, sptr<IEndpoint>>( link->remoteEtp().to_ptr_nc() , false, &link->remoteEtp(), true /*excl*/ ); // To all others except recipient
 			link->pushEvent<EventNewConnection>( link->remoteEtp().to_ptr_nc() );
 		}
 		else
