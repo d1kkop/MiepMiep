@@ -54,6 +54,8 @@ namespace MiepMiep
 		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
 		MM_TS void removeConnectionListener( const IConnectionListener* listener ) override;
 
+		MM_TS bool isListenerSock( const ISocket& sock ) const;
+
 
 		MM_TS static void clearAllStatics();
 		MM_TS MM_DECLSPEC static void printMemoryLeaks();

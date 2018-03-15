@@ -189,6 +189,21 @@ namespace MiepMiep
 		getOrAdd<NetworkListeners>()->removeListener<IConnectionListener>(listener);
 	}
 
+	MM_TS bool Network::isListenerSock(const ISocket& sock) const
+	{
+		bool bfound = false;
+		forAll<Listener>([&](const Listener& listener)
+		{
+			if ( listener.socket() == sock ) 
+			{
+				bfound = true;
+				return false; // stop iterating
+			}
+			return true; // continue iterating
+		});
+		return bfound;
+	}
+
 	MM_TS void Network::clearAllStatics()
 	{
 		// TODO add more clear statics here

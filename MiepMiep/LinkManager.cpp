@@ -108,7 +108,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS bool LinkManager::forLink(const IAddress* specific, bool exclude, const std::function<void(Link&)>& cb)
+	MM_TS bool LinkManager::forLink(const ISocket& sock, const IAddress* specific, bool exclude, const std::function<void(Link&)>& cb)
 	{
 		bool wasSentAtLeastOnce = false;
 		scoped_lock lk(m_LinksMapMutex);
@@ -116,7 +116,8 @@ namespace MiepMiep
 		{
 			if ( !exclude )
 			{
-				auto linkIt = m_Links2.find( specific->to_ptr() );
+				SocketAddrPair sap( sock, *specific );
+				auto linkIt = m_Links2.find( sap );
 				if ( linkIt != m_Links2.end() ) 
 				{
 					cb ( *linkIt->second );
@@ -127,20 +128,23 @@ namespace MiepMiep
 			{
 				for ( auto& link : m_LinksAsArray )
 				{
-					if ( link->destination() == *specific ) 
+					if ( !(link->socket() == sock || isListenerSocket( sock )) || link->destination() == *specific ) 
 						continue; // skip this one
 					cb ( *link );
+					wasSentAtLeastOnce = true;
 				}
-				wasSentAtLeastOnce = m_Links.size() > 1 || ((!m_Links.empty()) && (*specific != *m_Links.begin()->first));
 			}
 		}
 		else
 		{
 			for ( auto& link : m_LinksAsArray )
+			{
+				if ( !(link->socket() == sock || isListernerSocket( sock )) )
+					continue; 
 				cb ( *link );
-			wasSentAtLeastOnce = !m_LinksAsArray.empty();
+				wasSentAtLeastOnce = true;
+			}
 		}
 		return wasSentAtLeastOnce;
 	}
-
 }

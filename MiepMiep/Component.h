@@ -52,6 +52,7 @@ namespace MiepMiep
 		template <typename T> MM_TS sptr<T> get(u32 idx=0) const;
 		template <typename T> MM_TS u32 count() const;
 		template <typename T> MM_TS bool remove(u32 idx=0);
+		template <typename T, typename CB> MM_TS void forAll(const CB& cb);
 
 	protected:
 		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(u32 idx=0, Args... args);
@@ -107,6 +108,21 @@ namespace MiepMiep
 			return true;
 		}
 		return false;
+	}
+
+	template <typename T, typename CB> 
+	MM_TS void ComponentCollection::forAll(const CB& cb)
+	{
+		rscoped_lock lk(m_ComponentsMutex);
+		auto cIt = m_Components.find( T::compType() );
+		if ( cIt != m_Components.end() )
+		{
+			auto& v = cIt->second;
+			for ( auto& c : v )
+			{
+				cb( *c );
+			}
+		}
 	}
 
 	template <typename T, typename ...Args>
