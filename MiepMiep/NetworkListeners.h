@@ -9,7 +9,7 @@
 namespace MiepMiep
 {
 	struct IEvent;
-
+	class Link;
 
 	// -------- EventListener --------------------------------------------------------------------------------------------
 
@@ -115,9 +115,9 @@ namespace MiepMiep
 
 	struct EventBase : IEvent
 	{
-		EventBase(const ILink& link);
+		EventBase(const Link& link);
 
-		sptr<const ILink> m_Link;
+		sptr<const Link> m_Link;
 	};
 
 }

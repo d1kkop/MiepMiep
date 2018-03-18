@@ -35,20 +35,31 @@ UTESTBEGIN(SocketTest)
 	assert( !sock2->bind( 27001, &err ) && "sock bind" );
 	assert( sock2->isOpen() && !sock2->isBound() ); // should be open but not bound
 
-	// should be rebindable
+	// open new one with reusable address
 	sptr<ISocket> sock3 = ISocket::create();
 	assert( sock3 && "sock create" );
-	assert( sock3->open( IPProto::Ipv4, SocketOptions(), &err ) && "sock open" );
-	assert( sock3->bind( 27001, &err ) && "sock bind" );
+	assert( sock3->open( IPProto::Ipv4, SocketOptions(true), &err ) && "sock open" );
+	assert( sock3->bind( 27002, &err ) && "sock bind" );
 
-	sptr<ISocket> sock4 = ISocket::create();
-	assert( sock4 && "sock create" );
-	assert( sock4->open( IPProto::Ipv4, SocketOptions(), &err ) && "sock open" );
-	assert( sock4->bind( 27005, &err ) && "sock bind" );
-	assert( sock4->isOpen() && sock4->isBound() && "not both bound and open");
+	// should be rebindable
+	for ( auto i=0; i<5; i++ )
+	{
+		sptr<ISocket> sock4 = ISocket::create();
+		assert( sock4 && "sock create" );
+		assert( sock4->open( IPProto::Ipv4, SocketOptions(true), &err ) && "sock open" );
+		assert( sock4->bind( 27002, &err ) && "sock bind" );
+		assert( sock4->isOpen() && sock4->isBound() && "not both bound and open");
+		sock4->close();
+	}
 
-	sock4->close();
-	assert( !sock4->isOpen() && !sock4->isBound() && "socket should be closed" );
+	sptr<ISocket> sock5 = ISocket::create();
+	assert(sock5 && "sock create");
+	assert(sock5->open(IPProto::Ipv4, SocketOptions(true), &err) && "sock open");
+	assert(sock5->bind(27003, &err) && "sock bind");
+	assert(sock5->isOpen() && sock5->isBound() && "not both bound and open");
+	sock5->close();
+
+	assert( !sock5->isOpen() && !sock5->isBound() && "socket should be closed" );
 	return true;
 }
 UNITTESTEND(SocketTest)
@@ -275,7 +286,7 @@ UTESTBEGIN(RPCBigTest)
 {
 	BinSerializer bs;
 
-	for (u32 i = 0; i < 100000 ; i++)
+	for (u32 i = 0; i < 10000 ; i++)
 	{
 		g_md[ std::to_string(i) ] = " lalalal this is metadata johoeeeee with value: " + std::to_string(i);
 	}
@@ -291,13 +302,28 @@ UTESTBEGIN(RPCBigTest)
 	bs2.read(mdRead);
 	assert( mdRead == g_md );
 
-	sptr<INetwork> nw  = INetwork::create();
-	bool badded;
-	sptr<Link> link = sc<Network&>(*nw).getOrAdd<LinkManager>()->getOrAdd( SocketAddrPair( nullptr, *IAddress::resolve("localhost", 12203) ), nullptr, nullptr, &badded );
+	sptr<INetwork> nw = INetwork::create();
+	sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( *IAddress::resolve("localhost", 12203) );
 	bs2.setRead(0);
-//	ILink* iLink = link.get();
-//	rpc_dsr_MyRpcBigTest( *nw, *iLink, bs2 );
+	rpc_dsr_MyRpcBigTest( *nw, (ILink&) (Link&)*link, bs2 );
 
 	return true;
 }
 UNITTESTEND(RPCBigTest)
+
+
+UTESTBEGIN(AutoChatServerAndClient)
+{
+	sptr<INetwork> nw = INetwork::create();
+	
+	nw->startListen( 27001, "lala2");
+
+	nw->registerServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+
+	return true;
+}
+UNITTESTEND(AutoChatServerAndClient)

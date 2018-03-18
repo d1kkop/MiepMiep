@@ -37,6 +37,7 @@ namespace MiepMiep
 	class IAddress;
 	class ILink;
 	class INetwork;
+	class ISender;
 	class BinSerializer;
 	class IDeliveryTrace;
 	class IConnectionListener;
@@ -51,7 +52,7 @@ namespace MiepMiep
 	enum class ESendCallResult;
 	enum class EListenCallResult;
 	enum class EJoinServerCallResult;
-	enum class ERegisterServerCallResult;
+	enum class ECreateGroupCallResult;
 
 	using MetaData = std::map<std::string, std::string>;
 	template <typename T> using sptr = std::shared_ptr<T>;
@@ -65,7 +66,7 @@ namespace MiepMiep
 
 	// ---- !! FOR INTERNAL USE ONLY !! ------
 	MM_TS MM_DECLSPEC extern BinSerializer& priv_get_thread_serializer();
-	MM_TS MM_DECLSPEC extern ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& bs, const IAddress* specific, bool exclude, bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace); 
-	MM_TS MM_DECLSPEC extern void  priv_create_group(INetwork& nw, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace);
+	MM_TS MM_DECLSPEC extern ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& bs, const IAddress* specific, bool exclude, bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace, const ISender* sender); 
+	MM_TS MM_DECLSPEC extern ECreateGroupCallResult priv_create_group(INetwork& nw, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace, const ISender* sender);
 	MM_TS MM_DECLSPEC extern void* priv_get_rpc_func(const std::string& name);
 }

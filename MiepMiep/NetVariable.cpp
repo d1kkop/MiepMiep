@@ -8,6 +8,7 @@
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
 #include "Endpoint.h"
+#include "Socket.h"
 #include <cassert>
 #include <algorithm>
 
@@ -18,10 +19,10 @@ namespace MiepMiep
 
 	struct EventOwnerChanged : EventBase
 	{
-		EventOwnerChanged(const ILink& link, const IAddress* newOwner, const Group& group, byte varIdx):
+		EventOwnerChanged(const Link& link, const IAddress* newOwner, const Group& group, byte varIdx):
 			EventBase(link),
 			m_NewOwner( newOwner ? newOwner->to_ptr() : nullptr ),
-			m_Group(group.to_ptr()),
+			m_Group(group.ptr<Group>()),
 			m_VarBit(varIdx)
 		{
 		}
@@ -79,7 +80,7 @@ namespace MiepMiep
 		const string& ipAndPort = get<2>(tp);
 		if ( ipAndPort.empty() ) // we become owner
 		{
-			g->setNewOwnership( bit, nullptr );
+			g->setNewOwnership( bit, nullptr, &l.socket() );
 			l.pushEvent<EventOwnerChanged, const IAddress*, Group&, byte&>( nullptr, *g,  bit );
 		}
 		else
@@ -88,7 +89,7 @@ namespace MiepMiep
 			sptr<IAddress> destination = IAddress::fromIpAndPort( ipAndPort, &err );
 			if ( destination && err == 0 )
 			{
-				g->setNewOwnership( bit, destination.get() );
+				g->setNewOwnership( bit, destination.get(), nullptr );
 				l.pushEvent<EventOwnerChanged, const IAddress*, Group&, byte&>( destination.get(), *g,  bit );
 			}
 			else
@@ -111,7 +112,7 @@ namespace MiepMiep
 		delete p;
 	}
 
-	MM_TS sptr<IAddress> NetVar::getOwner() const
+	MM_TS sptr<const IAddress> NetVar::getOwner() const
 	{
 		return p->getOwner();
 	}
@@ -128,7 +129,7 @@ namespace MiepMiep
 
 	MM_TS u32 NetVar::getGroupId() const
 	{
-		return p->id();
+		return p->groupId();
 	}
 
 	MM_TS void NetVar::markChanged()
@@ -172,12 +173,15 @@ namespace MiepMiep
 		unGroup();
 	}
 
-	void NetVariable::initialize(class Group* g, EVarControl initVarControl, byte bit)
+	void NetVariable::initialize(class Group* g, const ISender* sender, const IAddress* owner, EVarControl initVarControl, byte bit)
 	{
 		scoped_spinlock lk(m_GroupMutex);
 		assert( g && !m_Group && m_Bit==(byte)-1 );
 		m_Group = g;
 		m_Bit = bit;
+		if ( sender ) m_Sender = sender->to_ptr();
+		if ( owner )  m_Owner  = owner->to_ptr();
+		assert( m_Sender || m_Owner );
 		m_VarControl = initVarControl;
 	}
 
@@ -191,7 +195,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS u32 NetVariable::id() const
+	MM_TS u32 NetVariable::groupId() const
 	{
 		scoped_spinlock lk(m_GroupMutex);
 		if ( !m_Group )
@@ -199,12 +203,18 @@ namespace MiepMiep
 		return m_Group->id();
 	}
 
-	MM_TS sptr<IAddress> NetVariable::getOwner() const
+	MM_TS sptr<const ISender> NetVariable::getSender() const
 	{
 		scoped_spinlock lk(m_OwnershipMutex);
-		// Return copy because owner may be changed at any time while the caller is then reading from a 'volatile' IEndpoint.
-		if ( m_Owner ) return m_Owner->getCopy();
-		return nullptr;
+		assert ( m_Sender || m_Owner );
+		return m_Sender;
+	}
+
+	MM_TS sptr<const IAddress> NetVariable::getOwner() const
+	{
+		scoped_spinlock lk(m_OwnershipMutex);
+		assert ( m_Sender || m_Owner );
+		return m_Owner;
 	}
 
 	MM_TS enum class EVarControl NetVariable::getVarControl() const
@@ -253,21 +263,29 @@ namespace MiepMiep
 			nw = &m_Group->network();
 		}
 
-		auto sendRes = nw->callRpc2<MiepMiep::changeOwner, u32, byte, string>( id(), bit(), ipAndPort, false, nullptr, false, false, true, true, MM_VG_CHANNEL, nullptr ) ;
-		return (sendRes == ESendCallResult::Fine ? EChangeOwnerCallResult::Fine : EChangeOwnerCallResult::Fail );		
+		auto sender = getSender();
+		assert( sender );
+		auto sendRes = nw->callRpc2<MiepMiep::changeOwner, u32, byte, string>( 
+			groupId(), bit(), ipAndPort, *sender, false, nullptr, false, 
+			false, true, true, MM_VG_CHANNEL, nullptr 
+		);
+		return ( sendRes == ESendCallResult::Fine ? EChangeOwnerCallResult::Fine : EChangeOwnerCallResult::Fail );
 	}
 
-	MM_TS void NetVariable::setNewOwner(const IAddress* etp)
+	MM_TS void NetVariable::setNewOwner(const IAddress* etp, const ISender* sender)
 	{
 		scoped_spinlock lk(m_OwnershipMutex);
+		assert ( etp || sender );
 		if ( !etp )
 		{
 			// We become owner.
 			m_Owner.reset();
+			m_Sender = sc<const ISocket*>(sender)->to_ptr();
 			m_VarControl = EVarControl::Full;
 			return;
 		}
-		m_Owner = etp->getCopy();
+		m_Sender.reset();
+		m_Owner = etp->to_ptr();
 		m_VarControl = EVarControl::Remote;
 	}
 

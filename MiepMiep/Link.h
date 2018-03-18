@@ -21,7 +21,8 @@ namespace MiepMiep
 	public:
 		Link(Network& network);
 		~Link() override;
-		MM_TS static sptr<Link> create(Network& network, const IAddress& destination, u32* id, const Listener* originator);
+		MM_TS static sptr<Link> create(Network& network, const IAddress& destination);
+		MM_TS static sptr<Link> create(Network& network, u32 id, const Listener& originator, const IAddress& destination);
 
 		// ILink
 		MM_TS INetwork& network() const override;
@@ -76,7 +77,7 @@ namespace MiepMiep
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., m_Network, bs, localCall);
-		return priv_send_rpc( m_Network, T::rpcName(), bs, &destination(), false, false, relay, true /* sys bit */, channel, trace );
+		return priv_send_rpc( m_Network, T::rpcName(), bs, &destination(), false, false, relay, true /* sys bit */, channel, trace, &socket() );
 	}
 
 	template <typename T, typename ...Args>
@@ -104,4 +105,17 @@ namespace MiepMiep
 	{
 		return m_Network.getOrAdd<T, Args...>(idx, args...);
 	}
+
+	template <typename T>
+	inline Link& toLink(T& link)
+	{
+		return sc<Link&>(link);
+	}
+
+	//template <>
+	inline Link& toLink(const ILink& link)
+	{
+		return sc<Link&>( const_cast<ILink&>(link) );
+	}
+
 }

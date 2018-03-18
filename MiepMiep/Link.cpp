@@ -54,61 +54,50 @@ namespace MiepMiep
 		}
 	}
 
-	sptr<Link> Link::create(Network& network, const IAddress& destination, u32* id, const Listener* originator)
+	sptr<Link> Link::create(Network& network, const IAddress& destination)
 	{
-		assert( !(id || originator) || (id && originator) );
+		sptr<ISocket> sock = ISocket::create();
+		if (!sock) return nullptr;
 
-		// If called from 'connect' call, we initiate a new socket on a 'random' port
-		// else, a socket is obtained from the originator (listener).
-		sptr<ISocket> sock;
-		sptr<IAddress> source;
-		if ( id == nullptr )
+		i32 err;
+		sock->open(IPProto::Ipv4, SocketOptions(), &err);
+		if (err != 0)
 		{
-			sock = ISocket::create();
-			if (!sock) return nullptr;
+			LOGW("Socket open error %d, cannot create link.", err);
+			return nullptr;
+		}
 
-			i32 err;
-			sock->open(IPProto::Ipv4, SocketOptions(), &err);
-			if ( err != 0 )
-			{
-				LOGW( "Socket open error %d, cannot create link.", err );
-				return nullptr;
-			}
-
-			sock->bind(0, &err);
-			if ( err != 0 )
-			{
-				LOGW( "Socket bind error %d, cannot create link.", err );
-				return nullptr;
-			}
-
-			// Now try obtain local source address
-			source = Endpoint::createSource( *sock, &err );
-			if ( err != 0 )
-			{
-				LOGW( "Could not obtain local address from socket. Error: %d.", err );
-				return nullptr;
-			}
+		sock->bind(0, &err);
+		if (err != 0)
+		{
+			LOGW("Socket bind error %d, cannot create link.", err);
+			return nullptr;
 		}
 
 		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
+		link->m_Id = rand();
+		link->m_Socket = sock;
 		link->m_Destination = destination.getCopy();
-		if ( id ) // Created from 'listen'
-		{
-			link->m_Id = *id;
-			link->m_Socket = originator->socket().to_ptr();
-			link->m_Source = originator->source().to_ptr();
-			link->m_Originator = originator->to_ptr();
-		}
-		else // Created from 'connect'
-		{
-			link->m_Id = rand();
-			link->m_Socket = sock;
-			link->m_Source = Endpoint::createSource( *sock );
-			// add socket to set and receive data directly in the link
-			link->m_Network.getOrAdd<SocketSetManager>()->addSocket( link->m_Socket, link->to_ptr() );
-		}
 
+		// add socket to set and receive data directly in the link
+		link->m_Network.getOrAdd<SocketSetManager>()->addSocket(link->m_Socket, link->to_ptr());
+
+		LOG( "Created new link to %s.", link->info() );
+		return link;
+
+	}
+
+	MM_TS sptr<Link> Link::create(Network& network, u32 id, const Listener& originator, const IAddress& destination)
+	{
+		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
+
+		link->m_Id = id;
+		link->m_Socket = originator.socket().to_sptr();
+		link->m_Originator = originator.to_ptr();
+		link->m_Destination = destination.getCopy();
+		const_pointer_cast<Listener>( link->m_Originator )->increaseNumClientsByOne();
+
+		// No need to add to SocketSetManager, because originator's socket is already in the manager's set.
 		LOG( "Created new link to %s.", link->info() );
 		return link;
 	}
@@ -144,7 +133,7 @@ namespace MiepMiep
 	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
 	{
 		auto& varVec = PerThreadDataProvider::getConstructedVariables();
-		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( varVec, typeName, initData, nullptr ); // makes copy
+		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( socket(), varVec, typeName, initData, nullptr ); // makes copy
 		varVec.clear();
 	}
 

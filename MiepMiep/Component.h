@@ -13,6 +13,7 @@ namespace MiepMiep
 		LinkState,
 		LinkStats,
 		MasterJoinData,
+		DelayedCallbacks,
 		RemoteServerInfo,
 		Listener,
 		LinkManager,
@@ -53,6 +54,7 @@ namespace MiepMiep
 		template <typename T> MM_TS u32 count() const;
 		template <typename T> MM_TS bool remove(u32 idx=0);
 		template <typename T, typename CB> MM_TS void forAll(const CB& cb);
+		template <typename T, typename CB> MM_TS void forAll(const CB& cb) const;
 
 	protected:
 		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(u32 idx=0, Args... args);
@@ -120,7 +122,24 @@ namespace MiepMiep
 			auto& v = cIt->second;
 			for ( auto& c : v )
 			{
-				cb( *c );
+				if ( !cb( sc<T&>(*c) ) )
+					break; // stop iterating if lamda returned false
+			}
+		}
+	}
+
+	template <typename T, typename CB>
+	MM_TS void ComponentCollection::forAll(const CB& cb) const
+	{
+		rscoped_lock lk(m_ComponentsMutex);
+		auto cIt = m_Components.find(T::compType());
+		if (cIt != m_Components.end())
+		{
+			auto& v = cIt->second;
+			for (auto& c : v)
+			{
+				if (!cb(sc<const T&>(*c)))
+					break; // stop iterating if lamda returned false
 			}
 		}
 	}

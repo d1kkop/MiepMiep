@@ -35,9 +35,12 @@ MM_VARGROUP(personVarGroup, i32, i32, u32)
 }
 
 
+
+
 UTESTBEGIN(VariablesTest)
 {
 	sptr<INetwork> network = INetwork::create();
+	return true;
 
 	vector<thread> ts;
 	for ( i32 i=0; i < 10; i++ )
@@ -45,7 +48,13 @@ UTESTBEGIN(VariablesTest)
 		ts.emplace_back( [=]() 
 		{
 			sptr<Person> p = make_shared<Person>( 22, 33, 44 );
-			network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33 );
+			ECreateGroupCallResult createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33 );
+			assert ( createRes == ECreateGroupCallResult::NoLinksInNetwork );
+
+			network->registerServer( *IAddress::resolve( "localhost", 12203 ), "lala" );
+
+			createRes = network->createGroup<personVarGroup, i32, i32, i32>(10, 20, 33);
+			assert(createRes == ECreateGroupCallResult::Fine);
 
 			assert( p->m_Age.getGroupId() == -1 );
 			assert( p->m_Age.getOwner() == nullptr );

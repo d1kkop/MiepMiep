@@ -25,7 +25,7 @@ namespace MiepMiep
 
 		/*	Returns only true if current state is 'unknown'.
 			When state is 'unknown', state is changed to 'conneecting' and true is returend. */
-		MM_TS bool connect(const string& pw, const MetaData& md=MetaData());
+		MM_TS bool connect(const string& pw, const MetaData& md);
 
 		/*	Returns only true if current state is 'unknown.' 
 			Only when the state is 'unknown', the connection becomes 'connected'. */
@@ -33,8 +33,8 @@ namespace MiepMiep
 
 		MM_TS ELinkState state() const;
 
+		mutable SpinLock m_StateMutex;
 		ELinkState m_State;
 		EDisconnectReason m_DiscReason;
-		mutable SpinLock m_StateMutex;
 	};
 }

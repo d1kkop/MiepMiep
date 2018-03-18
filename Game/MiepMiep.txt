@@ -1,14 +1,10 @@
-Wed Mar 14 17:21:05 2018 ------- New Session --------
-Wed Mar 14 17:21:05 2018 ----------------------------
-Wed Mar 14 17:21:05 2018 Created new link to 127.0.0.1:27002 (Id: 19393).
-Wed Mar 14 17:21:07 2018 Created new link to 127.0.0.1:50961 (Id: 19393).
-Wed Mar 14 17:21:07 2018 Received reliable seq: 0
-Wed Mar 14 17:21:07 2018 Received reliable seq: 1
-Wed Mar 14 17:21:07 2018 New incoming connection to 127.0.0.1:50961 (Id: 19393).
-Wed Mar 14 17:21:07 2018 Received reliable seq: 0
-Wed Mar 14 17:21:07 2018 Link to 127.0.0.1:27002 (Id: 19393) accepted.
-Wed Mar 14 17:21:27 2018 Stop listen was called. Old listen port was 65535. 
-Wed Mar 14 17:21:27 2018 !!** Leak at -->: MiepMiep::IPacketHandler::handle, line 27, size 4096. **!!
-Wed Mar 14 17:21:27 2018 !!** Leak at -->: MiepMiep::IPacketHandler::handle, line 27, size 4096. **!!
-Wed Mar 14 17:21:27 2018 !!** Leak at -->: MiepMiep::IPacketHandler::handle, line 27, size 4096. **!!
-Wed Mar 14 17:21:27 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 239, size 30. **!!
+Sun Mar 18 21:39:57 2018 ------- New Session --------
+Sun Mar 18 21:39:57 2018 ----------------------------
+Sun Mar 18 21:39:57 2018 Created new link to 127.0.0.1:27002 (Id: 19154).
+Sun Mar 18 21:39:57 2018 Created new link to 127.0.0.1:54436 (Id: 19154).
+Sun Mar 18 21:39:57 2018 Received reliable seq: 0
+Sun Mar 18 21:39:57 2018 Received reliable seq: 0
+Sun Mar 18 21:39:57 2018 Connection to master server 127.0.0.1:27002 (Id: 19154) established.
+Sun Mar 18 21:39:57 2018 Link to 127.0.0.1:27002 (Id: 19154) accepted.
+Sun Mar 18 21:39:57 2018 Received reliable seq: 1
+Sun Mar 18 21:39:57 2018 New incoming connection to 127.0.0.1:54436 (Id: 19154).

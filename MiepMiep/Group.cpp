@@ -6,7 +6,8 @@
 
 namespace MiepMiep
 {
-	Group::Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, EVarControl initControlType):
+	Group::Group(GroupCollection& groupCollection, const ISender& initialOwner, vector<NetVariable*>& vars, 
+				 const string& typeName, const BinSerializer& initData, EVarControl initControlType):
 		m_GroupCollection(groupCollection),
 		m_Variables(vars),
 		m_InitData(initData),
@@ -16,8 +17,10 @@ namespace MiepMiep
 		m_Changed(false)
 	{
 		byte k=0;
-		for ( auto* v : m_Variables ) 
-			v->initialize( this, initControlType, k++ );
+		for ( auto* v : m_Variables )
+		{
+			v->initialize( this, &initialOwner, nullptr, initControlType, k++ );
+		}
 	}
 
 	Group::~Group()
@@ -41,10 +44,10 @@ namespace MiepMiep
 		m_Variables.clear();
 	}
 
-	MM_TS void Group::setNewOwnership(byte varIdx, const IAddress* newOwner)
+	MM_TS void Group::setNewOwnership(byte varIdx, const IAddress* owner, const ISender* sender)
 	{
 		scoped_lock lk(m_VariablesMutex);
-		m_Variables[varIdx]->setNewOwner( newOwner );
+		m_Variables[varIdx]->setNewOwner( owner, sender );
 	}
 
 	MM_TS bool Group::wasUngrouped() const
@@ -76,5 +79,11 @@ namespace MiepMiep
 		return m_GroupCollection.network();
 	}
 
-	MM_TO_PTR_IMP( Group )
+	MM_TS sptr<const ISender> Group::getSenderFromFirstVar() const
+	{
+		scoped_lock lk(m_VariablesMutex);
+		assert( !m_Variables.empty() );
+		return m_Variables[0]->getSender();
+	}
+
 }

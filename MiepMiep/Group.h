@@ -17,7 +17,8 @@ namespace MiepMiep
 	class Group: public ITraceable
 	{
 	public:
-		Group(GroupCollection& groupCollection, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, EVarControl initControlType);
+		Group(GroupCollection& groupCollection, const ISender& initialOwner, vector<NetVariable*>& vars, 
+			  const string& typeName, const BinSerializer& initData, EVarControl initControlType);
 		~Group() override;
 
 		// Post set after Id is available. 
@@ -33,7 +34,7 @@ namespace MiepMiep
 		// Flag dirty when any of the variables inside the group get written/changed.
 		void markChanged();
 		MM_TS void unGroup();
-		MM_TS void setNewOwnership( byte varIdx, const IAddress* newOwner );
+		MM_TS void setNewOwnership( byte varIdx, const IAddress* owner, const ISender* sender ); // Either newOwner or sender must be set.
 		MM_TS bool wasUngrouped() const;
 
 		// Within lock/unlock varMutex, other threads that are about to destuct variables will block as the destructor of the variable
@@ -43,6 +44,7 @@ namespace MiepMiep
 		MM_TS void unlockVariablesMutex() const;
 
 		class Network& network() const;
+		MM_TS sptr<const ISender> getSenderFromFirstVar() const;
 
 		MM_TO_PTR(Group)
 		

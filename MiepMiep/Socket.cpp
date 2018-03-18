@@ -42,6 +42,17 @@ namespace MiepMiep
 		return this->equal(right);
 	}
 
+	sptr<ISocket> ISocket::to_sptr()
+	{
+		return ptr<ISocket>();
+	}
+
+	sptr<const ISocket> ISocket::to_sptr() const
+	{
+		return ptr<const ISocket>();
+	}
+
+
 #if MM_SDLSOCKET
 
 	// ------------ SDLSocket ------------------------------------------------------------------------------------
@@ -382,31 +393,36 @@ namespace MiepMiep
 		if (err) *err = 0;
 
 		if ( m_Socket == INVALID_SOCKET )
-			return ERecvResult::SocketClosed;
-
-		i32 addrSize = (i32) endPoint.getLowLevelAddrSize();
-		rawSize = recvfrom(m_Socket, (char*) buff, rawSize, 0, (sockaddr*)endPoint.getLowLevelAddr(), (int*) &addrSize);
-
-		if ( rawSize < 0 )
 		{
+			rawSize = 0;
+			return ERecvResult::SocketClosed;
+		}
+
+		i32 addrSize  = (i32) endPoint.getLowLevelAddrSize();
+		i32 recvBytes = recvfrom(m_Socket, (char*) buff, rawSize, 0, (sockaddr*)endPoint.getLowLevelAddr(), (int*) &addrSize);
+
+		if ( recvBytes < 0 )
+		{
+			rawSize = 0;
 			#if MM_PLATFORM_WINDOWS
 				if ( err ) *err = GetLastError();
 			#endif
 			return ERecvResult::Error;
 		}
 
+		rawSize = recvBytes;
 		return ERecvResult::Succes;
 	}
 
-	sptr<ISocket> BSDSocket::to_ptr()
-	{
-		return sc<BSDSocket&>(*this).ptr<BSDSocket>();
-	}
-
-	sptr<const ISocket> BSDSocket::to_ptr() const
-	{
-		return sc<const BSDSocket&>(*this).ptr<const BSDSocket>();
-	}
-
 #endif
+
+	MM_TS sptr<ISender> ISender::to_ptr()
+	{
+		return sc<ISocket*>(this)->to_sptr();
+	}
+
+	MM_TS sptr<const ISender> ISender::to_ptr() const
+	{
+		return sc<const ISocket*>(this)->to_sptr();
+	}
 }

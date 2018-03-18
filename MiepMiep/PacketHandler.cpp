@@ -43,10 +43,11 @@ namespace MiepMiep
 		{
 			if ( rawSize >= MM_MIN_HDR_SIZE )
 			{
-				auto sthis = ptr<IPacketHandler>(); // get sptr so that job can safely work with packethandler
-				m_Network.get<JobSystem>()->addJob( [=]()
+				sptr<RecvPacket> sPack = make_shared<RecvPacket>( 0, buff, rawSize, 0 );
+				sptr<IPacketHandler> sthis = ptr<IPacketHandler>(); // get sptr so that job can safely work with packethandler
+				m_Network.get<JobSystem>()->addJob( [sPack, sthis, etp]()
 				{
-					BinSerializer bs( buff, MM_MAX_RECVSIZE, rawSize, false, true );
+					BinSerializer bs( sPack->m_Data, MM_MAX_RECVSIZE, sPack->m_Length, false, false );
 					sthis->handleSpecial( bs, *etp.getCopyDerived() );
 				});
 

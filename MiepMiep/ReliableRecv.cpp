@@ -17,7 +17,7 @@ namespace MiepMiep
 
 	struct EventRpc : EventBase
 	{
-		EventRpc(const ILink& link, const RpcFunc& rpcFunc, const RecvPacket& pack):
+		EventRpc(const Link& link, const RpcFunc& rpcFunc, const RecvPacket& pack):
 			EventBase(link),
 			m_RpcFunc(rpcFunc),
 			m_Pack(pack)

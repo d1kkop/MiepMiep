@@ -20,7 +20,7 @@ namespace MiepMiep
 	public:
 		NetVariable(NetVar& userVar, byte* data, u32 size);
 		~NetVariable();
-		MM_TS void initialize(Group* g, EVarControl initVarControl, byte bit);
+		MM_TS void initialize(Group* g, const ISender* sender, const IAddress* owner, EVarControl initVarControl, byte bit);
 
 		// Set on initialization (through constructor, no locks required).
 		byte* data()			{ return m_Data; }	
@@ -29,8 +29,9 @@ namespace MiepMiep
 
 		MM_TS void unGroup();
 
-		MM_TS u32 id() const;
-		MM_TS sptr<IAddress> getOwner() const;
+		MM_TS u32 groupId() const;
+		MM_TS sptr<const ISender> getSender() const;
+		MM_TS sptr<const IAddress> getOwner() const;
 		MM_TS enum class EVarControl getVarControl() const;
 
 		// Requires VariablesMutex to be thread safe and to call user callback code!
@@ -42,7 +43,7 @@ namespace MiepMiep
 		MM_TS void markUnchanged();
 
 		MM_TS EChangeOwnerCallResult changeOwner( const IAddress& etp );
-		MM_TS void setNewOwner( const IAddress* etp );
+		MM_TS void setNewOwner( const IAddress* etp, const ISender* sender );
 
 		MM_TS bool readOrWrite( class BinSerializer& bs, bool write );
 		MM_TS void addUpdateCallback( const std::function<void (NetVar&, const byte*, const byte*)>& callback );
@@ -64,7 +65,8 @@ namespace MiepMiep
 		// Ownership can be changed on a variable basis inside the group.
 		mutable SpinLock m_OwnershipMutex;
 		atomic<EVarControl> m_VarControl;
-		sptr<IAddress> m_Owner;
+		sptr<const IAddress> m_Owner;
+		sptr<const ISender> m_Sender;
 
 		// Allow thread safe adding of multiple callbacks for a single variable.
 		mutable mutex m_UpdateCallbackMutex;

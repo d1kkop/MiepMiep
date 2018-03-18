@@ -38,17 +38,17 @@ namespace MiepMiep
 	};
 
 
-	enum class ERegisterServerCallResult
-	{
-		Fine,
-		AlreadyRegistered
-	};
-
-
 	enum class EJoinServerCallResult
 	{
 		Fine,
 		AlreadyJoined
+	};
+
+	enum class ECreateGroupCallResult
+	{
+		Fine,
+		NoLinksInNetwork,
+		MultipleLinksWhileNoSenderSpecified
 	};
 
 	enum class ESendCallResult
@@ -81,6 +81,15 @@ namespace MiepMiep
 		virtual void onNewConnection( const ILink& link, const IAddress& remote ) { }
 		virtual void onDisconnect( const ILink& link, EDisconnectReason reason, const IAddress& remote ) { }
 		virtual void onOwnerChanged( const ILink& link, NetVar& variable, const IAddress* newOwner ) { }
+	};
+
+	class MM_DECLSPEC ISender
+	{
+	public:
+		virtual u64 id() const = 0;
+
+		MM_TS sptr<ISender> to_ptr();
+		MM_TS sptr<const ISender> to_ptr() const;
 	};
 
 
@@ -133,21 +142,27 @@ namespace MiepMiep
 		MM_TS virtual EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 ) = 0;
 		MM_TS virtual bool stopListen( u16 port ) = 0;
 
-		MM_TS virtual ERegisterServerCallResult registerServer( const IAddress& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
-		MM_TS virtual EJoinServerCallResult joinServer( const IAddress& masterEtp, const std::string& serverName, const std::string& pw="", const MetaData& md=MetaData() ) = 0;
+		MM_TS virtual void registerServer( const IAddress& masterAddr, const std::string& serverName, const std::string& pw="", 
+										   const std::string& type="", const MetaData& hostMd=MetaData(), 
+										   float initialRating=0, const MetaData& customFilterMd=MetaData()) = 0;
+
+		MM_TS virtual EJoinServerCallResult joinServer( const IAddress& masterAddr, const std::string& serverName, const std::string& pw="",
+													    const std::string& type="", const MetaData& joinMd=MetaData(),
+													    float initialRating=0, float minRating=0, float maxRating=0,
+													    u32 minPlayers=0, u32 maxPlayers=~0 ) = 0;
 
 		template <typename T, typename ...Args> 
 		MM_TS ESendCallResult callRpc( Args... args, bool localCall=false, const IAddress* specific=nullptr, bool exclude=false, bool buffer=false, 
-									   bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr );
+									   bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr, const ISender* sender=nullptr );
 
 		template <typename T, typename ...Args>
-		MM_TS void createGroup(Args... args, bool localCall=false, byte channel=0, IDeliveryTrace* trace=nullptr);
+		MM_TS ECreateGroupCallResult createGroup(Args... args, bool localCall=false, byte channel=0, IDeliveryTrace* trace=nullptr, const ISender* sender=nullptr);
 		MM_TS virtual void destroyGroup( u32 groupId ) = 0;
 
 		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener ) = 0;
 		MM_TS virtual void removeConnectionListener( const IConnectionListener* connectionListener ) = 0;
 
-		MM_TS virtual ESendCallResult sendReliable( byte id, const BinSerializer* serializers, u32 numSerializers=1, const IAddress* specific=nullptr, 
+		MM_TS virtual ESendCallResult sendReliable( const ISender& sender, byte id, const BinSerializer* serializers, u32 numSerializers=1, const IAddress* specific=nullptr, 
 												    bool exclude=false, bool buffer=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr ) = 0;
 
 
@@ -157,18 +172,18 @@ namespace MiepMiep
 
 	template <typename T, typename ...Args>
 	MM_TS ESendCallResult INetwork::callRpc(Args... args, bool localCall, const IAddress* specific, 
-											bool exclude, bool buffer, bool relay, byte channel, IDeliveryTrace* trace)
+											bool exclude, bool buffer, bool relay, byte channel, IDeliveryTrace* trace, const ISender* sender)
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., *this, bs, localCall);
-		return priv_send_rpc( *this, T::rpcName(), bs, specific, exclude, buffer, relay, false, channel, trace );
+		return priv_send_rpc( *this, T::rpcName(), bs, specific, exclude, buffer, relay, false, channel, trace, sender );
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS void INetwork::createGroup(Args... args, bool localCall, byte channel, IDeliveryTrace* trace)
+	MM_TS ECreateGroupCallResult INetwork::createGroup(Args... args, bool localCall, byte channel, IDeliveryTrace* trace, const ISender* sender)
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., *this, bs, localCall);
-		priv_create_group( *this, T::rpcName(), bs, channel, trace );
+		return priv_create_group( *this, T::rpcName(), bs, channel, trace, sender );
 	}
 }

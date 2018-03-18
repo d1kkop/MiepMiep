@@ -38,9 +38,9 @@ namespace MyGame
 	bool Game::init()
 	{
 		m_Network = INetwork::create( true );
-
 		m_Network->addConnectionListener( this );
-		
+
+
 		m_Network->startListen( 27002, "my first pw" );
 
 		/*
@@ -58,8 +58,8 @@ namespace MyGame
 		//	md[ to_string(i) ] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string(i);
 		//}
 
-		m_Network->registerServer( *masterEtp, "myFirstGame", "my first pw", md );
-		m_Network->joinServer( *masterEtp, "myFirstGame" );
+		m_Network->registerServer( *masterEtp, "myFirstGame", "my first pw", "game_type", md, 0 );
+		m_Network->joinServer( *masterEtp, "myFirstGame", "my first pw", "game_type", md, 0 );
 
 		this_thread::sleep_for( milliseconds(20000) );
 		return true;
@@ -73,7 +73,9 @@ namespace MyGame
 	void Game::stop()
 	{
 		if ( m_Network )
+		{
 			m_Network->removeConnectionListener( this );
+		}
 	}
 
 	void Game::onConnectResult(const ILink& link, EConnectResult res)

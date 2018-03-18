@@ -79,6 +79,7 @@ namespace MiepMiep
 		}
 		else
 		{
+			growTo(buffSize);
 			Platform::memCpy(m_DataPtr, buffSize, streamIn, buffSize);
 			m_WritePos = writePos;
 		}
@@ -255,6 +256,8 @@ namespace MiepMiep
 	template <> bool BinSerializer::read(i16& b)							{ return read16((u16&)b); }
 	template <> bool BinSerializer::read(i32& b)							{ return read32((u32&)b); }
 	template <> bool BinSerializer::read(i64& b)							{ return read64((u64&)b); }
+	template <> bool BinSerializer::read(float& b)							{ return read32(sc<u32&>(*rc<u32*>(&b))); }
+	template <> bool BinSerializer::read(double& b)							{ return read64(sc<u64&>(*rc<u64*>(&b))); }
 	template <> bool BinSerializer::read(BinSerializer& other)				{ return other.write(data(), length()); }
 	template <> bool BinSerializer::read(IAddress& b)						{ return b.read(*this); }
 	template <> bool BinSerializer::read(sptr<IAddress>& b)
@@ -304,6 +307,8 @@ namespace MiepMiep
 	template <> bool BinSerializer::write(const i16& b)						{ return write16(b); }
 	template <> bool BinSerializer::write(const i32& b)						{ return write32(b); }
 	template <> bool BinSerializer::write(const i64& b)						{ return write64((i64&)b); }
+	template <> bool BinSerializer::write(const float& b)					{ return write32(sc<const u32&>(*rc<const u32*>(&b))); }
+	template <> bool BinSerializer::write(const double& b)					{ return write64(sc<const u64&>(*rc<const u64*>(&b))); }
 	template <> bool BinSerializer::write(const BinSerializer& other)		{ return write(other.data(), other.length()); }
 	template <> bool BinSerializer::write(const IAddress& b)				{ return b.write(*this); }
 	template <> bool BinSerializer::write(const sptr<IAddress>& b)			{ return write(const_pointer_cast<const IAddress>(b)); }

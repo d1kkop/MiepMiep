@@ -34,8 +34,8 @@ namespace MiepMiep
 		MM_TS u32 getNumClients() const { return m_NumConnections; }
 		MM_TS string getPassword() const;
 
-		// Called upon link closes so that it unregisters itself.
-		MM_TS void reduceNumClientsByOne();
+		MM_TS void increaseNumClientsByOne();	// Called upon creation when link is created from an originator.
+		MM_TS void reduceNumClientsByOne();		// Called upon link's destructor so that it unregisters itself.
 
 		MM_TO_PTR( Listener )
 

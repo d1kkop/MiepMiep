@@ -2,6 +2,7 @@
 
 #include "Memory.h"
 #include "Platform.h"
+#include "MiepMiep.h"
 
 
 namespace MiepMiep
@@ -29,9 +30,9 @@ namespace MiepMiep
 
 	struct SocketOptions
 	{
-		SocketOptions() :
-			m_ReuseAddr(false),
-			m_DontFragment(true)
+		SocketOptions(bool reuaseAddr=false, bool dontFragment=true) :
+			m_ReuseAddr(reuaseAddr),
+			m_DontFragment(dontFragment)
 		{
 		}
 
@@ -40,14 +41,14 @@ namespace MiepMiep
 	};
 
 
-	class ISocket
+	class ISocket: public ISender, public ITraceable
 	{
 	protected:
 		ISocket();
 
 	public:
 		static sptr<ISocket> create();
-		virtual ~ISocket();
+		~ISocket() override;
 
 		bool operator< (const ISocket& right) const;
 		bool operator==(const ISocket& right) const;
@@ -68,8 +69,9 @@ namespace MiepMiep
 		bool isBlocking() const { return m_Blocking; }
 		IPProto getIpProtocol() const { return m_IpProto; }
 
-		virtual sptr<ISocket> to_ptr() = 0;
-		virtual sptr<const ISocket> to_ptr() const = 0;
+		sptr<ISocket> to_sptr();
+		sptr<const ISocket> to_sptr() const;
+
 
 	protected:
 		bool m_Open;
@@ -99,7 +101,7 @@ namespace MiepMiep
 	};
 
 #elif MM_WIN32SOCKET
-	class BSDSocket: public ISocket, public ITraceable
+	class BSDSocket: public ISocket
 	{
 	public:
 		BSDSocket();
@@ -112,10 +114,10 @@ namespace MiepMiep
 		ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err) const override;
 		ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endPoint, i32* err ) const override;
 
-		sptr<ISocket> to_ptr() override;
-		sptr<const ISocket> to_ptr() const override;
-
 		SOCKET getSock() const  { return m_Socket; }
+
+		// ISender
+		u64 id() const override { return  rc<u64>( rc<void*>( m_Socket ) ); }
 
 	protected:
 		SOCKET m_Socket;

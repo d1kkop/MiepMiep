@@ -50,6 +50,8 @@ namespace MiepMiep
 		template <> bool write(const i16& b);
 		template <> bool write(const i32& b);
 		template <> bool write(const i64& b);
+		template <> bool write(const float& b);
+		template <> bool write(const double& b);
 		template <> bool write(const BinSerializer& other);
 		template <> bool write(const IAddress& b);
 		template <> bool write(const sptr<IAddress>& b);
@@ -67,6 +69,8 @@ namespace MiepMiep
 		template <> bool read(i16& b);
 		template <> bool read(i32& b);
 		template <> bool read(i64& b);
+		template <> bool read(float& b);
+		template <> bool read(double& b);
 		template <> bool read(BinSerializer& other);
 		template <> bool read(IAddress& b);
 		template <> bool read(sptr<IAddress>& b);

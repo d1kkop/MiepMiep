@@ -10,6 +10,7 @@
 #include "PerThreadDataProvider.h"
 #include "MiepMiep.h"
 #include "Endpoint.h"
+#include "Socket.h"
 
 
 namespace MiepMiep
@@ -18,7 +19,7 @@ namespace MiepMiep
 
 	struct EventConnectResult : EventBase
 	{
-		EventConnectResult(const ILink& link, EConnectResult res):
+		EventConnectResult(const Link& link, EConnectResult res):
 			EventBase(link),
 			m_Result(res) { }
 
@@ -35,7 +36,7 @@ namespace MiepMiep
 
 	struct EventNewConnection : EventBase
 	{
-		EventNewConnection(const ILink& link, const IAddress& newAddr):
+		EventNewConnection(const Link& link, const IAddress& newAddr):
 			EventBase(link),
 			m_NewAddr(newAddr.to_ptr()) { }
 
@@ -52,7 +53,7 @@ namespace MiepMiep
 
 	struct EventDisconnect : EventBase
 	{
-		EventDisconnect(const ILink& link, EDisconnectReason reason, const IAddress& discAddr):
+		EventDisconnect(const Link& link, EDisconnectReason reason, const IAddress& discAddr):
 			EventBase(link),
 			m_DiscAddr(discAddr.to_ptr()),
 			m_Reason(reason) { }
@@ -88,7 +89,7 @@ namespace MiepMiep
 		RPC_BEGIN();
 		EDisconnectReason reason = get<1>(tp) ? EDisconnectReason::Kicked : EDisconnectReason::Closed;
 		l.pushEvent<EventDisconnect>( reason, *get<0>(tp) );
-		LOG( "Link to %s ignored, already connected.", l.info() );
+		LOG( "Link to %s disconnected, reason %d.", l.info(), (u32)reason );
 	}
 
 	/* Connection results */
@@ -163,7 +164,7 @@ namespace MiepMiep
 		{
 			l.callRpc<linkStateAccepted>(); // To recipient directly
 			auto addrCopy = l.destination().getCopy();
-			nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( addrCopy , false, &l.destination(), true /*excl*/ ); // To all others except recipient
+			nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( addrCopy, l.socket(), false, &l.destination(), true /*excl*/ ); // To all others except recipient
 			l.pushEvent<EventNewConnection>( *addrCopy );
 		}
 		else
@@ -189,11 +190,11 @@ namespace MiepMiep
 			if ( m_State != ELinkState::Unknown )
 			{
 				LOGW( "Can only connect if state is set to 'Unknown." );
+				assert( false );
 				return false;
 			}
 			m_State = ELinkState::Connecting;
 		}
-
 		return m_Link.callRpc<linkStateConnect, string, MetaData>( pw, md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
 	}
 

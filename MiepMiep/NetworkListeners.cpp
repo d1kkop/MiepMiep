@@ -1,6 +1,7 @@
 #include "NetworkListeners.h"
 #include "Endpoint.h"
 #include "Network.h"
+#include "Link.h"
 #include <algorithm>
 
 
@@ -42,10 +43,9 @@ namespace MiepMiep
 
 	// --------- EventBase --------------------------------------------------------------------------------------
 
-	EventBase::EventBase(const ILink& link):
+	EventBase::EventBase(const Link& link):
 		m_Link(link.to_ptr())
 	{
-
 	}
 
 }

@@ -107,6 +107,12 @@ namespace MiepMiep
 		return m_Password;
 	}
 
+	MM_TS void Listener::increaseNumClientsByOne()
+	{
+		assert(m_NumConnections != (u32)~0);
+		m_NumConnections++;
+	}
+
 	MM_TS void Listener::reduceNumClientsByOne()
 	{
 		m_NumConnections--;
@@ -118,20 +124,17 @@ namespace MiepMiep
 		u32 linkId;
 		__CHECKED( bs.read(linkId) );
 
-		bool added;
-		SocketAddrPair sap( m_Socket.get(), etp ); 
-		sptr<Link> link = m_Network.getOrAdd<LinkManager>()->getOrAdd( sap, &linkId, this, &added );
+		auto lm = m_Network.getOrAdd<LinkManager>();
+		SocketAddrPair sap( *m_Socket, etp ); 
+		sptr<Link> link = lm->get( sap );
 		if ( !link )
 		{
-			LOGW( "Failed to add link to %s.", etp.toIpAndPort() );
-			return;
-		}
-
-		// If first time added, increment num connections on listener.
-		// If link leaves, it will reduce the count by 1 from its destructor.
-		if ( added )
-		{
-			m_NumConnections++;
+			link = lm->add( linkId, *this, etp );
+			if ( !link )
+			{
+				LOGW( "Failed to add link to %s.", etp.toIpAndPort() );
+				return;
+			}
 		}
 
 		if ( link->id() == linkId )
