@@ -22,20 +22,36 @@ namespace MiepMiep
 		stopListen();
 	}
 
-	MM_TS bool Listener::startOrRestartListening(u16 port)
+	MM_TS sptr<Link> Listener::getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap )
+	{
+		auto lm = m_Network.getOrAdd<LinkManager>();
+		sptr<Link> link = lm->get( sap );
+		if ( !link )
+		{
+			link = lm->add( linkId, *this, *sap.m_Address );
+			if ( !link )
+			{
+				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );
+			}
+		}
+		return link;
+	}
+
+	MM_TS bool Listener::startOrRestartListening( u16 port )
 	{
 		scoped_lock lk(m_ListeningMutex);
 
 		if ( port == m_ListenPort && m_Listening )
 		{
-			LOG( "Started listener while already listening on requested port %d, call ignored.", port );
+			LOGW( "Started listener while already listening on requested port %d, call ignored.", port );
 			return true; // already listening on that port
 		}
 
 		// already listening
 		if ( m_Listening ) 
 		{
-			LOG( "Was listening on port %d. But start listening was called with new port: %d.", (u16)m_ListenPort, port );
+			LOG( "Was listening on port %d. But start listening was called with new port: %d. This is ok, though it would be cleaner to call 'stopListen' first.",
+				 (u16)m_ListenPort, port );
 			stopListen();
 		}
 
@@ -53,6 +69,7 @@ namespace MiepMiep
 						sptr<IPacketHandler> handler = ptr<IPacketHandler>();
 						m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>( m_Socket ), handler );
 						m_Listening = true;
+						LOG( "Started listening on port %d.", port );
 					}
 					else
 					{
@@ -118,35 +135,6 @@ namespace MiepMiep
 		m_NumConnections--;
 		assert( m_NumConnections != (u32)~0 );
 	}
-
-	MM_TS void Listener::handleSpecial(class BinSerializer& bs, const Endpoint& etp)
-	{
-		u32 linkId;
-		__CHECKED( bs.read(linkId) );
-
-		auto lm = m_Network.getOrAdd<LinkManager>();
-		SocketAddrPair sap( *m_Socket, etp ); 
-		sptr<Link> link = lm->get( sap );
-		if ( !link )
-		{
-			link = lm->add( linkId, *this, etp );
-			if ( !link )
-			{
-				LOGW( "Failed to add link to %s.", etp.toIpAndPort() );
-				return;
-			}
-		}
-
-		if ( link->id() == linkId )
-		{
-			link->receive( bs );
-		}
-		else
-		{
-			LOGW( "Listener: Packet for link was discarded as link id's did not match." );
-		}
-	}
-
 
 	MM_TO_PTR_IMP( Listener )
 }

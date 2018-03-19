@@ -16,6 +16,7 @@ namespace MiepMiep
 
 	struct Job
 	{
+		// No locking, but before job is pushed in list its worker func is either set or not. It is never changed afterwards.
 		bool valid() const { return m_WorkFunc!=nullptr; }
 		std::function<void ()> m_WorkFunc;
 	};
@@ -26,8 +27,8 @@ namespace MiepMiep
 	public:
 		WorkerThread(class JobSystem& js);
 		~WorkerThread();
-		void start();
-		void stop();
+		MM_TS void start();
+		MM_TS void stop();
 
 		thread m_Thread;
 		class JobSystem& m_Js;
@@ -44,14 +45,14 @@ namespace MiepMiep
 		static EComponentType compType() { return EComponentType::JobSystem; }
 
 
-		void addJob( const std::function<void ()>& cb );
-		void stop();
-		bool isClosing() const volatile { return m_Closing; }
+		MM_TS void addJob( const std::function<void ()>& cb );
+		MM_TS void stop();
+		MM_TS bool isClosing() const volatile { return m_Closing; }
 
 	private:
-		Job peekJob();
-		mutex& getMutex() { return m_JobsMutex; }
-		void suspend(unique_lock<mutex>& ul);
+		MM_TS Job extractJob();
+		MM_TS mutex& getMutex() { return m_JobsMutex; }
+		MM_TS void suspend(unique_lock<mutex>& ul);
 
 
 	private:

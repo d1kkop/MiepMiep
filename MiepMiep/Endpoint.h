@@ -18,13 +18,14 @@ namespace MiepMiep
 		MM_TS static sptr<Endpoint> resolve( const string& name, u16 port, i32* errOut=nullptr );
 		MM_TS static sptr<Endpoint> fromIpAndPort( const string& ipAndPort, i32* errOut=nullptr );
 
-		// IEndpoint
-		MM_TS const char* toIpAndPort() const override;
-		MM_TS sptr<IAddress> getCopy() const override;
-		MM_TS sptr<Endpoint> getCopyDerived() const;
+		// IAddress
+		const char* toIpAndPort() const override;
+		sptr<IAddress> getCopy() const override;
+		sptr<Endpoint> getCopyDerived() const;
+		u16 port() const override;
 
-		MM_TS bool write(class BinSerializer& bs) const override;
-		MM_TS bool read(class BinSerializer& bs) override;
+		bool write(class BinSerializer& bs) const override;
+		bool read(class BinSerializer& bs) override;
 		
 		bool operator< ( const Endpoint& other) const;
 		bool operator==( const Endpoint& other ) const;

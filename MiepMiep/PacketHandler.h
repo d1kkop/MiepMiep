@@ -11,6 +11,9 @@ namespace MiepMiep
 {
 	class BinSerializer;
 	class Network;
+	class Link;
+	class ISocket;
+	struct SocketAddrPair;
 
 
 	class IPacketHandler: public ParentNetwork, public ITraceable
@@ -18,20 +21,19 @@ namespace MiepMiep
 	public:
 		IPacketHandler(Network& network);
 
-		// All packets are handled here first and then if 'valid' passed to handleSpecial.
-		void handle( const sptr<const class ISocket>& sock );
-
-		virtual void handleSpecial( class BinSerializer& bs, const class Endpoint& etp ) = 0;
-
+		MM_TS void recvFromSocket( const ISocket& sock );
+		MM_TS void handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr );
+		MM_TS virtual sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) = 0;
 	};
+
 
 	struct RecvPacket
 	{
 	public:
-		RecvPacket() = default; // Auto zeroed, due to 'calloc'
+		RecvPacket() = default; // Auto zeroed, due to 'calloc'.
 		RecvPacket(byte id, class BinSerializer& bs);
 		RecvPacket(byte id, u32 len, byte flags);
-		RecvPacket(byte id, const byte* data, u32 len, byte flags);
+		RecvPacket(byte id, const byte* data, u32 len, byte flags, bool copy);
 		RecvPacket(const RecvPacket& p);
 		RecvPacket(RecvPacket&& p) noexcept;
 		RecvPacket& operator=(const RecvPacket& p);

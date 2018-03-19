@@ -45,13 +45,14 @@ namespace MiepMiep
 	enum class EPacketType : byte;
 	enum class EConnectResult : byte;
 	enum class EDisconnectReason : byte;
+	enum class ERegisterServerResult : byte;
+	enum class EJoinServerResult : byte;
 
 	enum class EVarControl;
 	enum class ESendResult;
 	enum class EChangeOwnerCallResult;
 	enum class ESendCallResult;
 	enum class EListenCallResult;
-	enum class EJoinServerCallResult;
 	enum class ECreateGroupCallResult;
 
 	using MetaData = std::map<std::string, std::string>;

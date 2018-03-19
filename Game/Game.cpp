@@ -31,12 +31,42 @@ namespace MyGame
 		cout << var1 << " " << var2 << endl;
 	}
 
+
+
 	Game::Game()
 	= default;
+
+	struct Hello
+	{
+		Hello()
+		{
+			cout << "Struct hello" << endl;
+		}
+
+		Hello(const Hello& h)
+		{
+			cout << "Copy hello" << endl;
+		}
+
+		~Hello()
+		{
+			cout << "dstr hello " << endl;
+		}
+
+		void sayHello() { }
+	};
+
+	void myFunc(  std::function<void ()> cb )
+	{
+
+	}
 
 
 	bool Game::init()
 	{
+		BinSerializer bs;
+		Hello h;
+
 		m_Network = INetwork::create( true );
 		m_Network->addConnectionListener( this );
 
@@ -53,13 +83,17 @@ namespace MyGame
 
 		MetaData md;
 
-		//for ( i32 i=0; i<1000; i++ )
+		//for ( i32 i = 0; i<1000; i++ )
 		//{
-		//	md[ to_string(i) ] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string(i);
+		//	md[to_string( i )] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string( i );
 		//}
 
-		m_Network->registerServer( *masterEtp, "myFirstGame", "my first pw", "game_type", md, 0 );
-		m_Network->joinServer( *masterEtp, "myFirstGame", "my first pw", "game_type", md, 0 );
+
+		m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp, "myFirstGame", "my first pw", "game_type", md, 0, md );
+
+		// Note the above is an async process, so make sure it is actually registered, otherwise join will fail immediately!
+		std::this_thread::sleep_for( milliseconds(20) );
+		m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp, "myFirstGame", "my first pw", "game_type", md, 0 );
 
 		this_thread::sleep_for( milliseconds(20000) );
 		return true;
@@ -78,28 +112,48 @@ namespace MyGame
 		}
 	}
 
-	void Game::onConnectResult(const ILink& link, EConnectResult res)
+	void Game::onRegisterResult( const ILink& link, bool succes )
 	{
-		switch (res)
+		if ( succes )
 		{
-		case MiepMiep::EConnectResult::Fine:
+			cout << "Succesfully registered server at " << link.destination().toIpAndPort() << endl;
+		}
+		else
+		{
+			cout << "Failed to registered server at " << link.destination().toIpAndPort() << endl;
+		}
+	}
+
+	void Game::onJoinResult( const ILink& link, EJoinServerResult res )
+	{
+		switch ( res )
+		{
+		case EJoinServerResult::Fine:
 			cout << "connected to: " << link.destination().toIpAndPort() << endl;
 			break;
-		case MiepMiep::EConnectResult::Timedout:
+		case EJoinServerResult::TimedOut:
 			cout << "connecting to: " << link.destination().toIpAndPort() << " timed out." << endl;
 			break;
-		case MiepMiep::EConnectResult::InvalidPassword:
+		case EJoinServerResult::InvalidPassword:
 			cout << "connecting to: " << link.destination().toIpAndPort() << " invalid password." << endl;
 			break;
-		case MiepMiep::EConnectResult::MaxConnectionsReached:
+		case EJoinServerResult::MaxConnectionsReached:
 			cout << "connecting to: " << link.destination().toIpAndPort() << " max connections reached." << endl;
 			break;
-		case MiepMiep::EConnectResult::AlreadyConnected:
+		case EJoinServerResult::AlreadyConnected:
 			cout << "connecting to: " << link.destination().toIpAndPort() << " already connected." << endl;
+			break;
+		case EJoinServerResult::NoMatchesFound:
+			cout << "connecting to: " << link.destination().toIpAndPort() << " failed -> no matches found." << endl;
 			break;
 		default:
 			cout << "connecting to: " << link.destination().toIpAndPort() << " unknown result returned!" << endl;
 			break;
 		}
+	}
+
+	void Game::onConnectResult( const ILink& link, EConnectResult res )
+	{
+		int k = 0;
 	}
 }

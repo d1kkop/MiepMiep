@@ -68,7 +68,7 @@ namespace MiepMiep
 		{
 			// Packet may arrive multiple time as recv_sequence is only incremented when expected sequence is received.
 			m_OrderedPackets.try_emplace( pi.m_Sequence, /* key */
-					make_shared<RecvPacket>( packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_ChannelAndFlags), 1 /* value */
+					make_shared<RecvPacket>( packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_ChannelAndFlags, true), 1 /* value */
 			);
 		}
 		else // fragmented
@@ -76,7 +76,7 @@ namespace MiepMiep
 			// Fragment may arrive multiple time as recv_sequence is only incremented when expected sequence is received.
 			pair<decltype(m_OrderedFragments.begin()),bool> inserted = 
 				m_OrderedFragments.try_emplace( pi.m_Sequence, /* key */
-					make_shared<RecvPacket>( packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_ChannelAndFlags ) /* value */ );
+					make_shared<RecvPacket>( packId, bs.data()+bs.getRead(), bs.getWrite()-bs.getRead(), pi.m_ChannelAndFlags, true ) /* value */ );
 
 			if ( !inserted.second )
 				return; // Already exists, nothing to do.
@@ -93,10 +93,9 @@ namespace MiepMiep
 		}
 
 		// Processed ordered queue as much as possible
-		sptr<ReliableRecv> sThis = ptr<ReliableRecv>();
-		m_Link.getInNetwork<JobSystem>()->addJob( [sThis]()
+		m_Link.getInNetwork<JobSystem>()->addJob( [rr = move(ptr<ReliableRecv>())]()
 		{
-			sThis->proceedRecvQueue();
+			rr->proceedRecvQueue();
 		});
 	}
 
@@ -113,9 +112,9 @@ namespace MiepMiep
 			u32 numFragments = packIt->second.second;
 			queue.erase( packIt );
 
-			m_Link.getInNetwork<JobSystem>()->addJob( [sThis, pack]()
+			m_Link.getInNetwork<JobSystem>()->addJob( [rr = move(ptr<ReliableRecv>()), p = move(pack)]
 			{
-				sThis->handlePacket( *pack );
+				rr->handlePacket( *p );
 			});
 			
 			m_RecvSequence += numFragments;

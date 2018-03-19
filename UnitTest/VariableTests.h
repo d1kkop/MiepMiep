@@ -35,8 +35,6 @@ MM_VARGROUP(personVarGroup, i32, i32, u32)
 }
 
 
-
-
 UTESTBEGIN(VariablesTest)
 {
 	sptr<INetwork> network = INetwork::create();
@@ -51,7 +49,7 @@ UTESTBEGIN(VariablesTest)
 			ECreateGroupCallResult createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33 );
 			assert ( createRes == ECreateGroupCallResult::NoLinksInNetwork );
 
-			network->registerServer( *IAddress::resolve( "localhost", 12203 ), "lala" );
+			network->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve( "localhost", 12203 ), "lala" );
 
 			createRes = network->createGroup<personVarGroup, i32, i32, i32>(10, 20, 33);
 			assert(createRes == ECreateGroupCallResult::Fine);

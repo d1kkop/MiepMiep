@@ -46,9 +46,9 @@ namespace MiepMiep
 			);
 		scoped_lock lk(m_GroupLock);
 		m_PendingGroups.emplace_back( g );
-		auto gc = ptr<GroupCollection>();
-		network().get<JobSystem>()->addJob([&, gc]() { 
-			tryProcessPendingGroups();
+		network().get<JobSystem>()->addJob([gc = move(ptr<GroupCollection>())] 
+		{ 
+			gc->tryProcessPendingGroups();
 		});
 	}
 

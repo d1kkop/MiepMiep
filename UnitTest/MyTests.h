@@ -20,6 +20,15 @@ using namespace chrono;
 using namespace MiepMiep;
 
 
+void registerResult( const ILink& link, bool result )
+{
+}
+
+
+void joinResult( const ILink& link, EJoinServerResult result )
+{
+}
+
 UTESTBEGIN(SocketTest)
 {
 	sptr<ISocket> sock = ISocket::create();
@@ -71,9 +80,9 @@ public:
 	UnitTestPacketHandler(Network& nw):
 		IPacketHandler(nw) { }
 
-	void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override
+	MM_TS sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) override
 	{
-
+		return nullptr;
 	}
 };
 
@@ -318,11 +327,11 @@ UTESTBEGIN(AutoChatServerAndClient)
 	
 	nw->startListen( 27001, "lala2");
 
-	nw->registerServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
 
 	return true;
 }

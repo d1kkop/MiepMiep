@@ -19,7 +19,7 @@ namespace MiepMiep
 		stop();
 	}
 
-	void WorkerThread::start()
+	MM_TS void WorkerThread::start()
 	{
 		set_terminate([]()
 		{ 
@@ -37,11 +37,11 @@ namespace MiepMiep
 				{
 					break;
 				}
-				Job j = m_Js.peekJob();
+				Job j = m_Js.extractJob();
 				if ( !j.valid() )
 				{
 					m_Js.suspend( lk );
-					j = m_Js.peekJob();
+					j = m_Js.extractJob();
 				}
 				lk.unlock();
 				if ( j.valid() )
@@ -57,7 +57,7 @@ namespace MiepMiep
 		});
 	}
 
-	void WorkerThread::stop()
+	MM_TS void WorkerThread::stop()
 	{
 		if ( m_Thread.joinable() )
 		{
@@ -84,7 +84,7 @@ namespace MiepMiep
 		stop();
 	}
 
-	void JobSystem::addJob(const std::function<void()>& cb)
+	MM_TS void JobSystem::addJob(const std::function<void()>& cb)
 	{
 		#if MM_TRACE_JOBSYSTEM
 			stringstream ss;
@@ -103,7 +103,7 @@ namespace MiepMiep
 		m_QueueCv.notify_one();
 	}
 
-	Job JobSystem::peekJob()
+	MM_TS Job JobSystem::extractJob()
 	{
 		if ( !m_GlobalQueue.empty() )
 		{
@@ -114,7 +114,7 @@ namespace MiepMiep
 		return Job();
 	}
 
-	void JobSystem::suspend(unique_lock<mutex>& ul)
+	MM_TS void JobSystem::suspend(unique_lock<mutex>& ul)
 	{
 		#if MM_TRACE_JOBSYSTEM
 			stringstream ss;
@@ -124,7 +124,7 @@ namespace MiepMiep
 		m_QueueCv.wait( ul );
 	}
 
-	void JobSystem::stop()
+	MM_TS void JobSystem::stop()
 	{
 		m_JobsMutex.lock();
 		m_Closing = true;

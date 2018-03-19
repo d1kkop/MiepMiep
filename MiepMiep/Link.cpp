@@ -54,7 +54,12 @@ namespace MiepMiep
 		}
 	}
 
-	sptr<Link> Link::create(Network& network, const IAddress& destination)
+	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination)
+	{
+		return create( network, destination, rand() );
+	}
+
+	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination, u32 id)
 	{
 		sptr<ISocket> sock = ISocket::create();
 		if (!sock) return nullptr;
@@ -74,27 +79,67 @@ namespace MiepMiep
 			return nullptr;
 		}
 
-		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
-		link->m_Id = rand();
+		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
+
+		link->m_Source = Endpoint::createSource( *sock, &err );
+		if ( err != 0 )
+		{
+			LOGW( "Failed to obtain locally bound port.", err );
+			return nullptr;
+		}
+		
+		link->m_Id = id;
 		link->m_Socket = sock;
 		link->m_Destination = destination.getCopy();
 
 		// add socket to set and receive data directly in the link
 		link->m_Network.getOrAdd<SocketSetManager>()->addSocket(link->m_Socket, link->to_ptr());
 
+		LOG("Created new link to %s.", link->info());
+		return link;
+	}
+
+	MM_TS sptr<Link> Link::create( Network& network, const SocketAddrPair& sap, u32 id )
+	{
+		assert( sap.m_Address && sap.m_Socket );
+		if ( !sap.m_Address || !sap.m_Socket ) return nullptr;
+
+		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
+
+		i32 err;
+		link->m_Source = Endpoint::createSource( *sap.m_Socket, &err );
+		if ( err != 0 )
+		{
+			LOGW( "Failed to obtain locally bound port.", err );
+			return nullptr;
+		}
+
+		link->m_Id = id;
+		link->m_Socket = sap.m_Socket->to_sptr();
+		link->m_Destination = sap.m_Address->to_ptr();
+
+		// No need to add to SocketSetManager, because originator's socket is already in the manager's set.
 		LOG( "Created new link to %s.", link->info() );
 		return link;
-
 	}
 
 	MM_TS sptr<Link> Link::create(Network& network, u32 id, const Listener& originator, const IAddress& destination)
 	{
 		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
 
+		i32 err;
+		link->m_Source = Endpoint::createSource( originator.socket(), &err );
+		if ( err != 0 )
+		{
+			LOGW( "Failed to obtain locally bound port.", err );
+			return nullptr;
+		}
+
 		link->m_Id = id;
 		link->m_Socket = originator.socket().to_sptr();
-		link->m_Originator = originator.to_ptr();
-		link->m_Destination = destination.getCopy();
+		link->m_Originator  = originator.to_ptr();
+		link->m_Destination = destination.to_ptr();
+
 		const_pointer_cast<Listener>( link->m_Originator )->increaseNumClientsByOne();
 
 		// No need to add to SocketSetManager, because originator's socket is already in the manager's set.
@@ -113,6 +158,21 @@ namespace MiepMiep
 		return ls && ls->state() == ELinkState::Connected;
 	}
 
+	MM_TS sptr<Link> Link::getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap )
+	{
+		auto lm = m_Network.getOrAdd<LinkManager>();
+		sptr<Link> link = lm->get( sap );
+		if ( !link )
+		{
+			link = lm->add( sap, linkId );
+			if ( !link )
+			{
+				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );
+			}
+		}
+		return link;
+	}
+
 	MM_TS const char* Link::ipAndPort() const
 	{
 		return m_Destination->toIpAndPort();
@@ -121,7 +181,7 @@ namespace MiepMiep
 	MM_TS const char* Link::info() const
 	{
 		static thread_local char buff[128];
-		Platform::formatPrint(buff, sizeof(buff), "%s (Id: %d)", ipAndPort(), m_Id);
+		Platform::formatPrint(buff, sizeof(buff), "%s (src_port: %d, link: %d, socket: %d)", ipAndPort(), source().port(), m_Id, socket().id());
 		return buff;
 	}
 
@@ -140,21 +200,6 @@ namespace MiepMiep
 	MM_TS void Link::destroyGroup(u32 id)
 	{
 		
-	}
-
-	MM_TS void Link::handleSpecial(class BinSerializer& bs, const class Endpoint& etp)
-	{
-		u32 linkId;
-		__CHECKED( bs.read(linkId) );
-
-		if ( m_Id == linkId )
-		{
-			receive( bs );
-		}
-		else
-		{
-			LOGW( "Packet for link was discarded as link id's did not match." );
-		}
 	}
 
 	MM_TS void Link::receive(BinSerializer& bs)

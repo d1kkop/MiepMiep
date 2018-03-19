@@ -209,20 +209,25 @@ namespace MiepMiep
 		return getCopyDerived();
 	}
 
-	MM_TS sptr<Endpoint> Endpoint::getCopyDerived() const
+	sptr<Endpoint> Endpoint::getCopyDerived() const
 	{
 		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
 		Platform::copy(etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
 		return etp;
 	}
 
-	MM_TS bool Endpoint::write(class BinSerializer& bs) const
+	u16 Endpoint::port() const
+	{
+		return getPortHostOrder();
+	}
+
+	bool Endpoint::write( class BinSerializer& bs ) const
 	{
 		if (!bs.write(getLowLevelAddr(), getLowLevelAddrSize())) return false;
 		return true;
 	}
 
-	MM_TS bool Endpoint::read(class BinSerializer& bs)
+	bool Endpoint::read(class BinSerializer& bs)
 	{
 		if (!bs.read(getLowLevelAddr(), getLowLevelAddrSize() ) ) return false;
 		return true;

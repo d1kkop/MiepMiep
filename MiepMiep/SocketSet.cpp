@@ -92,7 +92,7 @@ namespace MiepMiep
 				if ( sockIt != m_Sockets.end() )
 				{
 					pair<sptr<const ISocket>, sptr<IPacketHandler>>& sockHandler = sockIt->second;
-					sockHandler.second->handle( sockHandler.first ); // handle data
+					sockHandler.second->recvFromSocket( *sockHandler.first ); // handle data
 				}
 			}
 

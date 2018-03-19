@@ -25,10 +25,11 @@ namespace MiepMiep
 
 		void process() override
 		{
-			m_NetworkListener->processEvents<IConnectionListener>( [this] (IConnectionListener* l) 
+			auto ls = m_Link->get<LinkState>();
+			if ( ls )
 			{
-				l->onConnectResult( *m_Link, m_Result );
-			});
+				ls->getConnectCb()(m_Result);
+			}
 		}
 
 		EConnectResult m_Result;
@@ -136,26 +137,28 @@ namespace MiepMiep
 			return;
 		}
 
+		// Link has no originator (read: listener) if link is set up through master server.
+		// In that case, the password and max clients check is done on the master server.
+		// Furthermore, links in that case do not have a listener, but are linked to eachother through the master server
+		// which uses the links implicitly bound ports.
+		// This is different then when using a listener, which uses a chosen port instead.
 		auto originator = l.originator();
-		if ( !originator )
+		if ( originator )
 		{
-			LOGC( "Found link has no originator, invalid behaviour detected!." );
-			return;
-		}
+			// Password fail
+			const string& pw = get<0>( tp );
+			if ( originator->getPassword() != pw )
+			{
+				l.callRpc<linkStatePasswordFail>();
+				return;
+			}
 
-		// Password fail
-		const string& pw = get<0>(tp);
-		if ( originator->getPassword() != pw )
-		{
-			l.callRpc<linkStatePasswordFail>();
-			return;
-		}
-			
-		// Max clients reached
-		if ( originator->getNumClients() >= originator->getMaxClients() )
-		{
-			l.callRpc<linkStateMaxClientsReached>();
-			return;
+			// Max clients reached
+			if ( originator->getNumClients() >= originator->getMaxClients() )
+			{
+				l.callRpc<linkStateMaxClientsReached>();
+				return;
+			}
 		}
 
 		// All fine, send accepted 
@@ -178,15 +181,24 @@ namespace MiepMiep
 
 	LinkState::LinkState(Link& link):
 		ParentLink(link),
-		m_State(ELinkState::Unknown)
+		m_State(ELinkState::Unknown),
+		m_WasAccepted(false)
 	{
 	}
 
-	MM_TS bool LinkState::connect(const string& pw, const MetaData& md)
+	MM_TS bool LinkState::connect( const string& pw, const MetaData& md, const function<void( EConnectResult )>& connectCb )
 	{
 		// Check state
 		{
 			scoped_spinlock lk(m_StateMutex);
+			m_ConnectCb = connectCb;
+
+			if ( m_WasAccepted )
+			{
+				LOG( "Connect returned immediately succesful as it was already accepted." );
+				return true;
+			}
+
 			if ( m_State != ELinkState::Unknown )
 			{
 				LOGW( "Can only connect if state is set to 'Unknown." );
@@ -209,6 +221,7 @@ namespace MiepMiep
 				return false;
 			}
 			m_State = ELinkState::Connected;
+			m_WasAccepted = true;
 		}
 
 		// Any other state (also if already connected, return false).

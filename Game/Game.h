@@ -15,6 +15,9 @@ namespace MyGame
 		void run();
 		void stop();
 
+		void onRegisterResult( const ILink& link, bool result );
+		void onJoinResult( const ILink& link, EJoinServerResult result );
+
 		void onConnectResult( const ILink& link, EConnectResult res ) override;
 
 		sptr<INetwork> m_Network;

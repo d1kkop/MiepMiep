@@ -32,6 +32,8 @@ namespace MiepMiep
 		LinkManager(Network& network);
 
 		MM_TS sptr<Link> add( const IAddress& to );
+		MM_TS sptr<Link> add( const IAddress& to, u32 id );
+		MM_TS sptr<Link> add( const SocketAddrPair& sap, u32 id );
 		MM_TS sptr<Link> add( u32 id, const Listener& originator, const IAddress& to );
 		MM_TS sptr<Link> get( const SocketAddrPair& sap );
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb, u32 clusterSize=0 );

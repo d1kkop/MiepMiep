@@ -18,7 +18,7 @@ namespace MiepMiep
 			return 0;
 		}
 
-		srand ((u32)time(nullptr));
+		srand( (u32)time( nullptr ) );
 
 	#if MM_SDLSOCKET
 		u32 err = (u32) SDL_Init(0);

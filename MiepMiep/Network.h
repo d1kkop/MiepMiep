@@ -36,14 +36,16 @@ namespace MiepMiep
 		MM_TS EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 ) override;
 		MM_TS bool stopListen( u16 port ) override;
 
-		MM_TS void registerServer(const IAddress& masterAddr, const std::string& serverName, const std::string& pw,
+		MM_TS void registerServer(const function<void (const ILink& link, bool)>& callback,
+								  const IAddress& masterAddr, const std::string& serverName, const std::string& pw,
 								  const std::string& type, const MetaData& hostMd, 
 								  float initialRating, const MetaData& customFilterMd ) override;
 
-		MM_TS EJoinServerCallResult joinServer(const IAddress& masterAddr, const std::string& serverName, const std::string& pw,
-											   const std::string& type, const MetaData& joinMd, 
-											   float initialRating, float minRating, float maxRating,
-											   u32 minPlayres, u32 maxPlayers) override;
+		MM_TS void joinServer(const function<void (const ILink& link, EJoinServerResult)>& callback,
+							  const IAddress& masterAddr, const std::string& serverName, const std::string& pw,
+							  const std::string& type, const MetaData& joinMd,
+							  float initialRating, float minRating, float maxRating,
+							  u32 minPlayres, u32 maxPlayers) override;
 
 		MM_TS void createGroupInternal( const ISender& sender, const string& typeName, const BinSerializer& initData, byte channel, IDeliveryTrace* trace );
 		MM_TS void destroyGroup( u32 groupId ) override;

@@ -17,14 +17,14 @@ namespace MiepMiep
 		~Listener() override;
 		static EComponentType compType() { return EComponentType::Listener; }
 
+		// IPacketHandler
+		MM_TS sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) override;
+
 		MM_TS bool startOrRestartListening( u16 port );
 		MM_TS void stopListen();
 
 		MM_TS void setMaxConnections( u32 num );
 		MM_TS void setPassword( const string& pw );
-
-		// All packets are handled here first after they have been converted from raw to binStream.
-		MM_TS void handleSpecial( class BinSerializer& bs, const Endpoint& etp ) override;
 
 		// These are thread safe because they are either set only from constructor once or they are atomic values.
 		MM_TS const ISocket& socket() const { return *m_Socket; }

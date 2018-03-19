@@ -56,6 +56,38 @@ namespace MiepMiep
 		return link;
 	}
 
+	MM_TS sptr<Link> LinkManager::add(const IAddress& to, u32 id)
+	{
+		sptr<Link> link = Link::create(m_Network, to, id);
+		if (!link)
+		{
+			return nullptr;
+		}
+
+		// insert
+		scoped_lock lk(m_LinksMapMutex);
+		m_Links[link->extractSocketAddrPair()] = link;
+		m_LinksAsArray.emplace_back(link);
+
+		return link;
+	}
+
+	MM_TS sptr<Link> LinkManager::add( const SocketAddrPair& sap, u32 id )
+	{
+		sptr<Link> link = Link::create( m_Network, sap, id );
+		if ( !link )
+		{
+			return nullptr;
+		}
+
+		// insert
+		scoped_lock lk( m_LinksMapMutex );
+		m_Links[sap] = link;
+		m_LinksAsArray.emplace_back( link );
+
+		return link;
+	}
+
 	MM_TS sptr<Link> LinkManager::add(u32 id, const Listener& originator, const IAddress& to)
 	{
 		SocketAddrPair sap( originator.socket(), to );

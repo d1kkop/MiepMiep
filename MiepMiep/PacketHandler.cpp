@@ -7,6 +7,8 @@
 #include "Util.h"
 #include "JobSystem.h"
 #include "Network.h"
+#include "LinkManager.h"
+#include "Link.h"
 #include <iostream>
 
 
@@ -17,18 +19,18 @@ namespace MiepMiep
 	{
 	}
 
-	void IPacketHandler::handle(const sptr<const class ISocket>& sock)
+	MM_TS void IPacketHandler::recvFromSocket(const ISocket& sock)
 	{
 		// Do the inital recv immediately (not in a seperate thread) because
 		// doing it in a seperate thread will make 'select' return immediately again as the data
 		// is not yet 'received' (pulled) due to the new (async) job being later with recv than the next
-		// cal to 'select'.
+		// call to 'select'.
 
 		byte* buff = reserveN<byte>(MM_FL, MM_MAX_RECVSIZE);
 		u32 rawSize = MM_MAX_RECVSIZE; // buff size in
 		Endpoint etp;
 		i32 err;
-		ERecvResult res = sock->recv( buff, rawSize, etp, &err );
+		ERecvResult res = sock.recv( buff, rawSize, etp, &err );
 
 	//	LOG( "Received data from.. %s.", etp.toIpAndPort() );
 
@@ -43,13 +45,15 @@ namespace MiepMiep
 		{
 			if ( rawSize >= MM_MIN_HDR_SIZE )
 			{
-				sptr<RecvPacket> sPack = make_shared<RecvPacket>( 0, buff, rawSize, 0 );
-				sptr<IPacketHandler> sthis = ptr<IPacketHandler>(); // get sptr so that job can safely work with packethandler
-				m_Network.get<JobSystem>()->addJob( [sPack, sthis, etp]()
+				m_Network.get<JobSystem>()->addJob(
+					[p = move( make_shared<RecvPacket>( 0, buff, rawSize, 0, false ) ),
+					ph = move( ptr<IPacketHandler>() ),
+					e  = etp.getCopyDerived(),
+					s  = sock.to_sptr()]
 				{
-					BinSerializer bs( sPack->m_Data, MM_MAX_RECVSIZE, sPack->m_Length, false, false );
-					sthis->handleSpecial( bs, *etp.getCopyDerived() );
-				});
+					BinSerializer bs( p->m_Data, MM_MAX_RECVSIZE, p->m_Length, false, false );
+					ph->handleInitialAndPassToLink( bs, *s, *e );
+				} );
 
 				// passed to thread-job
 				return;
@@ -64,6 +68,20 @@ namespace MiepMiep
 	}
 
 
+	void IPacketHandler::handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr )
+	{
+		u32 linkId;
+		__CHECKED( bs.read( linkId ) );
+
+		SocketAddrPair sap( sock, addr );
+		sptr<Link> link = getOrCreateLinkFrom( linkId, sap );
+	
+		if ( link )
+		{
+			link->receive( bs );
+		}
+	}
+
 	// --- Packet ------------------------------------------------------------------------------------------
 
 	RecvPacket::RecvPacket(byte id, u32 len, byte flags):
@@ -77,23 +95,23 @@ namespace MiepMiep
 	}
 
 	RecvPacket::RecvPacket(byte id, class BinSerializer& bs):
-		RecvPacket(id, bs.data(), bs.length(), 0)
+		RecvPacket(id, bs.data(), bs.length(), 0, true)
 	{
 	//	cout << "Pack constructor." << endl;
 	}
 
-	RecvPacket::RecvPacket(byte id, const byte* data, u32 len, byte flags):
+	RecvPacket::RecvPacket(byte id, const byte* data, u32 len, byte flags, bool copy):
 		m_Id(id),
-		m_Data(reserveN<byte>(MM_FL, len)),
+		m_Data(copy ? reserveN<byte>(MM_FL, len) : const_cast<byte*>(data)),
 		m_Length(len),
 		m_Flags(flags)
 	{
-		Platform::memCpy(m_Data, len, data, len);
+		if ( copy ) Platform::memCpy(m_Data, len, data, len);
 	//	cout << "Pack constructor." << endl;
 	}
 
 	RecvPacket::RecvPacket(const RecvPacket& p):
-		RecvPacket(p.m_Id, p.m_Data, p.m_Length, p.m_Flags)
+		RecvPacket(p.m_Id, p.m_Data, p.m_Length, p.m_Flags, true)
 	{
 	//	cout << "Pack const copy constructor." << endl;
 	}

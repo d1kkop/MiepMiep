@@ -22,13 +22,18 @@ namespace MiepMiep
 		Link(Network& network);
 		~Link() override;
 		MM_TS static sptr<Link> create(Network& network, const IAddress& destination);
+		MM_TS static sptr<Link> create(Network& network, const IAddress& destination, u32 id);
+		MM_TS static sptr<Link> create(Network& network, const SocketAddrPair& sap, u32 id );
 		MM_TS static sptr<Link> create(Network& network, u32 id, const Listener& originator, const IAddress& destination);
 
 		// ILink
 		MM_TS INetwork& network() const override;
 		MM_TS const IAddress& destination() const override { return *m_Destination; }
-		MM_TS const IAddress& source() const override { return /* TODO */ *m_Destination; }
+		MM_TS const IAddress& source() const override { return *m_Source; }
 		MM_TS bool  isConnected() const override;
+
+		// IPacketHandler
+		MM_TS sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) override;
 
 		// These are thread safe because they are set from constructor and never changed afterwards.
 		MM_TS u32 id() const { return m_Id; }
@@ -40,8 +45,6 @@ namespace MiepMiep
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );
-
-		MM_TS void handleSpecial( class BinSerializer& bs, const class Endpoint& etp ) override;
 
 		template <typename T, typename ...Args>
 		MM_TS ESendCallResult callRpc(Args... args, bool localCall=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr);
