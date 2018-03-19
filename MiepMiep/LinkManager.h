@@ -15,6 +15,7 @@ namespace MiepMiep
 
 	struct SocketAddrPair
 	{
+		SocketAddrPair() = default;
 		SocketAddrPair( const ISocket& sock, const IAddress& addr );
 		SocketAddrPair( const ISocket& sock, const Endpoint& etp );
 

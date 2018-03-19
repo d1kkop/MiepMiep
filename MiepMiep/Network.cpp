@@ -9,7 +9,7 @@
 #include "ReliableSend.h"
 #include "JobSystem.h"
 #include "NetworkListeners.h"
-#include "MasterJoinData.h"
+#include "MasterJoin.h"
 #include "PacketHandler.h"
 #include "SendThread.h"
 #include "SocketSetManager.h"
@@ -108,9 +108,9 @@ namespace MiepMiep
 		sptr<Link> link = lm->add( masterAddr );
 		get<JobSystem>()->addJob( [=]()
 		{
-			auto mjd = link->getOrAdd<MasterJoinData>(0, serverName, type, pw, initialRating);
-			mjd->setServerProps( hostMd );
-			link->getOrAdd<LinkState>()->connect(pw, customFilterMd);
+			auto mjd = link->getOrAdd<MasterJoin>(0, serverName, type, pw, initialRating);
+			mjd->registerServer( customFilterMd );
+		//	link->getOrAdd<LinkState>()->connect(pw, customFilterMd);
 		});
 	}
 
@@ -123,9 +123,9 @@ namespace MiepMiep
 		sptr<Link> link = lm->add(masterAddr);
 		get<JobSystem>()->addJob([=]()
 		{
-			auto mjd = link->getOrAdd<MasterJoinData>(0, serverName, type, pw, initialRating);
-			mjd->setJoinFilter( joinMd, minPlayers, maxPlayers, minRating, maxRating );
-			link->getOrAdd<LinkState>()->connect(pw, MetaData());
+			auto mjd = link->getOrAdd<MasterJoin>(0, serverName, type, pw, initialRating);
+			mjd->joinServer( minPlayers, maxPlayers, minRating, maxRating );
+			//link->getOrAdd<LinkState>()->connect(pw, MetaData());
 		});
 		return EJoinServerCallResult::Fine;
 	}

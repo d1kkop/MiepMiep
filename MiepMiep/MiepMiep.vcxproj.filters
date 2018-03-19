@@ -128,9 +128,6 @@
     <ClCompile Include="PacketHandler.cpp">
       <Filter>Core\HighLevelTypes</Filter>
     </ClCompile>
-    <ClCompile Include="MasterJoinData.cpp">
-      <Filter>Link\Components\Link</Filter>
-    </ClCompile>
     <ClCompile Include="Group.cpp">
       <Filter>Variables\Group</Filter>
     </ClCompile>
@@ -157,6 +154,12 @@
     </ClCompile>
     <ClCompile Include="ParentLink.cpp">
       <Filter>Link</Filter>
+    </ClCompile>
+    <ClCompile Include="MasterJoin.cpp">
+      <Filter>Link\Components\Link</Filter>
+    </ClCompile>
+    <ClCompile Include="MasterServer.cpp">
+      <Filter>Network\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -262,9 +265,6 @@
     <ClInclude Include="PacketHandler.h">
       <Filter>Core\HighLevelTypes</Filter>
     </ClInclude>
-    <ClInclude Include="MasterJoinData.h">
-      <Filter>Link\Components\Link</Filter>
-    </ClInclude>
     <ClInclude Include="Group.h">
       <Filter>Variables\Group</Filter>
     </ClInclude>
@@ -291,6 +291,12 @@
     </ClInclude>
     <ClInclude Include="ParentLink.h">
       <Filter>Link</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterJoin.h">
+      <Filter>Link\Components\Link</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterServer.h">
+      <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

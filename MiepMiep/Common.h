@@ -37,6 +37,9 @@ using namespace std;
 #define MM_MIN_RESEND_LATENCY_MP 1.3f
 #define MM_MAX_RESEND_LATENCY_MP 10.f
 
+/*	At what number create new server list */
+#define MM_NEW_SERVER_LIST_THRESHOLD 1000
+
 #define __CHECKED( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return; }
 #define __CHECKEDB( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return false; }
 #define __CHECKEDSR( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return ESendCallResult::SerializationError; }
