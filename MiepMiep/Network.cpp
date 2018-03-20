@@ -101,7 +101,7 @@ namespace MiepMiep
 	}
 
 	MM_TS void Network::registerServer( const function<void( const ILink& link, bool )>& callback,
-										const IAddress& masterAddr, const std::string& serverName, const std::string& pw,
+										const IAddress& masterAddr, bool isP2p, const std::string& serverName, const std::string& pw,
 										const std::string& type, const MetaData& hostMd,
 										float initialRating, const MetaData& customFilterMd )
 	{
@@ -110,7 +110,7 @@ namespace MiepMiep
 			getOrAdd<LinkManager>()->
 				add( *ma )->
 				getOrAdd<MasterJoin>( 0, serverName, pw, type, initialRating, hostMd )->
-				registerServer( customFilterMd, callback );
+				registerServer( isP2p, customFilterMd, callback );
 		} );
 	}
 

@@ -21,7 +21,8 @@ namespace MiepMiep
 		Timedout,
 		InvalidPassword,
 		MaxConnectionsReached,
-		AlreadyConnected
+		AlreadyConnected,
+		NotConnecting
 	};
 
 	enum class EDisconnectReason : byte
@@ -154,7 +155,7 @@ namespace MiepMiep
 		MM_TS virtual bool stopListen( u16 port )=0;
 
 		MM_TS virtual void registerServer( const std::function<void( const ILink& link, bool )>& callback,
-										   const IAddress& masterAddr, const std::string& serverName, const std::string& pw="",
+										   const IAddress& masterAddr, bool isP2p, const std::string& serverName, const std::string& pw="",
 										   const std::string& type="", const MetaData& hostMd=MetaData(),
 										   float initialRating=0, const MetaData& customFilterMd=MetaData() )=0;
 

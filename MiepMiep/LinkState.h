@@ -23,14 +23,10 @@ namespace MiepMiep
 		LinkState(Link& link);
 		static EComponentType compType() { return EComponentType::LinkState; }
 
-		/*	Returns only true if current state is 'unknown'.
-			When state is 'unknown', state is changed to 'conneecting' and true is returend. */
+
 		MM_TS bool connect(const string& pw, const MetaData& md, const function<void (EConnectResult)>& connectCb);
-
-		/*	Returns only true if current state is 'unknown.' 
-			Only when the state is 'unknown', the connection becomes 'connected'. */
-		MM_TS bool acceptConnect();
-
+		MM_TS bool acceptFromSingleTrip();
+		MM_TS bool acceptFromReturnTrip();
 		MM_TS ELinkState state() const;
 		
 		// This function is not thread safe but only set once in connect and will only be acquired upon reply. So it is thread safe to call this.

@@ -170,6 +170,11 @@ namespace MiepMiep
 				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );
 			}
 		}
+		else if ( linkId != link->id() )
+		{
+			LOGW( "Link id's do not match on %s. Incoming data is discarded.", link->info() );
+			link = nullptr; // Deliberately do not return 'valid' link.
+		}
 		return link;
 	}
 

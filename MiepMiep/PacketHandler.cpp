@@ -74,8 +74,10 @@ namespace MiepMiep
 		__CHECKED( bs.read( linkId ) );
 
 		SocketAddrPair sap( sock, addr );
+
+		// Link returns nullptr even if exists but link Id's do not match
 		sptr<Link> link = getOrCreateLinkFrom( linkId, sap );
-	
+		
 		if ( link )
 		{
 			link->receive( bs );

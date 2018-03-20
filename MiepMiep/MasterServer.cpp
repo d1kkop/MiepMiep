@@ -5,7 +5,8 @@ namespace MiepMiep
 {
 	// ------ ServerEntry ----------------------------------------------------------------------------
 
-	ServerEntry::ServerEntry(const string& name, const string& pw, const string& type, float initialRating, const MetaData& customFilterMd):
+	ServerEntry::ServerEntry(bool isP2p, const string& name, const string& pw, const string& type, float initialRating, const MetaData& customFilterMd):
+		m_IsP2p(isP2p),
 		m_Name(name),
 		m_Pw(pw),
 		m_Type(type),
@@ -18,11 +19,11 @@ namespace MiepMiep
 
 	// ------ ServerList ----------------------------------------------------------------------------
 
-	void ServerList::add(const SocketAddrPair& sap, const string& name, const string& pw, const string& type, float initialRating, const MetaData& customFilterMd )
+	void ServerList::add(const SocketAddrPair& sap, bool isP2p, const string& name, const string& pw, const string& type, float initialRating, const MetaData& customFilterMd )
 	{
 		scoped_lock lk(m_ServersMutex);
 		assert( m_Servers.count( sap ) == 0 );
-		m_Servers[sap] = ServerEntry( name, pw, type, initialRating, customFilterMd );
+		m_Servers[sap] = ServerEntry( isP2p, name, pw, type, initialRating, customFilterMd );
 	}
 
 	bool ServerList::exists(const SocketAddrPair& sap) const
@@ -62,7 +63,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS bool MasterServer::registerServer(const ISocket& reception, const IAddress& addr, const string& name, 
+	MM_TS bool MasterServer::registerServer(const ISocket& reception, const IAddress& addr, bool isP2p, const string& name, 
 											const string& pw, const string& type, float initialRating, const MetaData& customFilterMd )
 	{
 		SocketAddrPair sap( reception, addr );
@@ -78,14 +79,14 @@ namespace MiepMiep
 		{
 			if ( sl->count() < MM_NEW_SERVER_LIST_THRESHOLD )
 			{
-				sl->add( sap, name, pw, type, initialRating, customFilterMd );
+				sl->add( sap, isP2p, name, pw, type, initialRating, customFilterMd );
 				return true;
 			}
 		}
 
 		// not added as all have maximum size reached, add new server list
 		auto sl = make_shared<ServerList>();
-		sl->add( sap, name, pw, type, initialRating, customFilterMd );
+		sl->add( sap, isP2p, name, pw, type, initialRating, customFilterMd );
 		m_ServerLists.emplace_back( sl );
 
 		return true;

@@ -89,7 +89,7 @@ namespace MyGame
 		//}
 
 
-		m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp, "myFirstGame", "my first pw", "game_type", md, 0, md );
+		m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp, false, "myFirstGame", "my first pw", "game_type", md, 0, md );
 
 		// Note the above is an async process, so make sure it is actually registered, otherwise join will fail immediately!
 		std::this_thread::sleep_for( milliseconds(20) );

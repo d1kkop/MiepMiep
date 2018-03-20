@@ -22,7 +22,7 @@ namespace MiepMiep
 		MM_TS float initialRating() const { return m_Rating; }
 		MM_TS const MetaData& metaData() const { return m_Md; }
 
-		MM_TS void registerServer( const MetaData& customFilterMd, 
+		MM_TS void registerServer( bool isP2p, const MetaData& customFilterMd, 
 								   const function<void (const ILink& link, bool)>& cb );
 		MM_TS void joinServer( u32 minPlayers, u32 maxPlayers, float minRating, float maxRating, 
 							   const function<void (const ILink& link, EJoinServerResult)>& cb );

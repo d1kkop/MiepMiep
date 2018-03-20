@@ -56,19 +56,21 @@ namespace MiepMiep
 	MM_RPC(masterRpcRegisterResult, bool)
 	{
 		RPC_BEGIN();
-		l.pushEvent<EventRegisterResult>( l.get<MasterJoin>(), get<0>( tp ) );
+		bool succes = get<0>(tp);
+		l.pushEvent<EventRegisterResult>( l.get<MasterJoin>(), succes );
 	}
 
-	// [masterServerId, serverName, gameType, initialRating]
-	MM_RPC(masterRpcRegisterServer, string, string, string, float, MetaData)
+	// [bool: client-server/p2p, serverName, gameType, initialRating]
+	MM_RPC(masterRpcRegisterServer, bool, string, string, string, float, MetaData)
 	{
 		RPC_BEGIN();
-		const string& name = get<0>( tp );
-		const string& pw   = get<1>( tp );
-		const string& type = get<2>( tp );
-		float rating       = get<3>( tp );
-		const MetaData& md = get<4>( tp );
-		if ( nw.getOrAdd<MasterServer>()->registerServer( l.socket(), l.destination(), name, pw, type, rating, md ) )
+		bool isPeer2Peer   = get<0>( tp );
+		const string& name = get<1>( tp );
+		const string& pw   = get<2>( tp );
+		const string& type = get<3>( tp );
+		float rating       = get<4>( tp );
+		const MetaData& md = get<5>( tp );
+		if ( nw.getOrAdd<MasterServer>()->registerServer( l.socket(), l.destination(), isPeer2Peer, name, pw, type, rating, md ) )
 		{
 			l.callRpc<masterRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master register server request from %s succesful.", l.info());
@@ -118,7 +120,7 @@ namespace MiepMiep
 			
 			// Try connect to received addr. If connection was already accepted, the connect member returns 'true' immediately.
 			const sptr<IAddress>& to = get<2>( tp );
-			sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( *to, linkId );
+			sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( SocketAddrPair( l.socket(), *to ), linkId );
 			if ( !(newLink && mj && newLink->getOrAdd<LinkState>()->connect( mj->password(), mj->metaData(), lamConnResult )) )
 			{
 				l.pushEvent<EventJoinResult>( mj, EJoinServerResult::LogicError );
@@ -181,11 +183,11 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS void MasterJoin::registerServer(const MetaData& customFilterMd, const function<void (const ILink& link, bool)>& cb )
+	MM_TS void MasterJoin::registerServer(bool isP2p, const MetaData& customFilterMd, const function<void (const ILink& link, bool)>& cb )
 	{
 		m_RegisterCb = cb;
-		m_Link.callRpc<masterRpcRegisterServer, string, string, string, float, MetaData>(
-			/* data */	m_Name, m_Pw, m_Type, m_Rating, customFilterMd,
+		m_Link.callRpc<masterRpcRegisterServer, bool, string, string, string, float, MetaData>(
+			/* data */	isP2p, m_Name, m_Pw, m_Type, m_Rating, customFilterMd,
 			/* rpc */	false, false, MM_RPC_CHANNEL, nullptr);
 	}
 

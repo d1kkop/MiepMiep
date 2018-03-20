@@ -119,8 +119,17 @@ namespace MiepMiep
 	MM_RPC( linkStateAccepted )
 	{
 		RPC_BEGIN();
-		l.pushEvent<EventConnectResult>( EConnectResult::Fine );
-		LOG( "Link to %s accepted.", l.info() );
+		auto lState = l.get<LinkState>();
+		if ( lState )
+		{
+			if ( lState->acceptFromReturnTrip() )
+			{
+				l.pushEvent<EventConnectResult>( EConnectResult::Fine );
+				LOG( "Link to %s accepted from connect request.", l.info() );
+				return;
+			}
+		}
+		l.pushEvent<EventConnectResult>( EConnectResult::NotConnecting );
 	}
 
 	/* Incoming connect atempt */
@@ -129,13 +138,6 @@ namespace MiepMiep
 	MM_RPC( linkStateConnect, string, MetaData )
 	{
 		RPC_BEGIN();
-			
-		// Early out: if linkstate is added, it was already connected. TODO is this correct?
-		if ( l.has<LinkState>() )
-		{
-			l.callRpc<linkStateAlreadyConnected>();
-			return;
-		}
 
 		// Link has no originator (read: listener) if link is set up through master server.
 		// In that case, the password and max clients check is done on the master server.
@@ -145,7 +147,15 @@ namespace MiepMiep
 		auto originator = l.originator();
 		if ( originator )
 		{
-			// Password fail
+			// If has originator, that is, it was created from a listener.
+			// The link should have no linkState (yet).
+			if ( l.has<LinkState>() )
+			{
+				l.callRpc<linkStateAlreadyConnected>();
+				return;
+			}
+
+			// Password check
 			const string& pw = get<0>( tp );
 			if ( originator->getPassword() != pw )
 			{
@@ -153,27 +163,31 @@ namespace MiepMiep
 				return;
 			}
 
-			// Max clients reached
+			// Max clients check
 			if ( originator->getNumClients() >= originator->getMaxClients() )
 			{
 				l.callRpc<linkStateMaxClientsReached>();
 				return;
 			}
-		}
 
-		// All fine, send accepted 
-		bool wasAccepted = l.getOrAdd<LinkState>()->acceptConnect();
-		if ( wasAccepted )
-		{
-			l.callRpc<linkStateAccepted>(); // To recipient directly
-			auto addrCopy = l.destination().getCopy();
-			nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( addrCopy, l.socket(), false, &l.destination(), true /*excl*/ ); // To all others except recipient
-			l.pushEvent<EventNewConnection>( *addrCopy );
+			bool wasAccepted = l.getOrAdd<LinkState>()->acceptFromSingleTrip();
+			if ( wasAccepted )
+			{
+				LOG( "Link to %s accepted directly.", l.info() );
+				l.callRpc<linkStateAccepted>(); // To recipient directly
+				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), l.socket(), false, &l.destination(), true /*excl*/ ); // To all others except recipient
+				l.pushEvent<EventNewConnection>( l.destination() );
+			}
+			else
+			{
+				l.callRpc<linkStateAlreadyConnected>();
+			}
 		}
-		else
+		else /* The link was not created from a listener but from a (other) link on an implictly (not chosen) bound port.
+				In this case, it is possible that the linkState already exists as two endpoints may simultaneously connect to each other. */
 		{
-			// Note: 'acceptConnect' is mutual exclusive, so if called multiple times from recipient, it will still only accept once.
-			l.callRpc<linkStateAlreadyConnected>();
+			// For a connect request, do nothing. Since both parties connect, only accept the connection from a round trip instead of a single trip.
+			l.callRpc<linkStateAccepted>(); // Send back accepted but do NOT accept the link on this side from a single trip.
 		}
 	}
 
@@ -210,14 +224,32 @@ namespace MiepMiep
 		return m_Link.callRpc<linkStateConnect, string, MetaData>( pw, md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
 	}
 
-	MM_TS bool LinkState::acceptConnect()
+	MM_TS bool LinkState::acceptFromSingleTrip()
 	{
 		// Check state
 		{
-			scoped_spinlock lk(m_StateMutex);
-			if ( m_State != ELinkState::Unknown )
+			scoped_spinlock lk( m_StateMutex );
+			if ( !(m_State == ELinkState::Unknown) )
 			{
-				LOGW( "Can only accept if state is set to 'Unknown." );
+				LOGW( "Can only accept direct if state is set to 'Unknown'. State change discarded." );
+				return false;
+			}
+			m_State = ELinkState::Connected;
+			m_WasAccepted = true;
+		}
+
+		// Any other state (also if already connected, return false).
+		return true;
+	}
+
+	MM_TS bool LinkState::acceptFromReturnTrip()
+	{
+		// Check state
+		{
+			scoped_spinlock lk( m_StateMutex );
+			if ( !(m_State == ELinkState::Connecting) )
+			{
+				LOGW( "Can only accept from request if state is set to 'Connecting'. State change discarded." );
 				return false;
 			}
 			m_State = ELinkState::Connected;
