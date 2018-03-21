@@ -12,7 +12,7 @@ namespace MiepMiep
 	{
 		LinkState,
 		LinkStats,
-		MasterJoinData,
+		MasterLinkData,
 		DelayedCallbacks,
 		RemoteServerInfo,
 		Listener,

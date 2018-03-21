@@ -13,7 +13,7 @@ namespace MiepMiep
 	void serialize(BinSerializer& bs, bool write, TP& tp)
 	{
 		T& te = std::get<N>(tp);
-		bs.readOrWrite<T> ( te, write );
+		readOrWrite<T> ( bs, te, write );
 		serialize<N+1, TP, Args...>( bs, write, tp );
 	}
 }

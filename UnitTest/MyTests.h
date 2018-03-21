@@ -324,11 +324,14 @@ UTESTBEGIN(AutoChatServerAndClient)
 	
 	nw->startListen( 27001 );
 
-	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
+	MasterSessionData data;
+	SearchFilter sf;
+
+	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001), data );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
 
 	return true;
 }

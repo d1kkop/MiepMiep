@@ -93,7 +93,7 @@ namespace MiepMiep
 
 		operator T& () { return m_Data; }
 
-		bool readOrWrite( BinSerializer& bs, bool write ) override { return bs.readOrWrite(m_Data, write); }
+		bool readOrWrite( BinSerializer& bs, bool write ) override { return MiepMiep::readOrWrite(bs, m_Data, write); }
 
 	protected:
 		T m_Data;

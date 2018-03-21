@@ -155,11 +155,11 @@
     <ClCompile Include="ParentLink.cpp">
       <Filter>Link</Filter>
     </ClCompile>
-    <ClCompile Include="MasterJoin.cpp">
-      <Filter>Link\Components\Link</Filter>
-    </ClCompile>
     <ClCompile Include="MasterServer.cpp">
       <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MasterLinkData.cpp">
+      <Filter>Link\Components\Link</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -292,11 +292,11 @@
     <ClInclude Include="ParentLink.h">
       <Filter>Link</Filter>
     </ClInclude>
-    <ClInclude Include="MasterJoin.h">
-      <Filter>Link\Components\Link</Filter>
-    </ClInclude>
     <ClInclude Include="MasterServer.h">
       <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterLinkData.h">
+      <Filter>Link\Components\Link</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -23,7 +23,7 @@
     <ClCompile Include="JobSystem.cpp" />
     <ClCompile Include="LinkStats.cpp" />
     <ClCompile Include="Listener.cpp" />
-    <ClCompile Include="MasterJoin.cpp" />
+    <ClCompile Include="MasterLinkData.cpp" />
     <ClCompile Include="MasterServer.cpp" />
     <ClCompile Include="NetworkListeners.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
@@ -63,7 +63,7 @@
     <ClInclude Include="JobSystem.h" />
     <ClInclude Include="LinkStats.h" />
     <ClInclude Include="Listener.h" />
-    <ClInclude Include="MasterJoin.h" />
+    <ClInclude Include="MasterLinkData.h" />
     <ClInclude Include="MasterServer.h" />
     <ClInclude Include="NetworkListeners.h" />
     <ClInclude Include="PacketHandler.h" />
@@ -108,7 +108,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{8241375E-5851-44A0-9409-C53A63558C28}</ProjectGuid>
     <RootNamespace>MiepMiep</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

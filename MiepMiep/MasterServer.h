@@ -5,6 +5,7 @@
 #include "ParentNetwork.h"
 #include "Socket.h"
 #include "LinkManager.h"
+#include "MiepMiep.h"
 
 
 namespace MiepMiep
@@ -12,39 +13,43 @@ namespace MiepMiep
 	class ISocket;
 	class IAddress;
 
-	// ----- SearchFilter --------------------------------------------------------------------------------------------------------------
 
-	struct SearchFilter
+	template <>
+	inline bool readOrWrite( BinSerializer& bs, SearchFilter& sf, bool _write )
 	{
-		SearchFilter() { memset( this, 0, sizeof( *this ) ); }
+		__CHECKEDB( bs.readOrWrite( sf.m_Type, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_Name, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_MinRating, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_MinPlayers, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_MaxRating, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_MaxPlayers, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_FindPrivate, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_FindP2p, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_FindClientServer, _write ) );
+		__CHECKEDB( bs.readOrWrite( sf.m_CustomMatchmakingMd, _write ) );
+		return false;
+	}
 
-		string m_Name;
-		string m_Type;
-		float m_MinRating, m_MaxRating;
-		u32 m_MinPlayers, m_MaxPlayers;
-		bool m_FindPrivate;
-		bool m_FindP2p;
-		bool m_FindClientServer;
-	};
+	template <>
+	inline bool readOrWrite( BinSerializer& bs, MasterSessionData& md, bool _write )
+	{
+		return false;
+	}
+
 
 	// ----- MasterSession --------------------------------------------------------------------------------------------------------------
 
 	class MasterSession
 	{
 	public:
-		MasterSession() = default; // Calloc makes it all zero.
-		MasterSession(bool isP2p, const string& name, const string& type, float initialRating, const MetaData& customFilterMd);
+		MasterSession( const MasterSessionData& data );
 
 		MM_TS bool operator== (const SearchFilter& sf) const;
 
+	//	bool readOrWrite( BinSerializer& bs, bool write );
+
 	private:
-		bool m_IsP2p;
-		bool m_IsPrivate;
-		string m_Name;
-		string m_Type;
-		float  m_Rating;
-		u32 m_MaxClients;
-		MetaData m_CustomMd;
+		MasterSessionData m_Data;
 		mutable mutex m_DataMutex;
 
 		sptr<Link> m_Host;
@@ -57,14 +62,14 @@ namespace MiepMiep
 	class ServerList
 	{
 	public:
-		MM_TS void add( const SocketAddrPair& sap, bool isP2p, const string& name, const string& type, float initialRating, const MetaData& customFitlerMd );
+		MM_TS void addNewMasterSession( const SocketAddrPair& sap, const MasterSessionData& data );
 		MM_TS bool exists( const SocketAddrPair& sap ) const;
 		MM_TS u64 num() const;
 		MM_TS SocketAddrPair findFromFilter( const SearchFilter& sf );
 
 	private:
 		mutable mutex m_ServersMutex;
-		map<SocketAddrPair, MasterSession> m_Servers;
+		map<SocketAddrPair, MasterSession> m_MasterSessions;
 	};
 
 
@@ -74,7 +79,7 @@ namespace MiepMiep
 		MasterServer(Network& network);
 		static EComponentType compType() { return EComponentType::MasterServer; }
 
-		MM_TS bool registerServer( const ISocket& reception, const IAddress& addr, bool isP2p, const string& name, const string& type, float initialRating, const MetaData& customFilterMd );
+		MM_TS bool registerServer( const sptr<Link>& link, const MasterSessionData& data );
 		MM_TS SocketAddrPair findServerFromFilter( const SearchFilter& sf );
 
 	private:

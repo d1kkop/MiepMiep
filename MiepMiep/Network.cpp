@@ -9,7 +9,7 @@
 #include "ReliableSend.h"
 #include "JobSystem.h"
 #include "NetworkListeners.h"
-#include "MasterJoin.h"
+#include "MasterLinkData.h"
 #include "PacketHandler.h"
 #include "SendThread.h"
 #include "SocketSetManager.h"
@@ -101,34 +101,28 @@ namespace MiepMiep
 	}
 
 	MM_TS void Network::registerServer( const function<void( const ILink& link, bool )>& callback,
-										const IAddress& masterAddr, bool isP2p, const std::string& serverName, const std::string& pw,
-										const std::string& type, const MetaData& hostMd,
-										float initialRating, const MetaData& customFilterMd )
+										const IAddress& masterAddr, const MasterSessionData& data,
+										const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
 		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
 		{
 			auto link = getOrAdd<LinkManager>()->add( *ma );
 			if ( link )
 			{
-				link->getOrAdd<MasterJoin>( 0, serverName, pw, type, initialRating, hostMd )->
-					registerServer( isP2p, customFilterMd, callback );
+				link->getOrAdd<MasterLinkData>()->registerServer( callback, data );
 			}
 		} );
 	}
 
 	MM_TS void Network::joinServer( const function<void( const ILink& link, EJoinServerResult )>& callback,
-									const IAddress& masterAddr, const std::string& serverName, const std::string& pw,
-									const std::string& type, const MetaData& joinMd,
-									float initialRating, float minRating, float maxRating,
-									u32 minPlayers, u32 maxPlayers )
+									const IAddress& masterAddr, const SearchFilter& sf, const MetaData& joinMd )
 	{
 		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
 		{
 			auto link = getOrAdd<LinkManager>()->add( *ma );
 			if ( link )
 			{
-				link->getOrAdd<MasterJoin>( 0, serverName, pw, type, initialRating, joinMd )->
-					joinServer( minPlayers, maxPlayers, minRating, maxRating, callback );
+				link->getOrAdd<MasterLinkData>()->joinServer( callback, sf );
 			}
 		} );
 	}

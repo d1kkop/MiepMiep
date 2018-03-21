@@ -77,7 +77,7 @@ namespace MiepMiep
 		template <> bool read(std::string& b);
 		template <> bool read(MetaData& b);
 
-		template <typename T> bool readOrWrite(T& t, bool _write)
+		template <typename T> bool readOrWrite( T& t, bool _write )
 		{
 			return _write?write(t):read(t);
 		}
@@ -101,4 +101,11 @@ namespace MiepMiep
 		u32   m_MaxSize;
 		bool  m_Owns;
 	};
+
+
+	template <typename T>
+	inline bool readOrWrite( BinSerializer& bs, T& t, bool _write )
+	{
+		return bs.readOrWrite(t, _write);
+	}
 }

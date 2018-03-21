@@ -1,4 +1,4 @@
-#include "MasterJoin.h"
+#include "MasterLinkData.h"
 #include "MiepMiep.h"
 #include "Network.h"
 #include "Link.h"
@@ -7,6 +7,7 @@
 #include "MasterServer.h"
 #include "NetworkListeners.h"
 #include "LinkState.h"
+#include "MasterServer.h"
 
 
 namespace MiepMiep
@@ -15,7 +16,7 @@ namespace MiepMiep
 
 	struct EventRegisterResult : EventBase
 	{
-		EventRegisterResult( const Link& link, const sptr<MasterJoin>& mj, bool succes ):
+		EventRegisterResult( const Link& link, const sptr<MasterLinkData>& mj, bool succes ):
 			EventBase( link ),
 			m_Mj( mj ),
 			m_Succes( succes )
@@ -27,13 +28,13 @@ namespace MiepMiep
 			if ( m_Mj ) m_Mj->getRegisterCb()(*m_Link, m_Succes);
 		}
 
-		sptr<const MasterJoin> m_Mj;
+		sptr<const MasterLinkData> m_Mj;
 		bool m_Succes;
 	};
 
 	struct EventJoinResult : EventBase
 	{
-		EventJoinResult( const Link& link, const sptr<MasterJoin>& mj, EJoinServerResult joinRes  ):
+		EventJoinResult( const Link& link, const sptr<MasterLinkData>& mj, EJoinServerResult joinRes  ):
 			EventBase( link ),
 			m_Mj( mj ),
 			m_JoinRes( joinRes )
@@ -45,7 +46,7 @@ namespace MiepMiep
 			if ( m_Mj ) m_Mj->getJoinCb()(*m_Link, m_JoinRes);
 		}
 
-		sptr<const MasterJoin> m_Mj;
+		sptr<const MasterLinkData> m_Mj;
 		EJoinServerResult m_JoinRes;
 	};
 
@@ -57,19 +58,14 @@ namespace MiepMiep
 	{
 		RPC_BEGIN();
 		bool succes = get<0>(tp);
-		l.pushEvent<EventRegisterResult>( l.get<MasterJoin>(), succes );
+		l.pushEvent<EventRegisterResult>( l.get<MasterLinkData>(), succes );
 	}
 
-	// [bool: client-server/p2p, serverName, gameType, initialRating]
-	MM_RPC(masterRpcRegisterServer, bool, string, string, float, MetaData)
+	MM_RPC(masterRpcRegisterServer, MasterSessionData)
 	{
 		RPC_BEGIN();
-		bool isPeer2Peer   = get<0>( tp );
-		const string& name = get<1>( tp );
-		const string& type = get<2>( tp );
-		float rating       = get<3>( tp );
-		const MetaData& md = get<4>( tp );
-		if ( nw.getOrAdd<MasterServer>()->registerServer( l.socket(), l.destination(), isPeer2Peer, name, type, rating, md ) )
+		const MasterSessionData& data = get<0>(tp);
+		if ( nw.getOrAdd<MasterServer>()->registerServer( l.to_ptr(), data ) )
 		{
 			l.callRpc<masterRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master register server request from %s succesful.", l.info());
@@ -86,8 +82,8 @@ namespace MiepMiep
 	{
 		RPC_BEGIN();
 		bool bSucces = get<0>( tp );
-		u32 linkId   = get<1>(tp);
-		sptr<MasterJoin> mj = l.get<MasterJoin>(); /* link is on which the rpc was received */
+		u32 linkId   = get<1>( tp );
+		sptr<MasterLinkData> mj = l.get<MasterLinkData>(); /* link is on which the rpc was received */
 		if ( bSucces )
 		{
 			// Forward ConnectResult to a single joinMaster->connect result
@@ -118,12 +114,12 @@ namespace MiepMiep
 			};
 			
 			// Try connect to received addr. If connection was already accepted, the connect member returns 'true' immediately.
-			const sptr<IAddress>& to = get<2>( tp );
-			sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( SocketAddrPair( l.socket(), *to ), linkId );
-			if ( !(newLink && mj && newLink->getOrAdd<LinkState>()->connect( mj->password(), mj->metaData(), lamConnResult )) )
-			{
-				l.pushEvent<EventJoinResult>( mj, EJoinServerResult::LogicError );
-			}
+			//const sptr<IAddress>& to = get<2>( tp );
+			//sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( SocketAddrPair( l.socket(), *to ), linkId );
+			//if ( !(newLink && mj && newLink->getOrAdd<LinkState>()->connect( mj->password(), mj->metaData(), lamConnResult )) )
+			//{
+			//	l.pushEvent<EventJoinResult>( mj, EJoinServerResult::LogicError );
+			//}
 			// else -> event will arise from connect request (or timeout event, if connect takes too long..).
 		}
 		else
@@ -132,18 +128,10 @@ namespace MiepMiep
 		}
 	}
 
-	// [serverName, findPrivate, gameType, minRating, maxRating, minPlayers, maxPlayers]
-	MM_RPC(masterRpcJoinServer, string, string, bool, float, float, u32, u32)
+	MM_RPC(masterRpcJoinServer, SearchFilter)
 	{
 		RPC_BEGIN();
-		SearchFilter sf;
-		sf.m_Name = get<0>(tp);
-		sf.m_Type = get<1>( tp );
-		sf.m_FindPrivate = get<2>(tp);
-		sf.m_MinRating   = get<3>(tp);
-		sf.m_MaxRating   = get<4>(tp);
-		sf.m_MinPlayers  = get<5>(tp);
-		sf.m_MaxPlayers  = get<6>(tp);
+		const SearchFilter& sf = get<0>(tp);
 		SocketAddrPair serverSap = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
 		if ( serverSap )
 		{
@@ -169,33 +157,25 @@ namespace MiepMiep
 
 	// ---------- MasterJoinData -------------------------------------------------------------------------------
 
-	MasterJoin::MasterJoin(Link& link, const string& name, const string& pw, const string& type, float rating, const MetaData& md):
-		ParentLink(link),
-		m_Name(name),
-		m_Pw(pw),
-		m_Type(type),
-		m_Rating(rating),
-		m_Md(md)
+	MasterLinkData::MasterLinkData(Link& link):
+		ParentLink(link)
 	{
 	}
 
-	MasterJoin::~MasterJoin()
+	MasterLinkData::~MasterLinkData()
 	{
 	}
 
-	MM_TS void MasterJoin::registerServer(bool isP2p, const MetaData& customFilterMd, const function<void (const ILink& link, bool)>& cb )
+	MM_TS void MasterLinkData::registerServer( const function<void( const ILink& link, bool )>& cb, const MasterSessionData& data )
 	{
 		m_RegisterCb = cb;
-		m_Link.callRpc<masterRpcRegisterServer, bool, string, string, float, MetaData>(
-			/* data */	isP2p, m_Name, m_Type, m_Rating, customFilterMd,
-			/* rpc */	false, false, MM_RPC_CHANNEL, nullptr);
+		m_Link.callRpc<masterRpcRegisterServer, MasterSessionData>( data, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
-	MM_TS void MasterJoin::joinServer(u32 minPlayers, u32 maxPlayers, float minRating, float maxRating, const function<void (const ILink& link, EJoinServerResult)>& cb )
+	MM_TS void MasterLinkData::joinServer( const function<void( const ILink& link, EJoinServerResult )>& cb, const SearchFilter& sf )
 	{
 		m_JoinCb = cb;
-		m_Link.callRpc<masterRpcJoinServer, string, string, bool, float, float, u32, u32>(
-			/* data */		m_Name, m_Type, (m_Pw.empty()?false:true), minRating, maxRating, minPlayers, maxPlayers,
-			/* rpc */		false, false, MM_RPC_CHANNEL, nullptr);
+		m_Link.callRpc<masterRpcJoinServer, SearchFilter>( sf, false, false, MM_RPC_CHANNEL, nullptr );
 	}
+
 }
