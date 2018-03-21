@@ -322,7 +322,7 @@ UTESTBEGIN(AutoChatServerAndClient)
 {
 	sptr<INetwork> nw = INetwork::create();
 	
-	nw->startListen( 27001, "lala2");
+	nw->startListen( 27001 );
 
 	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), "myFirstServ", "lala2" );

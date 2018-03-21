@@ -33,7 +33,7 @@ namespace MiepMiep
 		void processEvents() override;
 
 		// INetwork
-		MM_TS EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 ) override;
+		MM_TS EListenCallResult startListen( u16 port ) override;
 		MM_TS bool stopListen( u16 port ) override;
 
 		MM_TS void registerServer(const function<void (const ILink& link, bool)>& callback,

@@ -1,27 +1,6 @@
-Tue Mar 20 00:30:04 2018 ------- New Session --------
-Tue Mar 20 00:30:04 2018 ----------------------------
-Tue Mar 20 00:30:04 2018 Started listening on port 27002.
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:27002 (src_port: 57684, link: 41, socket: 256).
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:57684 (src_port: 27002, link: 41, socket: 108).
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 New master register server request from 127.0.0.1:57684 (src_port: 27002, link: 41, socket: 108) succesful.
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:27002 (src_port: 57685, link: 41, socket: 284).
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:57685 (src_port: 27002, link: 41, socket: 108).
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 New master join request from 127.0.0.1:57685 (src_port: 27002, link: 41, socket: 108) succesful.
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:57684 (src_port: 57686, link: 41, socket: 292).
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:57686 (src_port: 57684, link: 41, socket: 256).
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 Link to 127.0.0.1:57684 (src_port: 57686, link: 41, socket: 292) accepted.
-Tue Mar 20 00:30:04 2018 Received reliable seq: 1
-Tue Mar 20 00:30:04 2018 New incoming connection to 127.0.0.1:57684 (src_port: 27002, link: 41, socket: 108).
-Tue Mar 20 00:30:04 2018 Received reliable seq: 1
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:57685 (src_port: 57687, link: 41, socket: 296).
-Tue Mar 20 00:30:04 2018 Created new link to 127.0.0.1:57687 (src_port: 57685, link: 41, socket: 284).
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 Received reliable seq: 0
-Tue Mar 20 00:30:04 2018 Received reliable seq: 1
-Tue Mar 20 00:30:04 2018 New incoming connection to 127.0.0.1:57685 (src_port: 27002, link: 41, socket: 108).
+Wed Mar 21 02:17:01 2018 ------- New Session --------
+Wed Mar 21 02:17:01 2018 ----------------------------
+Wed Mar 21 02:17:01 2018 Created new link to 127.0.0.1:27002 (src_port: 63594, link: 41, socket: 244).
+Wed Mar 21 02:17:01 2018 Created new link to 127.0.0.1:27002 (src_port: 63594, link: 41, socket: 244).
+Wed Mar 21 02:17:01 2018 Created new link to 127.0.0.1:27002 (src_port: 63595, link: 41, socket: 264).
+Wed Mar 21 02:17:01 2018 Created new link to 127.0.0.1:27002 (src_port: 63595, link: 41, socket: 264).

@@ -1,0 +1,116 @@
+TODO refactor:
+
+- Link no longer has socket added to socketSetManager because it is no longer a packet handler.
+    PacketHandler is a Session
+
+- Store session state data properly like p2p
+- LinkState management for p2p and client/server
+- Listeners should have manager
+- PacketHandler remove from listener, should be provided on construction
+
+
+Socket
+    - uint
+
+Address
+    - ip
+    - port
+
+
+Link : ComponentCollection, ParentNetwork
+
+    LinkState : ParentLink, IComponent
+        - state (connecting/connected/disconnected)
+
+    LinkStats : ParentLink, IComponent
+        - maxMtu
+        - send bytes/sec
+        - recv bytes/sec
+
+    SendStreams : ParentLink, IComponent
+    RecvStreams : ParentLink, IComponent
+    AckStreams  : ParentLink, IComponent
+    
+ReceptionThread : ParentSocketSetManager
+    - listenOnSocketSet()
+    ----------------------
+    - socketSet
+    
+
+Network : ComponentCollection
+    
+    SocketSetManager : ParentNetwork, IComponent
+        - addSocket()
+        - removeSocket()
+        - merge()  { to as small socket sets as possible on remove }
+        ------------
+        - receptionThreads[]
+            
+    LinkManager : ParentNetwork, IComponent
+        - addLink( socket, destIp, id )
+        - removeLink(..)
+        -------------------
+        - links[]
+        
+
+    Session : ParentNetwork (Not a component), IPacketHandler
+        - startListen()
+        - stopListen()
+        ------
+        - ptrToNetwork
+        - isP2p
+        - pw
+        - max clients
+        - num clients
+        - state
+        - customMd
+        - links[]
+        - listeners[]
+        - buffered Rpc's
+        
+        GroupManager : ParentSession
+            - addPendingGroup
+            - removeGroup
+            - processPendingGroups
+            
+             Group : ParentGroupManager
+                - groupId
+                - variables[]
+        
+                Variable : ParentGroup
+                    - ptrToGroup
+                    - data
+                    - dataSize
+                    - bit in group
+                    - owner
+        
+    Listener : ParentNetwork (Not a component)
+        - port
+        - socket
+        - source_addr
+        
+    MasterSession : ParentMasterServer
+        - ptrToMasterServer
+        - isP2p
+        - isPassworded
+        - numClients
+        - maxClients
+        - rating
+        - hostAddr
+        - customFilterMd
+        - links[]
+    
+    MasterServer : ParentNetwork, IComponent, IPacketHandler
+        - startListen
+        - stopListen
+        - registerSession
+        - joinSession
+        ------
+        - masterSessions[]
+        - listeners[]
+        
+        
+    SendThread : ParentNetwork, IComponent
+        - links[]
+    
+    

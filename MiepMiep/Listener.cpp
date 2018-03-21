@@ -12,7 +12,6 @@ namespace MiepMiep
 {
 	Listener::Listener(Network& network):
 		IPacketHandler(network),
-		m_ListenPort(-1),
 		m_Listening(false)
 	{
 	}
@@ -22,62 +21,17 @@ namespace MiepMiep
 		stopListen();
 	}
 
-	MM_TS bool Listener::startOrRestartListening( u16 port )
+	MM_TS sptr<Listener> Listener::startListen( Network& network, u16 port )
 	{
-		scoped_lock lk(m_ListeningMutex);
-
-		if ( port == m_ListenPort && m_Listening )
-		{
-			LOGW( "Started listener while already listening on requested port %d, call ignored.", port );
-			return true; // already listening on that port
-		}
-
-		// already listening
-		if ( m_Listening ) 
-		{
-			LOG( "Was listening on port %d. But start listening was called with new port: %d. This is ok, though it would be cleaner to call 'stopListen' first.",
-				 (u16)m_ListenPort, port );
-			stopListen();
-		}
-
-		m_Socket = ISocket::create();
-		if ( m_Socket )
-		{
-			i32 err;
-			if (m_Socket->open(IPProto::Ipv4, SocketOptions(), &err))
-			{
-				if ( m_Socket->bind( port, &err ) )
-				{
-					m_Source = Endpoint::createSource( *m_Socket, &err );
-					if ( m_Source )
-					{
-						sptr<IPacketHandler> handler = ptr<IPacketHandler>();
-						m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>( m_Socket ), handler );
-						m_Listening = true;
-						LOG( "Started listening on port %d.", port );
-					}
-					else
-					{
-						LOGW( "Failed to determine local bound address, error: %d.", err );
-					}
-				}
-				else
-				{
-					LOGW( "Failed to bind socket on port %d, reason: %d.", port, err );
-				}
-			}
-			else
-			{
-				LOGW( "Failed to open socket on port %d, reason: %d.", port, err );
-			}
-		}
-		
-		return false;
+		sptr<Listener> listener = reserve_sp<Listener, Network&>( MM_FL, network );
+		if ( listener->startListenIntern( port ) )
+			return listener;
+		return nullptr;
 	}
 
-	void Listener::stopListen()
+	MM_TS void Listener::stopListen()
 	{
-		LOG( "Stop listen was called. Old listen port was %d. ", (u16)m_ListenPort );
+		LOG( "Stop listen was called. Old listen port was %d. ", m_Source?m_Source->port() : 0 );
 		scoped_lock lk(m_ListeningMutex);
 		if ( m_Socket )
 		{
@@ -87,39 +41,55 @@ namespace MiepMiep
 				ss->removeSocket( m_Socket );
 			}
 			m_Socket.reset();
-			m_Listening  = false;
-			m_ListenPort = -1;
+			m_Listening = false;
 		}
 	}
 
-	MM_TS void Listener::setMaxConnections(u32 num)
+	MM_TSC bool Listener::startListenIntern( u16 port )
 	{
-		m_MaxConnections = num;
+		assert( !m_Source && !m_Listening );
+
+		m_Socket = ISocket::create();
+		if ( !m_Socket )
+		{
+			LOGW( "Socket creation failed. ");
+			return false;
+		}
+
+		i32 err;
+		if ( !m_Socket->open( IPProto::Ipv4, SocketOptions(), &err ) )
+		{
+			LOGW( "Socket open error %d.", err );
+			return false;
+		}
+
+		if ( !m_Socket->bind( port, &err ) )
+		{
+			LOGW( "Socket bind error %d.", err );
+			return false;
+		}
+
+		m_Source = Endpoint::createSource( *m_Socket, &err );
+		if ( !m_Source )
+		{
+			LOGW( "Failed retrieve bound address from socket, error %d.", err );
+			return false;
+		}
+
+		sptr<IPacketHandler> handler = ptr<IPacketHandler>();
+		m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>(m_Socket), handler );
+		m_Listening = true;
+		
+		return true;
 	}
 
-	MM_TS void Listener::setPassword(const string& pw)
+	MM_TS u16 Listener::port() const
 	{
-		scoped_spinlock lk(m_PasswordLock);
-		m_Password = pw;
-	}
-
-	MM_TS string Listener::getPassword() const
-	{
-		scoped_spinlock lk(m_PasswordLock);
-		return m_Password;
-	}
-
-	MM_TS void Listener::increaseNumClientsByOne()
-	{
-		assert(m_NumConnections != (u32)~0);
-		m_NumConnections++;
-	}
-
-	MM_TS void Listener::reduceNumClientsByOne()
-	{
-		m_NumConnections--;
-		assert( m_NumConnections != (u32)~0 );
+		return m_Source? m_Source->port() : 0;
 	}
 
 	MM_TO_PTR_IMP( Listener )
+
+
+
 }

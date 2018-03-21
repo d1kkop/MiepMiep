@@ -151,7 +151,7 @@ namespace MiepMiep
 
 		MM_TS virtual void processEvents()=0;
 
-		MM_TS virtual EListenCallResult startListen( u16 port, const std::string& pw="", u32 maxConnections=32 )=0;
+		MM_TS virtual EListenCallResult startListen( u16 port )=0;
 		MM_TS virtual bool stopListen( u16 port )=0;
 
 		MM_TS virtual void registerServer( const std::function<void( const ILink& link, bool )>& callback,

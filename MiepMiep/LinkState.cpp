@@ -155,20 +155,21 @@ namespace MiepMiep
 				return;
 			}
 
-			// Password check
-			const string& pw = get<0>( tp );
-			if ( originator->getPassword() != pw )
-			{
-				l.callRpc<linkStatePasswordFail>();
-				return;
-			}
+			// TODO replace for get session
+			//// Password check
+			//const string& pw = get<0>( tp );
+			//if ( originator->getPassword() != pw )
+			//{
+			//	l.callRpc<linkStatePasswordFail>();
+			//	return;
+			//}
 
-			// Max clients check
-			if ( originator->getNumClients() >= originator->getMaxClients() )
-			{
-				l.callRpc<linkStateMaxClientsReached>();
-				return;
-			}
+			//// Max clients check
+			//if ( originator->getNumClients() >= originator->getMaxClients() )
+			//{
+			//	l.callRpc<linkStateMaxClientsReached>();
+			//	return;
+			//}
 
 			bool wasAccepted = l.getOrAdd<LinkState>()->acceptFromSingleTrip();
 			if ( wasAccepted )

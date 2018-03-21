@@ -16,8 +16,8 @@
 #define MM_DLL_EXPORT __declspec(dllexport)
 
 
-#define MM_TS  /* Thread safe function. */
-#define MM_ASYNC
+#define MM_TS	/* Thread safe function. */
+#define MM_TSC	/* Thread safe because data altered/read is only ever set from construction. No locks are involved. */
 
 
 #include <map>

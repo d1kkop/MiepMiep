@@ -62,22 +62,22 @@ namespace MiepMiep
 		getOrAdd<NetworkListeners>()->processAll();
 	}
 
-	MM_TS EListenCallResult Network::startListen( u16 port, const std::string& pw, u32 maxConnections )
+	MM_TS EListenCallResult Network::startListen( u16 port )
 	{
-		sptr<Listener> listener;
-		{
-			scoped_lock lk( m_ListenerAddMutex );
-			u32 i = 0;
-			while ( has<Listener>( i ) ) i++;
-			listener = getOrAdd<Listener>( i );
-		}
-		assert( listener );
-		listener->setPassword( pw );
-		listener->setMaxConnections( maxConnections );
-		if ( !listener->startOrRestartListening( port ) )
-		{
-			return EListenCallResult::SocketError;
-		}
+		//sptr<Listener> listener;
+		//{
+		//	scoped_lock lk( m_ListenerAddMutex );
+		//	u32 i = 0;
+		//	while ( has<Listener>( i ) ) i++;
+		//	listener = getOrAdd<Listener>( i );
+		//}
+		//assert( listener );
+		//listener->setPassword( pw );
+		//listener->setMaxConnections( maxConnections );
+		//if ( !listener->startOrRestartListening( port ) )
+		//{
+		//	return EListenCallResult::SocketError;
+		//}
 		return EListenCallResult::Fine;
 	}
 
@@ -90,7 +90,7 @@ namespace MiepMiep
 			while ( s < e )
 			{
 				sptr<Listener> listener = get<Listener>( s );
-				if ( listener && listener->getPort() == port )
+				if ( listener && listener->port() == port )
 				{
 					return remove<Listener>( s );
 				}

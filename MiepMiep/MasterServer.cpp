@@ -3,15 +3,13 @@
 
 namespace MiepMiep
 {
-	// ------ ServerEntry ----------------------------------------------------------------------------
+	// ------ MasterSession ----------------------------------------------------------------------------
 
-	ServerEntry::ServerEntry(bool isP2p, const string& name, const string& pw, const string& type, float initialRating, const MetaData& customFilterMd):
+	MasterSession::MasterSession(bool isP2p, const string& name, const string& type, float initialRating, const MetaData& customFilterMd):
 		m_IsP2p(isP2p),
 		m_Name(name),
-		m_Pw(pw),
 		m_Type(type),
 		m_Rating(initialRating),
-		m_NumPlayers(0),
 		m_CustomFilterMd(customFilterMd)
 	{
 	}
@@ -19,11 +17,11 @@ namespace MiepMiep
 
 	// ------ ServerList ----------------------------------------------------------------------------
 
-	void ServerList::add(const SocketAddrPair& sap, bool isP2p, const string& name, const string& pw, const string& type, float initialRating, const MetaData& customFilterMd )
+	void ServerList::add(const SocketAddrPair& sap, bool isP2p, const string& name, const string& type, float initialRating, const MetaData& customFilterMd )
 	{
 		scoped_lock lk(m_ServersMutex);
 		assert( m_Servers.count( sap ) == 0 );
-		m_Servers[sap] = ServerEntry( isP2p, name, pw, type, initialRating, customFilterMd );
+		m_Servers[sap] = MasterSession( isP2p, name, type, initialRating, customFilterMd );
 	}
 
 	bool ServerList::exists(const SocketAddrPair& sap) const
@@ -43,11 +41,11 @@ namespace MiepMiep
 		scoped_lock lk(m_ServersMutex);
 		for ( auto& kvp : m_Servers )
 		{
-			const ServerEntry& se = kvp.second;
+			const MasterSession& se = kvp.second;
 			if ( se.m_Name == name && 
 				 se.m_Pw == pw &&
 				 se.m_Type == type &&
-				 (se.m_NumPlayers >= minPlayers && se.m_NumPlayers <= maxPlayers) && 
+				 ((u32)se.m_Links.size() >= minPlayers && (u32)se.m_Links.size() <= maxPlayers) && 
 				 (se.m_Rating >= minRating && se.m_Rating <= maxRating) )
 			{
 				return kvp.first;
@@ -64,7 +62,7 @@ namespace MiepMiep
 	}
 
 	MM_TS bool MasterServer::registerServer(const ISocket& reception, const IAddress& addr, bool isP2p, const string& name, 
-											const string& pw, const string& type, float initialRating, const MetaData& customFilterMd )
+											const string& type, float initialRating, const MetaData& customFilterMd )
 	{
 		SocketAddrPair sap( reception, addr );
 		scoped_lock lk(m_ServersMutex);
@@ -79,14 +77,14 @@ namespace MiepMiep
 		{
 			if ( sl->count() < MM_NEW_SERVER_LIST_THRESHOLD )
 			{
-				sl->add( sap, isP2p, name, pw, type, initialRating, customFilterMd );
+				sl->add( sap, isP2p, name, type, initialRating, customFilterMd );
 				return true;
 			}
 		}
 
 		// not added as all have maximum size reached, add new server list
 		auto sl = make_shared<ServerList>();
-		sl->add( sap, isP2p, name, pw, type, initialRating, customFilterMd );
+		sl->add( sap, isP2p, name, type, initialRating, customFilterMd );
 		m_ServerLists.emplace_back( sl );
 
 		return true;
