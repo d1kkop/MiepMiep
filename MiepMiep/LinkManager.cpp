@@ -23,7 +23,12 @@ namespace MiepMiep
 	{
 	}
 
-	bool SocketAddrPair::operator<(const SocketAddrPair& other) const
+	SocketAddrPair::operator bool() const
+	{
+		return m_Socket && m_Address;
+	}
+
+	bool SocketAddrPair::operator<( const SocketAddrPair& other ) const
 	{
 		if ( *m_Address < *other.m_Address ) return true;
 		if ( !(*m_Address == *other.m_Address) ) return false;

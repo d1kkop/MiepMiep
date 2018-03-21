@@ -22,6 +22,7 @@ namespace MiepMiep
 		sptr<const ISocket>  m_Socket;
 		sptr<const IAddress> m_Address;
 
+		operator bool () const;
 		bool operator< (const SocketAddrPair& other) const;
 	};
 

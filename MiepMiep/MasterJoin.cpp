@@ -132,19 +132,20 @@ namespace MiepMiep
 		}
 	}
 
-	// [serverName, gameType, minRating, maxRating, minPlayers, maxPlayers]
-	MM_RPC(masterRpcJoinServer, string, string, string, float, float, u32, u32)
+	// [serverName, findPrivate, gameType, minRating, maxRating, minPlayers, maxPlayers]
+	MM_RPC(masterRpcJoinServer, string, string, bool, float, float, u32, u32)
 	{
 		RPC_BEGIN();
-		const string& name = get<0>(tp);
-		const string& pw   = get<1>(tp);
-		const string& type = get<2>(tp);
-		float minRating = get<3>(tp);
-		float maxRating = get<4>(tp);
-		u32 minPlayers  = get<5>(tp);
-		u32 maxPlayers  = get<6>(tp);
-		SocketAddrPair serverSap = nw.getOrAdd<MasterServer>()->findServerFromFilter( name, pw, type, minRating, maxRating, minPlayers, maxPlayers );
-		if ( serverSap.m_Address )
+		SearchFilter sf;
+		sf.m_Name = get<0>(tp);
+		sf.m_Type = get<1>( tp );
+		sf.m_FindPrivate = get<2>(tp);
+		sf.m_MinRating   = get<3>(tp);
+		sf.m_MaxRating   = get<4>(tp);
+		sf.m_MinPlayers  = get<5>(tp);
+		sf.m_MaxPlayers  = get<6>(tp);
+		SocketAddrPair serverSap = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
+		if ( serverSap )
 		{
 			// Make unique link id, which the server and client both use to connect (handshake).
 			u32 linkId = rand();
@@ -193,8 +194,8 @@ namespace MiepMiep
 	MM_TS void MasterJoin::joinServer(u32 minPlayers, u32 maxPlayers, float minRating, float maxRating, const function<void (const ILink& link, EJoinServerResult)>& cb )
 	{
 		m_JoinCb = cb;
-		m_Link.callRpc<masterRpcJoinServer, string, string, string, float, float, u32, u32>(
-			/* data */		m_Name, m_Pw, m_Type, minRating, maxRating, minPlayers, maxPlayers,
+		m_Link.callRpc<masterRpcJoinServer, string, string, bool, float, float, u32, u32>(
+			/* data */		m_Name, m_Type, (m_Pw.empty()?false:true), minRating, maxRating, minPlayers, maxPlayers,
 			/* rpc */		false, false, MM_RPC_CHANNEL, nullptr);
 	}
 }

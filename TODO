@@ -1,3 +1,12 @@
+Release checks:
+
+- Unit tests
+- Game test
+- Change calloc for 'malloc'
+- Specify NDEBUG
+- Change redundent LOG for LOG ( ) (nothing)
+
+
 TODO refactor:
 
 - Link no longer has socket added to socketSetManager because it is no longer a packet handler.
@@ -7,6 +16,9 @@ TODO refactor:
 - LinkState management for p2p and client/server
 - Listeners should have manager
 - PacketHandler remove from listener, should be provided on construction
+
+
+------ THE GRAND DESIGN ------
 
 
 Socket

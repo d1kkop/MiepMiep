@@ -1,13 +1,15 @@
-Wed Mar 21 02:17:17 2018 ------- New Session --------
-Wed Mar 21 02:17:17 2018 ----------------------------
-Wed Mar 21 02:17:17 2018 Created new link to 127.0.0.1:12203 (src_port: 57244, link: 15194, socket: 34812).
-Wed Mar 21 02:17:17 2018 Created new link to 127.0.0.1:12203 (src_port: 57244, link: 15194, socket: 34812).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64437, link: 41, socket: 6076).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64438, link: 41, socket: 30716).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64437, link: 41, socket: 6076).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64438, link: 41, socket: 30716).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64439, link: 41, socket: 32764).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64440, link: 41, socket: 38940).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64439, link: 41, socket: 32764).
-Wed Mar 21 02:17:18 2018 Created new link to 127.0.0.1:27001 (src_port: 64440, link: 41, socket: 38940).
-Wed Mar 21 02:17:18 2018 No memory leaks detected.
+Wed Mar 21 13:49:30 2018 ------- New Session --------
+Wed Mar 21 13:49:30 2018 ----------------------------
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:12203 (src_port: 58131, link: 19751, socket: 10172).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:12203 (src_port: 58131, link: 19751, socket: 10172).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58132, link: 41, socket: 20444).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58133, link: 41, socket: 6076).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58132, link: 41, socket: 20444).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58133, link: 41, socket: 6076).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58134, link: 41, socket: 28668).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58134, link: 41, socket: 28668).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58135, link: 41, socket: 1980).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58135, link: 41, socket: 1980).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58136, link: 18467, socket: 32764).
+Wed Mar 21 13:49:30 2018 Created new link to 127.0.0.1:27001 (src_port: 58136, link: 18467, socket: 32764).
+Wed Mar 21 13:49:30 2018 No memory leaks detected.

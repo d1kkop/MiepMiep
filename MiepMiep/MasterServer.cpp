@@ -5,13 +5,29 @@ namespace MiepMiep
 {
 	// ------ MasterSession ----------------------------------------------------------------------------
 
-	MasterSession::MasterSession(bool isP2p, const string& name, const string& type, float initialRating, const MetaData& customFilterMd):
+	MasterSession::MasterSession( bool isP2p, const string& name, const string& type, float initialRating, const MetaData& customMd ):
 		m_IsP2p(isP2p),
 		m_Name(name),
 		m_Type(type),
 		m_Rating(initialRating),
-		m_CustomFilterMd(customFilterMd)
+		m_CustomMd(customMd),
+		// -- The below will be updated from host --
+		m_IsPrivate(true), // Start private, have host update this.
+		m_MaxClients(0)
 	{
+
+	}
+
+	MM_TS bool MasterSession::operator==( const SearchFilter& sf ) const
+	{
+		scoped_lock lk( m_DataMutex );
+		return
+			m_Name == sf.m_Name &&
+			m_Type == sf.m_Type &&
+			(!m_IsPrivate || sf.m_FindPrivate) &&
+			((m_IsP2p && sf.m_FindP2p) || (!m_IsP2p && sf.m_FindClientServer)) &&
+			((u32)m_Links.size() >= sf.m_MinPlayers &&  sf.m_MaxPlayers <= m_MaxClients) &&
+			(m_Rating >= sf.m_MinRating && m_Rating <= sf.m_MaxRating);
 	}
 
 
@@ -21,7 +37,7 @@ namespace MiepMiep
 	{
 		scoped_lock lk(m_ServersMutex);
 		assert( m_Servers.count( sap ) == 0 );
-		m_Servers[sap] = MasterSession( isP2p, name, type, initialRating, customFilterMd );
+		m_Servers.try_emplace( sap, isP2p, name, type, initialRating, customFilterMd );
 	}
 
 	bool ServerList::exists(const SocketAddrPair& sap) const
@@ -30,26 +46,22 @@ namespace MiepMiep
 		return m_Servers.count( sap ) == 1;
 	}
 
-	u64 ServerList::count() const
+	u64 ServerList::num() const
 	{
 		scoped_lock lk(m_ServersMutex);
 		return m_Servers.size();
 	}
 
-	MM_TS SocketAddrPair ServerList::findFromFilter(const string& name, const string& pw, const string& type, float minRating, float maxRating, u32 minPlayers, u32 maxPlayers)
+	MM_TS SocketAddrPair ServerList::findFromFilter(const SearchFilter& sf)
 	{
 		scoped_lock lk(m_ServersMutex);
 		for ( auto& kvp : m_Servers )
 		{
 			const MasterSession& se = kvp.second;
-			if ( se.m_Name == name && 
-				 se.m_Pw == pw &&
-				 se.m_Type == type &&
-				 ((u32)se.m_Links.size() >= minPlayers && (u32)se.m_Links.size() <= maxPlayers) && 
-				 (se.m_Rating >= minRating && se.m_Rating <= maxRating) )
+			if ( se == sf )
 			{
 				return kvp.first;
-			}						 
+			}					 
 		}
 		return SocketAddrPair();
 	}
@@ -65,7 +77,7 @@ namespace MiepMiep
 											const string& type, float initialRating, const MetaData& customFilterMd )
 	{
 		SocketAddrPair sap( reception, addr );
-		scoped_lock lk(m_ServersMutex);
+		scoped_lock lk(m_ServerListMutex);
 
 		for ( auto& sl : m_ServerLists )
 		{
@@ -75,7 +87,7 @@ namespace MiepMiep
 
 		for ( auto& sl : m_ServerLists )
 		{
-			if ( sl->count() < MM_NEW_SERVER_LIST_THRESHOLD )
+			if ( sl->num() < MM_NEW_SERVER_LIST_THRESHOLD )
 			{
 				sl->add( sap, isP2p, name, type, initialRating, customFilterMd );
 				return true;
@@ -90,18 +102,17 @@ namespace MiepMiep
 		return true;
 	}
 
-	MM_TS SocketAddrPair MasterServer::findServerFromFilter(const string& name, const string& pw, const string& type,
-															float minRating, float maxRating, u32 minPlayers, u32 maxPlayers)
+	MM_TS SocketAddrPair MasterServer::findServerFromFilter(const SearchFilter& sf)
 	{
 		// Because servers are split among server lists, we do not need to lock all servers, only the lists of servers.
 		u32 i=0;
-		while (i != UINT_MAX)
+		for (u32 i=0; i != UINT_MAX; i++)
 		{
 			sptr<ServerList> sl;
 
 			// Try obtain a server list to search trough.
 			{
-				scoped_lock  lk(m_ServersMutex);
+				scoped_lock  lk(m_ServerListMutex);
 				if ( i < m_ServerLists.size() )
 				{
 					sl = m_ServerLists[i];
@@ -111,7 +122,8 @@ namespace MiepMiep
 
 			if (sl)
 			{
-				return sl->findFromFilter( name, pw, type, minRating, maxRating, minPlayers, maxPlayers );
+				auto sap = sl->findFromFilter( sf );
+				if ( sap ) return sap;
 			}
 			else
 			{
@@ -122,4 +134,5 @@ namespace MiepMiep
 
 		return SocketAddrPair();
 	}
+
 }
