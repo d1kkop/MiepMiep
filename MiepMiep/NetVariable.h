@@ -62,7 +62,7 @@ namespace MiepMiep
 		mutable  SpinLock m_ChangeMutex;
 		bool  m_Changed;
 
-		// Ownership can be changed on a variable basis inside the group.
+		// Ownership can be changed on a per variable basis inside the group.
 		mutable SpinLock m_OwnershipMutex;
 		atomic<EVarControl> m_VarControl;
 		sptr<const IAddress> m_Owner;

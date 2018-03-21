@@ -2,16 +2,15 @@
 #include "Network.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
-#include "Listener.h"
 #include "Endpoint.h"
 #include "Socket.h"
 #include "LinkState.h"
+#include "PacketHandler.h"
 #include "ReliableRecv.h"
 #include "UnreliableRecv.h"
 #include "ReliableNewRecv.h"
 #include "ReliableAckRecv.h"
 #include "ReliableNewestAckRecv.h"
-#include "SocketSetManager.h"
 #include "Util.h"
 
 
@@ -32,26 +31,12 @@ namespace MiepMiep
 	// -------- Link ----------------------------------------------------------------------------------------------------
 
 	Link::Link(Network& network):
-		IPacketHandler(network)
+		ParentNetwork(network)
 	{
 	}
 
 	Link::~Link()
 	{
-		if ( m_Originator ) 
-		{
-			// NOTE: Do not remove socket from socket set, as socket was borroed from originator (listener).
-			const_pointer_cast<Listener>( m_Originator )->reduceNumClientsByOne();
-		}
-		else
-		{
-			// Remove socket from set, if socket set manager is still alive (might be closing).
-			auto ss = m_Network.get<SocketSetManager>();
-			if ( ss )
-			{
-				ss->removeSocket( m_Socket );
-			}
-		}
 	}
 
 	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination)
@@ -79,30 +64,17 @@ namespace MiepMiep
 			return nullptr;
 		}
 
-		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
-
-		link->m_Source = Endpoint::createSource( *sock, &err );
-		if ( err != 0 )
-		{
-			LOGW( "Failed to obtain locally bound port.", err );
-			return nullptr;
-		}
-		
-		link->m_Id = id;
-		link->m_Socket = sock;
-		link->m_Destination = destination.getCopy();
-
-		// add socket to set and receive data directly in the link
-		link->m_Network.getOrAdd<SocketSetManager>()->addSocket(link->m_Socket, link->to_ptr());
-
-		LOG("Created new link to %s.", link->info());
-		return link;
+		return create( network, SocketAddrPair( *sock, destination ), id );
 	}
 
 	MM_TS sptr<Link> Link::create( Network& network, const SocketAddrPair& sap, u32 id )
 	{
 		assert( sap.m_Address && sap.m_Socket );
-		if ( !sap.m_Address || !sap.m_Socket ) return nullptr;
+		if ( !sap.m_Address || !sap.m_Socket )
+		{
+			LOGC( "Invalid socket address pair provided. Link creation discarded." );
+			return nullptr;
+		}
 
 		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
 
@@ -118,31 +90,6 @@ namespace MiepMiep
 		link->m_Socket = sap.m_Socket->to_sptr();
 		link->m_Destination = sap.m_Address->to_ptr();
 
-		// No need to add to SocketSetManager, because originator's socket is already in the manager's set.
-		LOG( "Created new link to %s.", link->info() );
-		return link;
-	}
-
-	MM_TS sptr<Link> Link::create(Network& network, u32 id, const Listener& originator, const IAddress& destination)
-	{
-		sptr<Link> link = reserve_sp<Link, Network&>(MM_FL, network);
-
-		i32 err;
-		link->m_Source = Endpoint::createSource( originator.socket(), &err );
-		if ( err != 0 )
-		{
-			LOGW( "Failed to obtain locally bound port.", err );
-			return nullptr;
-		}
-
-		link->m_Id = id;
-		link->m_Socket = originator.socket().to_sptr();
-		link->m_Originator  = originator.to_ptr();
-		link->m_Destination = destination.to_ptr();
-
-		const_pointer_cast<Listener>( link->m_Originator )->increaseNumClientsByOne();
-
-		// No need to add to SocketSetManager, because originator's socket is already in the manager's set.
 		LOG( "Created new link to %s.", link->info() );
 		return link;
 	}
@@ -158,26 +105,6 @@ namespace MiepMiep
 		return ls && ls->state() == ELinkState::Connected;
 	}
 
-	MM_TS sptr<Link> Link::getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap )
-	{
-		auto lm = m_Network.getOrAdd<LinkManager>();
-		sptr<Link> link = lm->get( sap );
-		if ( !link )
-		{
-			link = lm->add( sap, linkId );
-			if ( !link )
-			{
-				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );
-			}
-		}
-		else if ( linkId != link->id() )
-		{
-			LOGW( "Link id's do not match on %s. Incoming data is discarded.", link->info() );
-			link = nullptr; // Deliberately do not return 'valid' link.
-		}
-		return link;
-	}
-
 	MM_TS const char* Link::ipAndPort() const
 	{
 		return m_Destination->toIpAndPort();
@@ -190,7 +117,7 @@ namespace MiepMiep
 		return buff;
 	}
 
-	MM_TS SocketAddrPair Link::extractSocketAddrPair() const
+	MM_TS SocketAddrPair Link::getSocketAddrPair() const
 	{
 		return SocketAddrPair( *m_Socket, *m_Destination );
 	}

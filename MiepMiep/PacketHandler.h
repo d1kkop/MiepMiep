@@ -23,9 +23,7 @@ namespace MiepMiep
 
 		MM_TS void recvFromSocket( const ISocket& sock );
 		MM_TS void handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr );
-
-		// Link returns nullptr even if exists but link Id's do not match.
-		MM_TS virtual sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) = 0;
+		MM_TS sptr<Link> getOrCreateLink( u32 linkId, const SocketAddrPair& sap );
 	};
 
 

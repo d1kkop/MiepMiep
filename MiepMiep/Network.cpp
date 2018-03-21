@@ -107,10 +107,12 @@ namespace MiepMiep
 	{
 		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
 		{
-			getOrAdd<LinkManager>()->
-				add( *ma )->
-				getOrAdd<MasterJoin>( 0, serverName, pw, type, initialRating, hostMd )->
-				registerServer( isP2p, customFilterMd, callback );
+			auto link = getOrAdd<LinkManager>()->add( *ma );
+			if ( link )
+			{
+				link->getOrAdd<MasterJoin>( 0, serverName, pw, type, initialRating, hostMd )->
+					registerServer( isP2p, customFilterMd, callback );
+			}
 		} );
 	}
 
@@ -122,10 +124,12 @@ namespace MiepMiep
 	{
 		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
 		{
-			getOrAdd<LinkManager>()->
-				add( *ma )->
-				getOrAdd<MasterJoin>( 0, serverName, pw, type, initialRating, joinMd )->
-				joinServer( minPlayers, maxPlayers, minRating, maxRating, callback );
+			auto link = getOrAdd<LinkManager>()->add( *ma );
+			if ( link )
+			{
+				link->getOrAdd<MasterJoin>( 0, serverName, pw, type, initialRating, joinMd )->
+					joinServer( minPlayers, maxPlayers, minRating, maxRating, callback );
+			}
 		} );
 	}
 

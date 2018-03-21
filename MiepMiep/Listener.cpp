@@ -22,21 +22,6 @@ namespace MiepMiep
 		stopListen();
 	}
 
-	MM_TS sptr<Link> Listener::getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap )
-	{
-		auto lm = m_Network.getOrAdd<LinkManager>();
-		sptr<Link> link = lm->get( sap );
-		if ( !link )
-		{
-			link = lm->add( linkId, *this, *sap.m_Address );
-			if ( !link )
-			{
-				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );
-			}
-		}
-		return link;
-	}
-
 	MM_TS bool Listener::startOrRestartListening( u16 port )
 	{
 		scoped_lock lk(m_ListeningMutex);

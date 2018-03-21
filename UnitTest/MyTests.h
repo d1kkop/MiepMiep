@@ -80,10 +80,7 @@ public:
 	UnitTestPacketHandler(Network& nw):
 		IPacketHandler(nw) { }
 
-	MM_TS sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) override
-	{
-		return nullptr;
-	}
+
 };
 
 UTESTBEGIN(SocketSetTest)

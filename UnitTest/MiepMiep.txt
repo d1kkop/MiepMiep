@@ -1,4 +1,17 @@
-Sun Mar 18 16:17:37 2018 ------- New Session --------
-Sun Mar 18 16:17:37 2018 ----------------------------
-Sun Mar 18 16:17:37 2018 Created new link to 127.0.0.1:12203 (Id: 21534).
-Sun Mar 18 16:17:47 2018 No memory leaks detected.
+Wed Mar 21 01:24:58 2018 ------- New Session --------
+Wed Mar 21 01:24:58 2018 ----------------------------
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:12203 (src_port: 55473, link: 4943, socket: 34812).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:12203 (src_port: 55473, link: 4943, socket: 34812).
+Wed Mar 21 01:24:58 2018 Started listening on port 27001.
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55474, link: 41, socket: 6076).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55475, link: 41, socket: 1980).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55474, link: 41, socket: 6076).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55475, link: 41, socket: 1980).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55476, link: 41, socket: 14300).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55477, link: 41, socket: 12252).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55476, link: 41, socket: 14300).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55477, link: 41, socket: 12252).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55478, link: 18467, socket: 36892).
+Wed Mar 21 01:24:58 2018 Created new link to 127.0.0.1:27001 (src_port: 55478, link: 18467, socket: 36892).
+Wed Mar 21 01:25:00 2018 Stop listen was called. Old listen port was 65535. 
+Wed Mar 21 01:25:00 2018 No memory leaks detected.

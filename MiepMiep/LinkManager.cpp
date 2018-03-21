@@ -42,73 +42,28 @@ namespace MiepMiep
 
 	MM_TS sptr<Link> LinkManager::add(const IAddress& to)
 	{
-		sptr<Link> link = Link::create(m_Network, to);
-		if (!link)
-		{
-			return nullptr;
-		}
-
-		// insert
-		scoped_lock lk(m_LinksMapMutex);
-		m_Links[link->extractSocketAddrPair()] = link;
-		m_LinksAsArray.emplace_back(link);
-
-		return link;
+		return add(to, rand());
 	}
 
 	MM_TS sptr<Link> LinkManager::add(const IAddress& to, u32 id)
 	{
-		sptr<Link> link = Link::create(m_Network, to, id);
-		if (!link)
-		{
+		sptr<Link> link;
+		if ( !tryCreate(link, to, id) )
 			return nullptr;
-		}
-
-		// insert
-		scoped_lock lk(m_LinksMapMutex);
-		m_Links[link->extractSocketAddrPair()] = link;
-		m_LinksAsArray.emplace_back(link);
-
+		insertNoExistsCheck(link);
 		return link;
 	}
 
 	MM_TS sptr<Link> LinkManager::add( const SocketAddrPair& sap, u32 id )
 	{
-		sptr<Link> link = Link::create( m_Network, sap, id );
-		if ( !link )
-		{
+		sptr<Link> link;
+		if ( !tryCreate( link, sap, id ) )
 			return nullptr;
-		}
-
-		// insert
-		scoped_lock lk( m_LinksMapMutex );
-		m_Links[sap] = link;
-		m_LinksAsArray.emplace_back( link );
-
+		insertNoExistsCheck( link );
 		return link;
 	}
 
-	MM_TS sptr<Link> LinkManager::add(u32 id, const Listener& originator, const IAddress& to)
-	{
-		SocketAddrPair sap( originator.socket(), to );
-		scoped_lock lk(m_LinksMapMutex);
-		if ( m_Links.count( sap ) != 0 )
-			return nullptr; // already exists
-
-		sptr<Link> link = Link::create(m_Network, id, originator, to);
-		if (!link)
-		{
-			return nullptr;
-		}
-
-		// insert
-		m_Links[link->extractSocketAddrPair()] = link;
-		m_LinksAsArray.emplace_back(link);
-
-		return link;
-	}
-
-	MM_TS sptr<Link> LinkManager::get(const SocketAddrPair& sap)
+	MM_TS sptr<Link> LinkManager::get( const SocketAddrPair& sap )
 	{
 		scoped_lock lk(m_LinksMapMutex);
 		auto lit = m_Links.find( sap );
@@ -119,7 +74,13 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	MM_TS void LinkManager::forEachLink(const std::function<void(Link&)>& cb, u32 clusterSize)
+	MM_TS bool LinkManager::has( const SocketAddrPair& sap ) const
+	{
+		scoped_lock lk( m_LinksMapMutex );
+		return m_Links.count( sap ) != 0;
+	}
+
+	MM_TS void LinkManager::forEachLink( const std::function<void( Link& )>& cb, u32 clusterSize )
 	{
 		if ( 0 == clusterSize )
 		{
@@ -188,6 +149,40 @@ namespace MiepMiep
 		if ( !m_LinksAsArray.empty() )
 			return m_LinksAsArray[0];
 		return nullptr;
+	}
+
+	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const IAddress& to, u32 id )
+	{
+		link = Link::create( m_Network, to, id );
+		if ( !link ) return false;
+		auto sap = link->getSocketAddrPair();
+		if ( has( sap ) )
+		{
+			LOGW( "Tried to create a link that does already exists, creation discarded." );
+			return false;
+		}
+		link = Link::create( m_Network, sap, id );
+		return link != nullptr;
+	}
+
+	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const SocketAddrPair& sap, u32 id )
+	{
+		if ( has( sap ) )
+		{
+			LOGW( "Tried to create a link that does already exists, creation discarded." );
+			return false;
+		}
+		link = Link::create( m_Network, sap, id );
+		return link != nullptr;
+	}
+
+	MM_TS void LinkManager::insertNoExistsCheck( const sptr<Link>& link )
+	{
+		scoped_lock lk( m_LinksMapMutex );
+		auto sap = link->getSocketAddrPair();
+		assert( m_Links.count(sap) == 0 );
+		m_Links[sap] = link;
+		m_LinksAsArray.emplace_back( link );
 	}
 
 }

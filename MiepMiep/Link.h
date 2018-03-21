@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Component.h"
-#include "PacketHandler.h"
 #include "MiepMiep.h"
 #include "LinkManager.h"
 
@@ -16,15 +15,15 @@ namespace MiepMiep
 
 	// ------------ Link -----------------------------------------------
 
-	class Link: public ILink, public ComponentCollection, public IPacketHandler
+	class Link: public ParentNetwork, public ILink, public ComponentCollection, public ITraceable
 	{
 	public:
 		Link(Network& network);
 		~Link() override;
+
 		MM_TS static sptr<Link> create(Network& network, const IAddress& destination);
 		MM_TS static sptr<Link> create(Network& network, const IAddress& destination, u32 id);
 		MM_TS static sptr<Link> create(Network& network, const SocketAddrPair& sap, u32 id );
-		MM_TS static sptr<Link> create(Network& network, u32 id, const Listener& originator, const IAddress& destination);
 
 		// ILink
 		MM_TS INetwork& network() const override;
@@ -32,16 +31,13 @@ namespace MiepMiep
 		MM_TS const IAddress& source() const override { return *m_Source; }
 		MM_TS bool  isConnected() const override;
 
-		// IPacketHandler
-		MM_TS sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) override;
-
 		// These are thread safe because they are set from constructor and never changed afterwards.
 		MM_TS u32 id() const { return m_Id; }
 		MM_TS const ISocket& socket() const { return *m_Socket; }
 		MM_TS const Listener* originator() const { return m_Originator.get(); }
 		MM_TS const char* ipAndPort() const;
 		MM_TS const char* info() const;
-		MM_TS SocketAddrPair extractSocketAddrPair() const;
+		MM_TS SocketAddrPair getSocketAddrPair() const;
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );

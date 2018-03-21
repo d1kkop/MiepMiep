@@ -75,13 +75,33 @@ namespace MiepMiep
 
 		SocketAddrPair sap( sock, addr );
 
-		// Link returns nullptr even if exists but link Id's do not match
-		sptr<Link> link = getOrCreateLinkFrom( linkId, sap );
+		// Link returns nullptr even if exists but link Id's do not match.
+		sptr<Link> link = getOrCreateLink( linkId, sap );
 		
 		if ( link )
 		{
 			link->receive( bs );
 		}
+	}
+
+	MM_TS sptr<Link> IPacketHandler::getOrCreateLink( u32 linkId, const SocketAddrPair& sap )
+	{
+		auto lm = m_Network.getOrAdd<LinkManager>();
+		sptr<Link> link = lm->get( sap );
+		if ( !link )
+		{
+			link = lm->add( sap, linkId );
+			if ( !link )
+			{
+				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );
+			}
+		}
+		else if ( linkId != link->id() )
+		{
+			LOGW( "Link id's do not match on %s. Incoming data is discarded.", link->info() );
+			link = nullptr; // Deliberately do not return 'valid' link.
+		}
+		return link;
 	}
 
 	// --- Packet ------------------------------------------------------------------------------------------

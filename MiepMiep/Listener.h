@@ -17,9 +17,6 @@ namespace MiepMiep
 		~Listener() override;
 		static EComponentType compType() { return EComponentType::Listener; }
 
-		// IPacketHandler
-		MM_TS sptr<Link> getOrCreateLinkFrom( u32 linkId, const SocketAddrPair& sap ) override;
-
 		MM_TS bool startOrRestartListening( u16 port );
 		MM_TS void stopListen();
 
