@@ -88,14 +88,13 @@ namespace MyGame
 		//	md[to_string( i )] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string( i );
 		//}
 
-		MasterSessionData data;
-		SearchFilter sf;
-
-		m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp, data );
+		m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp,
+								    true, false, 10, 32, "first game", "type", "lala" );
 
 		// Note the above is an async process, so make sure it is actually registered, otherwise join will fail immediately!
 		std::this_thread::sleep_for( milliseconds(20) );
-		m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp, sf );
+		m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
+							   "first game", "type", 5, 15, 0, 128, true, true, true );
 
 		this_thread::sleep_for( milliseconds(20000) );
 		return true;

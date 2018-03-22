@@ -77,35 +77,6 @@ namespace MiepMiep
 	};
 
 
-	// ----- Helper Structs --------------------------------------------------------------------------------------------------------------
-
-	struct MM_DECLSPEC MasterSessionData
-	{
-		MasterSessionData() { memset( this, 0, sizeof( *this ) ); }
-
-		bool m_IsP2p;
-		bool m_IsPrivate;
-		float m_Rating;
-		u32	  m_MaxClients;
-		std::string m_Name;
-		std::string m_Type;
-		std::string m_Password;
-	};
-
-	struct MM_DECLSPEC SearchFilter
-	{
-		SearchFilter() { memset( this, 0, sizeof( *this ) ); }
-
-		std::string m_Name;
-		std::string m_Type;
-		float m_MinRating, m_MaxRating;
-		u32 m_MinPlayers, m_MaxPlayers;
-		bool m_FindPrivate;
-		bool m_FindP2p;
-		bool m_FindClientServer;
-		MetaData m_CustomMatchmakingMd;
-	};
-
 
 	// ---------- User Classes -------------------------------
 
@@ -185,12 +156,15 @@ namespace MiepMiep
 		MM_TS virtual bool stopListen( u16 port )=0;
 
 		MM_TS virtual void registerServer( const std::function<void( const ILink& link, bool )>& callback,
-										   const IAddress& masterAddr, const MasterSessionData& data,
+										   const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
+										   u32 maxClients, std::string name, std::string type, std::string password,
 										   const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		MM_TS virtual void joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
-									   const IAddress& masterAddr, const SearchFilter& sf,
-									   const MetaData& joinMd=MetaData() )=0;
+									   const IAddress& masterAddr, std::string name, std::string type,
+									   float minRating, float maxRating, u32 minPlayers, float maxPlayers,
+									   bool findPrivate, bool findP2p, bool findClientServer,
+									   const MetaData& joinMd=MetaData(), const MetaData customMatchMakingMd=MetaData() )=0;
 
 		template <typename T, typename ...Args>
 		MM_TS ESendCallResult callRpc( Args... args, bool localCall=false, const IAddress* specific=nullptr, bool exclude=false, bool buffer=false,

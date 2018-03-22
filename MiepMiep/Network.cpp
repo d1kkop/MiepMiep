@@ -100,10 +100,19 @@ namespace MiepMiep
 		return false;
 	}
 
-	MM_TS void Network::registerServer( const function<void( const ILink& link, bool )>& callback,
-										const IAddress& masterAddr, const MasterSessionData& data,
+	MM_TS void Network::registerServer( const std::function<void( const ILink& link, bool )>& callback,
+										const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
+										u32 maxClients, std::string name, std::string type, std::string password,
 										const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
+		MasterSessionData data;
+		data.m_IsP2p = isP2p;
+		data.m_IsPrivate = isPrivate;
+		data.m_Rating = rating;
+		data.m_MaxClients = maxClients;
+		data.m_Name = name;
+		data.m_Type = type;
+		data.m_Password = password;
 		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
 		{
 			auto link = getOrAdd<LinkManager>()->add( *ma );
@@ -114,9 +123,20 @@ namespace MiepMiep
 		} );
 	}
 
-	MM_TS void Network::joinServer( const function<void( const ILink& link, EJoinServerResult )>& callback,
-									const IAddress& masterAddr, const SearchFilter& sf, const MetaData& joinMd )
+	MM_TS void Network::joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
+									const IAddress& masterAddr, std::string name, std::string type,
+									float minRating, float maxRating, u32 minPlayers, float maxPlayers,
+									bool findPrivate, bool findP2p, bool findClientServer,
+									const MetaData& joinMd, const MetaData customMatchMakingMd )
 	{
+		SearchFilter sf;
+		sf.m_Name = name;
+		sf.m_Type = type;
+		sf.m_MinRating = minRating;
+		sf.m_MaxRating = maxRating;
+		sf.m_FindPrivate = findPrivate;
+		sf.m_FindP2p = findP2p;
+		sf.m_FindClientServer = findClientServer;
 		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
 		{
 			auto link = getOrAdd<LinkManager>()->add( *ma );

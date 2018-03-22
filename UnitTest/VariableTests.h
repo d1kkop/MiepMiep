@@ -49,9 +49,9 @@ UTESTBEGIN(VariablesTest)
 			ECreateGroupCallResult createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33 );
 			assert ( createRes == ECreateGroupCallResult::NoLinksInNetwork );
 
-			MasterSessionData data;
 
-			network->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve( "localhost", 12203 ), data );
+			network->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve( "localhost", 12203 ),
+									 true, false, 10, 32, "my game", "type", "lala" );
 
 			createRes = network->createGroup<personVarGroup, i32, i32, i32>(10, 20, 33);
 			assert(createRes == ECreateGroupCallResult::Fine);

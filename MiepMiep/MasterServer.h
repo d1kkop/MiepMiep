@@ -5,7 +5,7 @@
 #include "ParentNetwork.h"
 #include "Socket.h"
 #include "LinkManager.h"
-#include "MiepMiep.h"
+#include "Network.h"
 
 
 namespace MiepMiep
@@ -59,17 +59,17 @@ namespace MiepMiep
 
 	// ----- ServerList --------------------------------------------------------------------------------------------------------------
 
-	class ServerList
+	class ServerList : public ITraceable
 	{
 	public:
-		MM_TS void addNewMasterSession( const SocketAddrPair& sap, const MasterSessionData& data );
-		MM_TS bool exists( const SocketAddrPair& sap ) const;
+		MM_TS void addServer( const sptr<MasterSessionData>& data );
+		MM_TS void removeServer( const sptr<MasterSessionData>& data );
 		MM_TS u64 num() const;
-		MM_TS SocketAddrPair findFromFilter( const SearchFilter& sf );
+		MM_TS sptr<MasterSession> findFromFilter( const SearchFilter& sf );
 
 	private:
 		mutable mutex m_ServersMutex;
-		map<SocketAddrPair, MasterSession> m_MasterSessions;
+		map<u64, sptr<MasterSession>> m_MasterSessions;
 	};
 
 
@@ -80,9 +80,11 @@ namespace MiepMiep
 		static EComponentType compType() { return EComponentType::MasterServer; }
 
 		MM_TS bool registerServer( const sptr<Link>& link, const MasterSessionData& data );
+		MM_TS void removeServer( const sptr<Link>& link ); // Must be link that is part of a session.
 		MM_TS SocketAddrPair findServerFromFilter( const SearchFilter& sf );
 
 	private:
+		atomic<u64> m_MasterSessionIdNumerator;
 		mutex m_ServerListMutex;
 		vector<sptr<ServerList>> m_ServerLists;
 	};

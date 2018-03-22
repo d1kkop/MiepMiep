@@ -324,14 +324,18 @@ UTESTBEGIN(AutoChatServerAndClient)
 	
 	nw->startListen( 27001 );
 
-	MasterSessionData data;
-	SearchFilter sf;
+	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001),
+						true, false, 10, 32, "my game", "type", "lala" );
 
-	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001), data );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
-	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), sf );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001),
+					"first game", "type", 5, 15, 0, 128, true, true, true );
+
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), 
+					"first game", "type", 5, 15, 0, 128, true, true, true );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), 
+					"first game", "type", 5, 15, 0, 128, true, true, true );
+	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), 
+					"first game", "type", 5, 15, 0, 128, true, true, true );
 
 	return true;
 }
