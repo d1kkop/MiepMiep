@@ -29,11 +29,6 @@ inline static void rpc(Args... args, INetwork& network, BinSerializer& bs, bool 
 	std::tuple<Args...> tp(args...); \
 	MiepMiep::serialize<0, std::tuple<Args...>, Args...>( bs, true, tp ); \
 	if ( localCall ) rpc_tuple_##name( network, nullptr, tp ); \
-}\
-template <typename ...Args> \
-inline static void rpc( INetwork& network, BinSerializer& bs, bool localCall ) /* zero params case */\
-{\
-	if ( localCall ) rpc_tuple_##name( network, nullptr, std::tuple<>() ); \
 }};\
 extern "C" {\
 inline void MM_DLL_EXPORT rpc_dsr_##name(INetwork& network, const ILink& link, BinSerializer& bs)\

@@ -168,7 +168,7 @@
       <Filter>Link\Components\Link\Master</Filter>
     </ClCompile>
     <ClCompile Include="ListenerManager.cpp">
-      <Filter>Network</Filter>
+      <Filter>Network\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -311,7 +311,7 @@
       <Filter>Link\Components\Link\Master</Filter>
     </ClInclude>
     <ClInclude Include="ListenerManager.h">
-      <Filter>Network</Filter>
+      <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

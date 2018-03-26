@@ -1,6 +1,7 @@
 #include "ListenerManager.h"
 #include "Listener.h"
 #include "MiepMiep.h"
+#include "Socket.h"
 #include <cassert>
 
 
@@ -22,6 +23,7 @@ namespace MiepMiep
 		{
 			assert( m_Listeners.count( port ) == 0 );
 			m_Listeners[ port ] = listener;
+			m_ListenerSockets[ listener->socket().to_sptr() ] = listener;
 			return EListenCallResult::Fine;
 		}
 		return EListenCallResult::SocketError;
@@ -34,8 +36,15 @@ namespace MiepMiep
 		if ( lIt != m_Listeners.end() )
 		{
 			lIt->second->stopListen();
+			m_ListenerSockets.erase( lIt->second->socket().to_sptr() );
 			m_Listeners.erase(lIt);
 		}
+	}
+
+	MM_TS bool ListenerManager::isListenerSocket( const ISocket& sock ) const
+	{
+		scoped_lock lk(m_ListenersMutex);
+		return m_ListenerSockets.count( sock.to_sptr() ) != 0;
 	}
 
 }

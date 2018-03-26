@@ -4,6 +4,7 @@
 #include "Socket.h"
 #include "Network.h"
 #include "Listener.h"
+#include "ListenerManager.h"
 #include "Util.h"
 
 
@@ -111,6 +112,7 @@ namespace MiepMiep
 	MM_TS bool LinkManager::forLink(const ISocket& sock, const IAddress* specific, bool exclude, const std::function<void(Link&)>& cb)
 	{
 		bool wasSentAtLeastOnce = false;
+		sptr<ListenerManager> lm = m_Network.get<ListenerManager>();
 		scoped_lock lk(m_LinksMapMutex);
 		if ( specific ) 
 		{
@@ -128,7 +130,7 @@ namespace MiepMiep
 			{
 				for ( auto& link : m_LinksAsArray )
 				{
-					if ( !(link->socket() == sock || m_Network.isListenerSocket( sock )) || link->destination() == *specific ) 
+					if ( !(link->socket() == sock || lm->isListenerSocket( sock )) || link->destination() == *specific ) 
 						continue; // skip this one
 					cb ( *link );
 					wasSentAtLeastOnce = true;
@@ -139,7 +141,7 @@ namespace MiepMiep
 		{
 			for ( auto& link : m_LinksAsArray )
 			{
-				if ( !(link->socket() == sock || m_Network.isListenerSocket( sock )) )
+				if ( !(link->socket() == sock || lm->isListenerSocket( sock )) )
 					continue; 
 				cb ( *link );
 				wasSentAtLeastOnce = true;

@@ -7,6 +7,9 @@ using namespace std;
 
 namespace MiepMiep
 {
+	class ITraceable;
+
+
 	struct MemoryFootprint
 	{
 		string func;
@@ -15,17 +18,32 @@ namespace MiepMiep
 	};
 
 
+
+	template <typename T>
+	struct Shared : public shared_ptr<T>
+	{
+		Shared():
+			shared_ptr() { }
+
+		Shared( ITraceable* t ):
+			shared_ptr( t ) { }
+
+		void deref() { this->_Decref(); }
+	};
+
+
 	class ITraceable
 	{
 	public:
-		ITraceable();
 		virtual ~ITraceable();
 
 		template <class T>
 		sptr<T> ptr() const { assert(m_Ptr.get()); return static_pointer_cast<T>(m_Ptr); }
+
+		Shared<ITraceable> ptr_derived() const { assert( m_Ptr.get() ); return m_Ptr; }
 		
 	private:
-		sptr<ITraceable> m_Ptr;
+		Shared<ITraceable> m_Ptr;
 
 		friend class Memory;
 	};
@@ -99,18 +117,18 @@ namespace MiepMiep
 	inline sptr<T>	reserve_sp(char* fname, u64 line)						
 	{ 
 		T* t = Memory::doAlloc<T>(fname, line);
-		sptr<T> sp = t->template ptr<T>();
-		sp._Decref(); // back to 1
-		return sp;
+		Shared<ITraceable> sp = t->ptr_derived();
+		sp.deref(); // back to 1
+		return t->template ptr<T>();
 	}
 
 	template <typename T, typename ...Args>		
 	inline sptr<T>	reserve_sp(char* fname, u64 line, Args&&... args)		
 	{
 		T* t = Memory::doAlloc<T, Args...>(fname, line, args...); 
-		sptr<T> sp = t->template ptr<T>();
-		sp._Decref(); // back to 1
-		return sp;
+		Shared<ITraceable> sp = t->ptr_derived();
+		sp.deref(); // back to 1
+		return t->template ptr<T>();
 	}
 
 	template <typename T>	inline void release(T* p)		{ Memory::doDelete<T>(p); }

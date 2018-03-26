@@ -16,8 +16,6 @@ void* operator new [] (size_t n)
 
 namespace MiepMiep
 {
-	ITraceable::ITraceable()
-	= default;
 
 	ITraceable::~ITraceable()
 	{
@@ -42,7 +40,7 @@ namespace MiepMiep
 
 	ITraceable* Memory::trace(ITraceable* p, u64 size, char* fname, u64 line)
 	{
-		p->m_Ptr = sptr<ITraceable>( p );
+		p->m_Ptr = Shared<ITraceable>( p );
 		trace( sc<void*>( p ), size, fname, line );
 		return p;
 	}

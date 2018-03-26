@@ -66,6 +66,7 @@ namespace MiepMiep
 	using rscoped_lock  = lock_guard<recursive_mutex>;
 	using rmutex		= recursive_mutex;
 
+	//template <typename T> using sptr = std::shared_ptr<T>;
 	template <typename T> using wptr = weak_ptr<T>;
 	template <typename T> using uptr = unique_ptr<T>;
 

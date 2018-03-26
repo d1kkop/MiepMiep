@@ -8,6 +8,7 @@
 namespace MiepMiep
 {
 	class Listener;
+	class ISocket;
 
 
 	class ListenerManager: public ParentNetwork, public IComponent, public ITraceable
@@ -19,9 +20,11 @@ namespace MiepMiep
 
 		MM_TS EListenCallResult startListen( u16 port );
 		MM_TS void stopListen( u16 port );
+		MM_TS bool isListenerSocket( const ISocket& sock ) const;
 
 	private:
-		mutex m_ListenersMutex;
+		mutable mutex m_ListenersMutex;
 		map<u16, sptr<Listener>> m_Listeners;
+		map<sptr<const ISocket>, sptr<Listener>> m_ListenerSockets;
 	};
 }

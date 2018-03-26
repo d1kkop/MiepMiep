@@ -212,21 +212,6 @@ namespace MiepMiep
 		get<NetworkListeners>()->removeListener<IConnectionListener>( listener );
 	}
 
-	MM_TS bool Network::isListenerSocket( const ISocket& sock ) const
-	{
-		bool bfound = false;
-		forAll<Listener>( [&] ( const Listener& listener )
-		{
-			if ( listener.socket() == sock )
-			{
-				bfound = true;
-				return false; // stop iterating
-			}
-			return true; // continue iterating
-		} );
-		return bfound;
-	}
-
 	MM_TS sptr<const ISender> Network::getFirstNetworkIdentity( bool& hasMultiple ) const
 	{
 		// Either return first from listeners or from links. This works only

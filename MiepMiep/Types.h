@@ -55,14 +55,9 @@ namespace MiepMiep
 	enum class EListenCallResult;
 	enum class ECreateGroupCallResult;
 
-	using MetaData = std::map<std::string, std::string>;
-	template <typename T> using sptr = std::shared_ptr<T>;
 
-	struct IEndpoint_less
-	{
-		bool operator()( const IAddress& left, const IAddress& right ) const;
-		bool operator()( const sptr<const IAddress>& left, const sptr<const IAddress>& right ) const;
-	};
+	template <typename T> using sptr = std::shared_ptr<T>;
+	using MetaData = std::map<std::string, std::string>;
 
 
 	// ---- !! FOR INTERNAL USE ONLY !! ------

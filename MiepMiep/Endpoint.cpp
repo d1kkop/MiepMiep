@@ -38,20 +38,6 @@ namespace MiepMiep
 		return a==b;
 	}
 
-	bool IEndpoint_less::operator()( const IAddress& left, const IAddress& right ) const
-	{
-		const Endpoint& a = sc<const Endpoint&>(left);
-		const Endpoint& b = sc<const Endpoint&>(right);
-		return a < b;
-	}
-
-	bool IEndpoint_less::operator()( const sptr<const IAddress>& left, const sptr<const IAddress>& right ) const
-	{
-		const Endpoint& a = sc<const Endpoint&>(*left);
-		const Endpoint& b = sc<const Endpoint&>(*right);
-		return a < b;
-	}
-
 	sptr<IAddress> IAddress::to_ptr()
 	{
 		return sc<Endpoint&>(*this).ptr<Endpoint>();

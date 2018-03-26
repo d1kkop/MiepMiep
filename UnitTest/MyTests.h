@@ -13,6 +13,7 @@
 #include "Network.h"
 #include "MiepMiep.h"
 #include "MasterServer.h"
+#include "Common.h"
 #include <thread>
 #include <mutex>
 #include <cassert>

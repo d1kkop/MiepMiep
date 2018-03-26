@@ -63,7 +63,6 @@ namespace MiepMiep
 		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
 		MM_TS void removeConnectionListener( const IConnectionListener* listener ) override;
 
-		MM_TS bool isListenerSocket( const ISocket& sock ) const;
 		MM_TS sptr <const ISender> getFirstNetworkIdentity(bool& hasMultiple) const;
 
 
