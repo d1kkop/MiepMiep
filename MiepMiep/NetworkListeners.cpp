@@ -1,8 +1,6 @@
 #include "NetworkListeners.h"
-#include "Endpoint.h"
 #include "Network.h"
 #include "Link.h"
-#include <algorithm>
 
 
 namespace MiepMiep

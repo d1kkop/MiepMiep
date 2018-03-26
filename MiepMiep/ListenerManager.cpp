@@ -2,7 +2,6 @@
 #include "Listener.h"
 #include "MiepMiep.h"
 #include "Socket.h"
-#include <cassert>
 
 
 namespace MiepMiep

@@ -6,7 +6,6 @@
 #include "ReliableNewSend.h"
 #include "Util.h"
 #include "Platform.h"
-#include <cassert>
 using namespace chrono;
 
 

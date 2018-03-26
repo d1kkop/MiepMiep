@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Common.h"
-#include "Config.h"
 using namespace std;
 
 

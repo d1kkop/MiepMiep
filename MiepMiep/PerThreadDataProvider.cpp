@@ -1,5 +1,4 @@
 #include "PerThreadDataProvider.h"
-#include <cassert>
 
 
 namespace MiepMiep

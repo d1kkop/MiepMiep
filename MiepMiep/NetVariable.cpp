@@ -1,16 +1,11 @@
-#include "Variables.h"
+#include "NetVariable.h"
 #include "Link.h"
 #include "Network.h"
-#include "NetVariable.h"
-#include "Platform.h"
 #include "Group.h"
 #include "NetworkListeners.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
-#include "Endpoint.h"
 #include "Socket.h"
-#include <cassert>
-#include <algorithm>
 
 
 namespace MiepMiep

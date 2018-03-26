@@ -6,7 +6,6 @@
 #include "PerThreadDataProvider.h"
 #include "NetworkListeners.h"
 #include "Platform.h"
-#include "MiepMiep.h"
 
 
 namespace MiepMiep

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Component.h"
-#include "Threading.h"
 #include "PacketHandler.h"
 
 
