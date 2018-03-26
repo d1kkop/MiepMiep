@@ -27,7 +27,7 @@ namespace MiepMiep
 		~SocketSet() override;
 
 		// Fails if max number of sockets was added. For BSD sockets the default is 64.
-		MM_TS bool addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler);
+		MM_TS bool addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler);
 		MM_TS void removeSocket(const sptr<const ISocket>& sock);
 		MM_TS bool hasSocket(const sptr<const ISocket>& sock) const;
 

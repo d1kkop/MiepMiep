@@ -74,8 +74,7 @@ namespace MiepMiep
 			return false;
 		}
 
-		sptr<IPacketHandler> handler = ptr<IPacketHandler>();
-		m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>(m_Socket), handler );
+		m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>(m_Socket), ptr<IPacketHandler>() );
 		m_Listening = true;
 		
 		return true;
@@ -87,7 +86,5 @@ namespace MiepMiep
 	}
 
 	MM_TO_PTR_IMP( Listener )
-
-
 
 }

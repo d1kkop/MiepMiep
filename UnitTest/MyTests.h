@@ -82,7 +82,6 @@ public:
 	UnitTestPacketHandler(Network& nw):
 		IPacketHandler(nw) { }
 
-
 };
 
 UTESTBEGIN(SocketSetTest)
@@ -311,7 +310,7 @@ UTESTBEGIN(RPCBigTest)
 	assert( mdRead == g_md );
 
 	sptr<INetwork> nw = INetwork::create();
-	sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( *IAddress::resolve("localhost", 12203) );
+	sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( *IAddress::resolve("localhost", 12203), true );
 	bs2.setRead(0);
 	rpc_dsr_MyRpcBigTest( *nw, (ILink&) (Link&)*link, bs2 );
 

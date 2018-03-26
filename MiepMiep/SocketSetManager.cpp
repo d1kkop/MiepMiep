@@ -17,7 +17,7 @@ namespace MiepMiep
 		stop();
 	}
 
-	bool ReceptionThread::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
+	bool ReceptionThread::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
 	{
 		scoped_lock lk(m_SocketSetMutex);
 		return m_SockSet->addSocket( sock, handler );
@@ -88,7 +88,7 @@ namespace MiepMiep
 		m_ReceptionThreads.clear(); // will invoke reception thread destructors which join the calling thread
 	}
 
-	MM_TS void SocketSetManager::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
+	MM_TS void SocketSetManager::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
 	{
 		scoped_lock lk(m_ReceptionThreadsMutex);
 

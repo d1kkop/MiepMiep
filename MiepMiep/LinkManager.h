@@ -33,9 +33,9 @@ namespace MiepMiep
 		LinkManager(Network& network);
 		static EComponentType compType() { return EComponentType::LinkManager; }
 
-		MM_TS sptr<Link> add( const IAddress& to );
-		MM_TS sptr<Link> add( const IAddress& to, u32 id );
-		MM_TS sptr<Link> add( const SocketAddrPair& sap, u32 id );
+		MM_TS sptr<Link> add( const IAddress& to, bool addHandler );
+		MM_TS sptr<Link> add( const IAddress& to, u32 id, bool addHandler );
+		MM_TS sptr<Link> add( const SocketAddrPair& sap, u32 id, bool addHandler );
 		MM_TS sptr<Link> get( const SocketAddrPair& sap );
 		MM_TS bool		 has( const SocketAddrPair& sap ) const;
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb, u32 clusterSize=0 );
@@ -43,8 +43,8 @@ namespace MiepMiep
 		MM_TS sptr<const Link> getFirstLink() const;
 
 	private:
-		MM_TS bool tryCreate( sptr<Link>& link, const IAddress& to, u32 id );
-		MM_TS bool tryCreate( sptr<Link>& link, const SocketAddrPair& sap, u32 id );
+		MM_TS bool tryCreate( sptr<Link>& link, const IAddress& to, u32 id, bool addHandler );
+		MM_TS bool tryCreate( sptr<Link>& link, const SocketAddrPair& sap, u32 id, bool addHandler );
 		MM_TS void insertNoExistsCheck( const sptr<Link>& link );
 
 	private:

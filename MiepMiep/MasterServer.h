@@ -65,7 +65,8 @@ namespace MiepMiep
 	public:
 		MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList );
 
-		MM_TS void onClientJoins( const Link& link );
+		MM_TS void onClientJoins( Link& link );
+		MM_TS void onClientLeaves( Link& link );
 
 		MM_TS bool operator== ( const SearchFilter& sf ) const;
 

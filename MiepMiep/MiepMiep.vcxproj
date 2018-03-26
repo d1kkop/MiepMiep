@@ -108,6 +108,9 @@
     <ClInclude Include="NetVariable.h" />
     <ClInclude Include="Variables.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\TODO" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{8241375E-5851-44A0-9409-C53A63558C28}</ProjectGuid>

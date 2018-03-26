@@ -144,8 +144,8 @@ namespace MiepMiep
 		// Furthermore, links in that case do not have a listener, but are linked to eachother through the master server
 		// which uses the links implicitly bound ports.
 		// This is different then when using a listener, which uses a chosen port instead.
-		auto originator = l.originator();
-		if ( originator )
+	//	auto originator = l.originator();
+		if ( true )
 		{
 			// If has originator, that is, it was created from a listener.
 			// The link should have no linkState (yet).

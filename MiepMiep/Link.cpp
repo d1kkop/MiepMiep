@@ -11,6 +11,7 @@
 #include "ReliableNewRecv.h"
 #include "ReliableAckRecv.h"
 #include "ReliableNewestAckRecv.h"
+#include "SocketSetManager.h"
 #include "Util.h"
 
 
@@ -31,20 +32,29 @@ namespace MiepMiep
 	// -------- Link ----------------------------------------------------------------------------------------------------
 
 	Link::Link(Network& network):
-		ParentNetwork(network)
+		IPacketHandler(network),
+		m_SocketWasAddedToHandler(false)
 	{
 	}
 
 	Link::~Link()
 	{
+		if ( m_SocketWasAddedToHandler )
+		{
+			sptr<SocketSetManager> ss = m_Network.get<SocketSetManager>();
+			if ( ss )
+			{
+				ss->removeSocket( m_Socket );
+			}
+		}
 	}
 
-	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination)
+	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination, bool addHandler)
 	{
-		return create( network, destination, rand() );
+		return create( network, destination, rand(), addHandler );
 	}
 
-	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination, u32 id)
+	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination, u32 id, bool addHandler)
 	{
 		sptr<ISocket> sock = ISocket::create();
 		if (!sock) return nullptr;
@@ -64,10 +74,10 @@ namespace MiepMiep
 			return nullptr;
 		}
 
-		return create( network, SocketAddrPair( *sock, destination ), id );
+		return create( network, SocketAddrPair( *sock, destination ), id, addHandler );
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, const SocketAddrPair& sap, u32 id )
+	MM_TS sptr<Link> Link::create( Network& network, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
 		assert( sap.m_Address && sap.m_Socket );
 		if ( !sap.m_Address || !sap.m_Socket )
@@ -84,6 +94,12 @@ namespace MiepMiep
 		{
 			LOGW( "Failed to obtain locally bound port.", err );
 			return nullptr;
+		}
+
+		if ( addHandler )
+		{
+			network.getOrAdd<SocketSetManager>()->addSocket( sap.m_Socket, link->ptr<Link>() );
+			link->m_SocketWasAddedToHandler = true;
 		}
 
 		link->m_Id = id;

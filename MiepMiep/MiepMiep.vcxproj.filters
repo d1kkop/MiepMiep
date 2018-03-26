@@ -314,4 +314,9 @@
       <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\TODO">
+      <Filter>Core</Filter>
+    </None>
+  </ItemGroup>
 </Project>

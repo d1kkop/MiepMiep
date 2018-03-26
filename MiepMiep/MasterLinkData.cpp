@@ -54,43 +54,40 @@ namespace MiepMiep
 	// ---------- RPC -------------------------------------------------------------------------------
 
 	// [bool : succes or fail]
-	MM_RPC(masterRpcRegisterResult, bool)
+	MM_RPC(masterLinkRpcRegisterResult, bool)
 	{
 		RPC_BEGIN();
 		bool succes = get<0>(tp);
 		l.pushEvent<EventRegisterResult>( l.get<MasterLinkData>(), succes );
 	}
 
-	MM_RPC(masterRpcRegisterServer, MasterSessionData)
+	MM_RPC(masterLinkRpcRegisterServer, MasterSessionData)
 	{
 		RPC_BEGIN();
 		const MasterSessionData& data = get<0>(tp);
-		if ( nw.getOrAdd<MasterServer>()-> registerSession( l.to_ptr(), data ) )
+		if ( nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data ) )
 		{
-			l.callRpc<masterRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
+			l.callRpc<masterLinkRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master register server request from %s succesful.", l.info());
 		}
 		else
 		{
-			l.callRpc<masterRpcRegisterResult, bool>(false, false, false, MM_RPC_CHANNEL, nullptr);
+			l.callRpc<masterLinkRpcRegisterResult, bool>(false, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master register server request from %s failed.", l.info());
 		}
 	}
 
 	// [bool : succes or fail]
-	MM_RPC(masterRpcJoinResult, bool)
+	MM_RPC(masterLinkRpcJoinResult, bool)
 	{
 		RPC_BEGIN();
 		bool bSucces = get<0>( tp );
 		sptr<MasterLinkData> mj = l.get<MasterLinkData>(); 
 		assert(mj);
-		if ( bSucces )
-		{
-			 l.pushEvent<EventJoinResult>( mj, bSucces ? EJoinServerResult::Fine : EJoinServerResult::NoMatchesFound );
-		} 
+		l.pushEvent<EventJoinResult>( mj, bSucces ? EJoinServerResult::Fine : EJoinServerResult::NoMatchesFound );
 	}
 
-	MM_RPC(masterRpcJoinServer, SearchFilter)
+	MM_RPC(masterLinkRpcJoinServer, SearchFilter)
 	{
 		RPC_BEGIN();
 		const SearchFilter& sf = get<0>(tp);
@@ -98,12 +95,12 @@ namespace MiepMiep
 		if ( session )
 		{
 		//	session->onClientJoins( l );
-			l.callRpc<masterRpcJoinResult, bool>( true, false, false, MM_RPC_CHANNEL, nullptr );
+			l.callRpc<masterLinkRpcJoinResult, bool>( true, false, false, MM_RPC_CHANNEL, nullptr );
 			LOG("New master join request from %s succesful.", l.info());
 		}
 		else
 		{
-			l.callRpc<masterRpcJoinResult, bool>(false, false, false, MM_RPC_CHANNEL, nullptr);
+			l.callRpc<masterLinkRpcJoinResult, bool>(false, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master join server request from %s failed.", l.info());
 		}
 	}
@@ -124,13 +121,13 @@ namespace MiepMiep
 	MM_TS void MasterLinkData::registerServer( const function<void( const ILink& link, bool )>& cb, const MasterSessionData& data )
 	{
 		m_RegisterCb = cb;
-		m_Link.callRpc<masterRpcRegisterServer, MasterSessionData>( data, false, false, MM_RPC_CHANNEL, nullptr );
+		m_Link.callRpc<masterLinkRpcRegisterServer, MasterSessionData>( data, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
 	MM_TS void MasterLinkData::joinServer( const function<void( const ILink& link, EJoinServerResult )>& cb, const SearchFilter& sf )
 	{
 		m_JoinCb = cb;
-		m_Link.callRpc<masterRpcJoinServer, SearchFilter>( sf, false, false, MM_RPC_CHANNEL, nullptr );
+		m_Link.callRpc<masterLinkRpcJoinServer, SearchFilter>( sf, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
 }

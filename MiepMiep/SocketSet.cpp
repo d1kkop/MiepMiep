@@ -16,7 +16,7 @@ namespace MiepMiep
 	SocketSet::~SocketSet()
 	= default;
 
-	MM_TS bool SocketSet::addSocket(sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler)
+	MM_TS bool SocketSet::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler)
 	{
 		scoped_lock lk(m_SetMutex);
 		m_IsDirty = true;

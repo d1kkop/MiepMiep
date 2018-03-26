@@ -36,6 +36,16 @@ namespace MiepMiep
 	}
 
 
+	MM_RPC( masterSessionConnectTo, u32, sptr<IAddress> )
+	{
+		RPC_BEGIN();
+		u32 linkId = get<0>(tp);
+		const sptr<IAddress>& toAddr = get<1>(tp);
+		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( *toAddr, linkId, false );
+		if ( !newLink ) return;
+	}
+
+
 	// ------ MasterSession ----------------------------------------------------------------------------
 
 	MasterSession::MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList ):
@@ -46,18 +56,37 @@ namespace MiepMiep
 		m_Links.emplace_back( host );
 	}
 
-	MM_TS void MasterSession::onClientJoins( const Link& link )
+	MM_TS void MasterSession::onClientJoins( Link& newLink )
 	{
-		assert(!link.has<LinkMasterState>());
+		assert(!newLink.has<LinkMasterState>());
 		scoped_lock lk( m_DataMutex );
 		if ( m_Data.m_IsP2p )
 		{
+			// Have all existing links connect to new link and new link connect to all existing links.
+			auto addrCpy = newLink.destination().getCopy();
 			for ( auto& l : m_Links )
 			{
-				//l->callRpc<
+				u32 linkId = rand();
+				l->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, addrCpy );
+				newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, l->destination().getCopy() );
 			}
-			//l.callRpc<masterRpcJoinResult, bool, u32, sptr<IAddress>>( false, -1, sptr<IAddress>(), false, false, MM_RPC_CHANNEL, nullptr );
 		}
+		else
+		{
+			// For client-server architecture, only have new client join to host.
+			if ( m_Host ) // Host could have left session
+			{
+				u32 linkId = rand();
+				m_Host->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink.destination().getCopy() );
+				newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, m_Host->destination().getCopy() );
+			}
+		}
+		m_Links.emplace_back( newLink.to_ptr() );
+	}
+
+	MM_TS void MasterSession::onClientLeaves( Link& link )
+	{
+
 	}
 
 	MM_TS void MasterSession::removeSelf()

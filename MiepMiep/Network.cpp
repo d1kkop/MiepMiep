@@ -73,7 +73,7 @@ namespace MiepMiep
 										u32 maxClients, std::string name, std::string type, std::string password,
 										const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
-		auto link = getOrAdd<LinkManager>()->add(masterAddr);
+		auto link = getOrAdd<LinkManager>()->add(masterAddr, true);
 		if ( !link ) return false;
 		get<JobSystem>()->addJob( [=]
 		{
@@ -97,7 +97,7 @@ namespace MiepMiep
 									bool findPrivate, bool findP2p, bool findClientServer,
 									const MetaData& joinMd, const MetaData customMatchMakingMd )
 	{
-		auto link = getOrAdd<LinkManager>()->add( masterAddr );
+		auto link = getOrAdd<LinkManager>()->add( masterAddr, true );
 		if ( !link ) return false;
 		get<JobSystem>()->addJob( [=]
 		{

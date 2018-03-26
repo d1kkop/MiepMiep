@@ -3,6 +3,8 @@
 #include "Component.h"
 #include "MiepMiep.h"
 #include "LinkManager.h"
+#include "PacketHandler.h"
+#include "Socket.h"
 
 
 namespace MiepMiep
@@ -11,19 +13,18 @@ namespace MiepMiep
 	class ISocket;
 	class Network;
 	class Link;
-	class Listener;
 
 	// ------------ Link -----------------------------------------------
 
-	class Link: public ParentNetwork, public ILink, public ComponentCollection, public ITraceable
+	class Link: public ILink, public ComponentCollection, public IPacketHandler
 	{
 	public:
 		Link(Network& network);
 		~Link() override;
 
-		MM_TS static sptr<Link> create(Network& network, const IAddress& destination);
-		MM_TS static sptr<Link> create(Network& network, const IAddress& destination, u32 id);
-		MM_TS static sptr<Link> create(Network& network, const SocketAddrPair& sap, u32 id );
+		MM_TS static sptr<Link> create(Network& network, const IAddress& destination, bool addHandler);
+		MM_TS static sptr<Link> create(Network& network, const IAddress& destination, u32 id, bool addHandler);
+		MM_TS static sptr<Link> create(Network& network, const SocketAddrPair& sap, u32 id, bool addHandler);
 
 		// ILink
 		MM_TS INetwork& network() const override;
@@ -34,7 +35,6 @@ namespace MiepMiep
 		// These are thread safe because they are set from constructor and never changed afterwards.
 		MM_TS u32 id() const { return m_Id; }
 		MM_TS const ISocket& socket() const { return *m_Socket; }
-		MM_TS const Listener* originator() const { return m_Originator.get(); }
 		MM_TS const char* ipAndPort() const;
 		MM_TS const char* info() const;
 		MM_TS SocketAddrPair getSocketAddrPair() const;
@@ -64,10 +64,10 @@ namespace MiepMiep
 
 	private:
 		u32 m_Id;
+		bool m_SocketWasAddedToHandler;
 		sptr<const class IAddress>  m_Destination;
 		sptr<const class IAddress>  m_Source;
 		sptr<const class ISocket>   m_Socket;
-		sptr<const class Listener>  m_Originator;
 	};
 
 
