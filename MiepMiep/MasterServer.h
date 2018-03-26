@@ -3,73 +3,103 @@
 #include "Memory.h"
 #include "Component.h"
 #include "ParentNetwork.h"
-#include "Socket.h"
-#include "LinkManager.h"
+#include "Link.h"
 #include "Network.h"
+#include "LinkManager.h"
+#include "Platform.h"
+#include <atomic>
+#include <list>
 
 
 namespace MiepMiep
 {
 	class ISocket;
 	class IAddress;
-
-
-	template <>
-	inline bool readOrWrite( BinSerializer& bs, SearchFilter& sf, bool _write )
-	{
-		__CHECKEDB( bs.readOrWrite( sf.m_Type, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_Name, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_MinRating, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_MinPlayers, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_MaxRating, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_MaxPlayers, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_FindPrivate, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_FindP2p, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_FindClientServer, _write ) );
-		__CHECKEDB( bs.readOrWrite( sf.m_CustomMatchmakingMd, _write ) );
-		return false;
-	}
+	class MasterSession;
+	struct SearchFilter;
+	struct MasterSessionData;
 
 	template <>
-	inline bool readOrWrite( BinSerializer& bs, MasterSessionData& md, bool _write )
+	bool readOrWrite( BinSerializer& bs, SearchFilter& sf, bool _write );
+
+	template <typename T=MasterSessionData>
+	bool readOrWrite( BinSerializer& bs, MasterSessionData& md, bool _write );
+
+
+
+	// ----- SearchFilter data --------------------------------------------------------------------------------------------------------------
+
+	struct SearchFilter
 	{
-		return false;
-	}
+		std::string m_Name;
+		std::string m_Type;
+		float m_MinRating, m_MaxRating;
+		u32 m_MinPlayers, m_MaxPlayers;
+		bool m_FindPrivate;
+		bool m_FindP2p;
+		bool m_FindClientServer;
+		MetaData m_CustomMatchmakingMd;
+	};
+
+
+	// ----- MasterSession client/server shared per link data  ------------------------------------------------------------------
+
+	struct MasterSessionData : public ITraceable
+	{
+		bool  m_IsP2p;
+		bool  m_IsPrivate;
+		float m_Rating;
+		u32	  m_MaxClients;
+		std::string m_Name;
+		std::string m_Type;
+		std::string m_Password;
+	};
 
 
 	// ----- MasterSession --------------------------------------------------------------------------------------------------------------
 
-	class MasterSession
+	using MsListCIt = list<sptr<MasterSession>>::const_iterator;
+
+	class MasterSession : public ITraceable
 	{
 	public:
-		MasterSession( const MasterSessionData& data );
+		MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList );
 
-		MM_TS bool operator== (const SearchFilter& sf) const;
+		MM_TS void onClientJoins( const Link& link );
 
-	//	bool readOrWrite( BinSerializer& bs, bool write );
+		MM_TS bool operator== ( const SearchFilter& sf ) const;
+
+		MM_TS void removeSelf();
+
+		//	bool readOrWrite( BinSerializer& bs, bool write );
 
 	private:
-		MasterSessionData m_Data;
 		mutable mutex m_DataMutex;
-
+		MasterSessionData m_Data;
 		sptr<Link> m_Host;
 		vector<sptr<Link>> m_Links;
+
+		// Hard link to session list, no Id's.
+		sptr<MasterSessionList> m_SessionList;
+		MsListCIt m_SessionListIt;
+
+		friend class MasterSessionList;
 	};
 
 
-	// ----- ServerList --------------------------------------------------------------------------------------------------------------
+	// ----- MasterSessionList --------------------------------------------------------------------------------------------------------------
 
-	class ServerList : public ITraceable
+	class MasterSessionList : public ITraceable
 	{
 	public:
-		MM_TS void addServer( const sptr<MasterSessionData>& data );
-		MM_TS void removeServer( const sptr<MasterSessionData>& data );
+		MM_TS void addSession( const sptr<Link>& host, const MasterSessionData& initialData );
+		MM_TS void removeSession( MsListCIt whereIt );
 		MM_TS u64 num() const;
-		MM_TS sptr<MasterSession> findFromFilter( const SearchFilter& sf );
+		MM_TS const MasterSession* findFromFilter( const SearchFilter& sf );
 
 	private:
-		mutable mutex m_ServersMutex;
-		map<u64, sptr<MasterSession>> m_MasterSessions;
+		mutable mutex m_SessionsMutex;
+		list<sptr<MasterSession>> m_MasterSessions;
 	};
 
 
@@ -79,13 +109,12 @@ namespace MiepMiep
 		MasterServer(Network& network);
 		static EComponentType compType() { return EComponentType::MasterServer; }
 
-		MM_TS bool registerServer( const sptr<Link>& link, const MasterSessionData& data );
-		MM_TS void removeServer( const sptr<Link>& link ); // Must be link that is part of a session.
-		MM_TS SocketAddrPair findServerFromFilter( const SearchFilter& sf );
+		MM_TS bool registerSession( const sptr<Link>& link, const MasterSessionData& data );
+		MM_TS void removeSession( MasterSession& session );
+		MM_TS const MasterSession* findServerFromFilter( const SearchFilter& sf );
 
 	private:
-		atomic<u64> m_MasterSessionIdNumerator;
 		mutex m_ServerListMutex;
-		vector<sptr<ServerList>> m_ServerLists;
+		vector<sptr<MasterSessionList>> m_SessionLists;
 	};
 }

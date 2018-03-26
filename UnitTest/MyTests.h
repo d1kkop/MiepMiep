@@ -12,6 +12,7 @@
 #include "LinkManager.h"
 #include "Network.h"
 #include "MiepMiep.h"
+#include "MasterServer.h"
 #include <thread>
 #include <mutex>
 #include <cassert>

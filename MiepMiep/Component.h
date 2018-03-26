@@ -11,14 +11,15 @@ namespace MiepMiep
 	enum class EComponentType
 	{
 		LinkState,
+		LinkMasterState,
 		LinkStats,
 		MasterLinkData,
-		DelayedCallbacks,
 		RemoteServerInfo,
 		Listener,
 		LinkManager,
 		MasterServer,
 		SocketSetManager,
+		ListenerManager,
 		SendThreadManager,
 		JobSystem,
 		NetworkListeners,
@@ -58,7 +59,7 @@ namespace MiepMiep
 		template <typename T, typename CB> MM_TS void forAll(const CB& cb) const;
 
 	protected:
-		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(u32 idx=0, Args... args);
+		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(u32 idx=0, Args&&... args);
 
 	private:
 		mutable rmutex m_ComponentsMutex;
@@ -146,12 +147,12 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> ComponentCollection::getOrAddInternal(u32 idx, Args... args)
+	MM_TS sptr<T> ComponentCollection::getOrAddInternal(u32 idx, Args&&... args)
 	{
 		rscoped_lock lk(m_ComponentsMutex);
 		if (!has<T>(idx))
 		{
-			sptr<T> comp = reserve_sp<T, Args...>(MM_FL, args...);
+			sptr<T> comp = reserve_sp<T, Args...>(MM_FL, args... );
 			auto& vecComp = m_Components[T::compType()];
 			if ( vecComp.size() <= idx )
 				vecComp.resize( idx + 1 );

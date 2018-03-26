@@ -20,7 +20,7 @@ namespace MiepMiep
 	struct EventConnectResult : EventBase
 	{
 		EventConnectResult(const Link& link, EConnectResult res):
-			EventBase(link),
+			EventBase(link, false),
 			m_Result(res) { }
 
 		void process() override
@@ -38,7 +38,7 @@ namespace MiepMiep
 	struct EventNewConnection : EventBase
 	{
 		EventNewConnection(const Link& link, const IAddress& newAddr):
-			EventBase(link),
+			EventBase(link, false),
 			m_NewAddr(newAddr.to_ptr()) { }
 
 		void process() override
@@ -55,7 +55,7 @@ namespace MiepMiep
 	struct EventDisconnect : EventBase
 	{
 		EventDisconnect(const Link& link, EDisconnectReason reason, const IAddress& discAddr):
-			EventBase(link),
+			EventBase(link, false),
 			m_DiscAddr(discAddr.to_ptr()),
 			m_Reason(reason) { }
 

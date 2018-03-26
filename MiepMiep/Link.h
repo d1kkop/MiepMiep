@@ -49,13 +49,13 @@ namespace MiepMiep
 		MM_TS void pushEvent(Args&&... args); 
 
 		template <typename T, typename ...Args>
-		MM_TS sptr<T> getOrAdd(u32 idx=0, Args... args);
+		MM_TS sptr<T> getOrAdd(u32 idx=0, Args&&... args);
 
 		template <typename T, typename ...Args>
-		MM_TS sptr<T> getInNetwork(u32 idx=0, Args... args);
+		MM_TS sptr<T> getInNetwork(u32 idx=0, Args&&... args);
 
 		template <typename T, typename ...Args>
-		MM_TS sptr<T> getOrAddInNetwork(u32 idx=0, Args... args);
+		MM_TS sptr<T> getOrAddInNetwork(u32 idx=0, Args&&... args);
 
 		MM_TS void receive( BinSerializer& bs );
 		MM_TS void send( const byte* data, u32 length );
@@ -84,23 +84,23 @@ namespace MiepMiep
 	{
 		sptr<T> evt = make_shared<T>(*this, args...);
 		sptr<IEvent> evtDown = static_pointer_cast<IEvent>(evt);
-		m_Network.getOrAdd<NetworkListeners>()->pushEvent( evtDown );
+		m_Network.get<NetworkListeners>()->pushEvent( evtDown );
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> Link::getOrAdd(u32 idx, Args... args)
+	MM_TS sptr<T> Link::getOrAdd(u32 idx, Args&&... args)
 	{
 		return getOrAddInternal<T, Link&>(idx, *this, args...);
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> Link::getInNetwork(u32 idx, Args... args)
+	MM_TS sptr<T> Link::getInNetwork(u32 idx, Args&&... args)
 	{
 		return m_Network.get<T, Args...>(idx, args...);
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS sptr<T> Link::getOrAddInNetwork(u32 idx, Args... args)
+	MM_TS sptr<T> Link::getOrAddInNetwork(u32 idx, Args&&... args)
 	{
 		return m_Network.getOrAdd<T, Args...>(idx, args...);
 	}

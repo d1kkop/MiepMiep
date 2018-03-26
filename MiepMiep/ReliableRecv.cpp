@@ -17,8 +17,8 @@ namespace MiepMiep
 
 	struct EventRpc : EventBase
 	{
-		EventRpc(const Link& link, const RpcFunc& rpcFunc, const RecvPacket& pack):
-			EventBase(link),
+		EventRpc(const Link& link, const RpcFunc& rpcFunc, const RecvPacket& pack, bool isSystemRpc):
+			EventBase(link, isSystemRpc),
 			m_RpcFunc(rpcFunc),
 			m_Pack(pack)
 		{
@@ -158,15 +158,7 @@ namespace MiepMiep
 		}
 		
 		auto rpcFunc = rc<RpcFunc>( rpcAddress );
-		bool isSystemCall = pack.m_Flags & MM_SYSTEM_BIT;
-		if ( isSystemCall || m_Link.m_Network.allowAsyncCallbacks() ) // call async always
-		{
-			rpcFunc ( m_Link.m_Network, m_Link, bs );
-		}
-		else
-		{
-			m_Link.pushEvent<EventRpc>( rpcFunc, pack );
-		}
+		m_Link.pushEvent<EventRpc>( rpcFunc, pack, (pack.m_Flags & MM_SYSTEM_BIT) );
 	}
 
 }

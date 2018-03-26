@@ -166,8 +166,8 @@ namespace MiepMiep
 			LOGW( "Tried to create a link that does already exists, creation discarded." );
 			return false;
 		}
-		link = Link::create( m_Network, sap, id );
-		return link != nullptr;
+		assert(link);
+		return true;
 	}
 
 	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const SocketAddrPair& sap, u32 id )

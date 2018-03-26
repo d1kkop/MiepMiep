@@ -93,7 +93,7 @@ namespace MiepMiep
 	// Inline functions to avoid having to type Memory:: in front everywhere.
 	template <typename T>						inline T*	reserve(char* fname, u64 line)							{ return Memory::doAlloc<T>(fname, line); }
 	template <typename T>						inline T*	reserveN(char* fname, u64 line, u64 cnt)				{ return Memory::doAllocN<T>(fname, line, cnt); }
-	template <typename T, typename ...Args>		inline T*	reserve(char* fname, u64 line, Args... args)			{ return Memory::doAlloc<T, Args...>(fname, line, args...); }
+	template <typename T, typename ...Args>		inline T*	reserve(char* fname, u64 line, Args&&... args)			{ return Memory::doAlloc<T, Args...>(fname, line, args...); }
 
 	template <typename T>						
 	inline sptr<T>	reserve_sp(char* fname, u64 line)						
@@ -105,7 +105,7 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>		
-	inline sptr<T>	reserve_sp(char* fname, u64 line, Args... args)		
+	inline sptr<T>	reserve_sp(char* fname, u64 line, Args&&... args)		
 	{
 		T* t = Memory::doAlloc<T, Args...>(fname, line, args...); 
 		sptr<T> sp = t->template ptr<T>();

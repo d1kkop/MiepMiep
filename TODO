@@ -16,6 +16,7 @@ TODO refactor:
 - LinkState management for p2p and client/server
 - Listeners should have manager
 - PacketHandler remove from listener, should be provided on construction
+- Use Args&& for callRpc however, do proper handling for BinSerializer otherwise many linking errors.
 
 
 ------ THE GRAND DESIGN ------

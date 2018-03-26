@@ -16,6 +16,7 @@ namespace MiepMiep
 		/* Use Start Listen instead of constructor !! */
 		Listener( Network& network );
 		~Listener() override;
+
 		MM_TS static sptr<Listener> startListen( Network& network, u16 port );
 		MM_TS static EComponentType compType() { return EComponentType::Listener; }
 

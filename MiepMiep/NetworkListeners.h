@@ -48,7 +48,7 @@ namespace MiepMiep
 	class NetworkListeners: public ParentNetwork, public IComponent, public ITraceable
 	{
 	public:
-		NetworkListeners(Network& network);
+		NetworkListeners(Network& network, bool allowAsyncCallbacks);
 		static EComponentType compType() { return EComponentType::NetworkListeners; }
 
 		// Iterates through all events and calls appropriate listeners.
@@ -79,6 +79,7 @@ namespace MiepMiep
 
 		mutex m_EventsMutex;
 		vector<sptr<IEvent>> m_Events;
+		bool m_AllowAsyncCallbacks;
 	};
 
 
@@ -99,7 +100,7 @@ namespace MiepMiep
 
 	struct IEvent : public ITraceable
 	{
-		IEvent(): 
+		IEvent(bool isSystemEvent): 
 			m_NetworkListener(nullptr),
 			m_Network(nullptr),
 			m_IsSystemEvent(false)
@@ -115,7 +116,7 @@ namespace MiepMiep
 
 	struct EventBase : IEvent
 	{
-		EventBase(const Link& link);
+		EventBase(const Link& link, bool isSystemEvent);
 
 		sptr<const Link> m_Link;
 	};

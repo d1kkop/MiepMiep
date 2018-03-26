@@ -79,7 +79,7 @@ namespace MiepMiep
 
 		template <typename T> bool readOrWrite( T& t, bool _write )
 		{
-			return _write?write(t):read(t);
+			return _write?this->typename write(t):this->typename read(t);
 		}
 
 	private:

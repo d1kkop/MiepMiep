@@ -7,8 +7,9 @@
 
 namespace MiepMiep
 {
-	NetworkListeners::NetworkListeners(Network& network):
-		ParentNetwork(network)
+	NetworkListeners::NetworkListeners(Network& network, bool allowAsyncCallbacks):
+		ParentNetwork(network),
+		m_AllowAsyncCallbacks( allowAsyncCallbacks )
 	{
 	}
 
@@ -19,7 +20,7 @@ namespace MiepMiep
 
 		// In this case, immediately async call callback, otherwise push in list and have some other thread
 		// consume the events.
-		if ( m_Network.allowAsyncCallbacks() || event->m_IsSystemEvent )
+		if ( m_AllowAsyncCallbacks || event->m_IsSystemEvent )
 		{
 			event->process();
 		}
@@ -43,7 +44,8 @@ namespace MiepMiep
 
 	// --------- EventBase --------------------------------------------------------------------------------------
 
-	EventBase::EventBase(const Link& link):
+	EventBase::EventBase(const Link& link, bool isSystemEvent):
+		IEvent(isSystemEvent),
 		m_Link(link.to_ptr())
 	{
 	}

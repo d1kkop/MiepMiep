@@ -12,7 +12,7 @@ namespace MiepMiep
 	class  Endpoint;
 	class  ISocket;
 	struct SocketAddrPair;
-	class  ServerList;
+	class  MasterSessionList;
 
 	enum class ENetworkError
 	{
@@ -20,42 +20,6 @@ namespace MiepMiep
 		SerializationError,
 		LogicalError
 	};
-
-
-	// -------- Put here because string requires dll-interface and because 
-	// -------- we do not want to bother the user with 'helper structs'.		----------------------------------------------------
-
-	struct MasterSessionData : public IComponent, public ITraceable
-	{
-		MasterSessionData() { memset( this, 0, sizeof( *this ) ); }
-
-		bool  m_IsP2p;
-		bool  m_IsPrivate;
-		float m_Rating;
-		u32	  m_MaxClients;
-		std::string m_Name;
-		std::string m_Type;
-		std::string m_Password;
-
-		// Set from ServerList
-		u64	  m_Id;
-		sptr<ServerList> m_ServerList;
-	};
-
-	struct MM_DECLSPEC SearchFilter
-	{
-		SearchFilter() { memset( this, 0, sizeof( *this ) ); }
-
-		std::string m_Name;
-		std::string m_Type;
-		float m_MinRating, m_MaxRating;
-		u32 m_MinPlayers, m_MaxPlayers;
-		bool m_FindPrivate;
-		bool m_FindP2p;
-		bool m_FindClientServer;
-		MetaData m_CustomMatchmakingMd;
-	};
-
 
 	// ------------ Network -----------------------------------------------
 
@@ -70,14 +34,14 @@ namespace MiepMiep
 
 		// INetwork
 		MM_TS EListenCallResult startListen( u16 port ) override;
-		MM_TS bool stopListen( u16 port ) override;
+		MM_TS void stopListen( u16 port ) override;
 
-		MM_TS void registerServer( const std::function<void( const ILink& link, bool )>& callback,
+		MM_TS bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
 								   const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
 								   u32 maxClients, std::string name, std::string type, std::string password,
 								   const MetaData& hostMd, const MetaData& customMatchmakingMd ) override;
 
-		MM_TS void joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
+		MM_TS bool joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
 							   const IAddress& masterAddr, std::string name, std::string type,
 							   float minRating, float maxRating, u32 minPlayers, float maxPlayers,
 							   bool findPrivate, bool findP2p, bool findClientServer,
@@ -123,13 +87,6 @@ namespace MiepMiep
 		template <typename T, typename ...Args> 
 		MM_TS ESendCallResult callRpc2( Args... args, const ISender& sender, bool localCall=false, const IAddress* specific=nullptr, bool exclude=false, bool buffer=false, 
 										bool relay=false, bool systemBit=true, byte channel=0, IDeliveryTrace* trace=nullptr );
-
-		bool allowAsyncCallbacks() const { return m_AllowAsyncCallbacks; }
-
-
-	private:
-		bool m_AllowAsyncCallbacks;
-		mutex m_ListenerAddMutex;
 	};
 
 

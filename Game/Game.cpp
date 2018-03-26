@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "BinSerializer.h"
+#include "MasterServer.h" 
 #include "Apple.h"
 #include "Tree.h"
 #include <iostream>
@@ -32,40 +33,13 @@ namespace MyGame
 	}
 
 
-
 	Game::Game()
 	= default;
-
-	struct Hello
-	{
-		Hello()
-		{
-			cout << "Struct hello" << endl;
-		}
-
-		Hello(const Hello& h)
-		{
-			cout << "Copy hello" << endl;
-		}
-
-		~Hello()
-		{
-			cout << "dstr hello " << endl;
-		}
-
-		void sayHello() { }
-	};
-
-	void myFunc(  std::function<void ()> cb )
-	{
-
-	}
 
 
 	bool Game::init()
 	{
 		BinSerializer bs;
-		Hello h;
 
 		m_Network = INetwork::create( true );
 		m_Network->addConnectionListener( this );
@@ -93,8 +67,8 @@ namespace MyGame
 
 		// Note the above is an async process, so make sure it is actually registered, otherwise join will fail immediately!
 		std::this_thread::sleep_for( milliseconds(20) );
-		m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
-							   "first game", "type", 5, 15, 0, 128, true, true, true );
+	//	m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
+	//						   "first game", "type", 5, 15, 0, 128, true, true, true );
 
 		this_thread::sleep_for( milliseconds(20000) );
 		return true;
@@ -132,24 +106,8 @@ namespace MyGame
 		case EJoinServerResult::Fine:
 			cout << "connected to: " << link.destination().toIpAndPort() << endl;
 			break;
-		case EJoinServerResult::TimedOut:
-			cout << "connecting to: " << link.destination().toIpAndPort() << " timed out." << endl;
-			break;
-		case EJoinServerResult::InvalidPassword:
-			cout << "connecting to: " << link.destination().toIpAndPort() << " invalid password." << endl;
-			break;
-		case EJoinServerResult::MaxConnectionsReached:
-			cout << "connecting to: " << link.destination().toIpAndPort() << " max connections reached." << endl;
-			break;
-		case EJoinServerResult::AlreadyConnected:
-			cout << "connecting to: " << link.destination().toIpAndPort() << " already connected." << endl;
-			break;
 		case EJoinServerResult::NoMatchesFound:
-			cout << "connecting to: " << link.destination().toIpAndPort() << " failed -> no matches found." << endl;
-			break;
-		default:
-			cout << "connecting to: " << link.destination().toIpAndPort() << " unknown result returned!" << endl;
-			break;
+			cout << "no matches found" << link.destination().toIpAndPort() << endl;
 		}
 	}
 

@@ -20,7 +20,7 @@ namespace MiepMiep
 	struct EventOwnerChanged : EventBase
 	{
 		EventOwnerChanged(const Link& link, const IAddress* newOwner, const Group& group, byte varIdx):
-			EventBase(link),
+			EventBase(link, false),
 			m_NewOwner( newOwner ? newOwner->to_ptr() : nullptr ),
 			m_Group(group.ptr<Group>()),
 			m_VarBit(varIdx)
@@ -265,7 +265,7 @@ namespace MiepMiep
 
 		auto sender = getSender();
 		assert( sender );
-		auto sendRes = nw->callRpc2<MiepMiep::changeOwner, u32, byte, string>( 
+		auto sendRes = nw->callRpc2<MiepMiep::changeOwner, u32, byte, string>(
 			groupId(), bit(), ipAndPort, *sender, false, nullptr, false, 
 			false, true, true, MM_VG_CHANNEL, nullptr 
 		);

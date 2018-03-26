@@ -98,7 +98,7 @@ namespace MiepMiep
 		assert( sc<const ISocket&>(sender) == m_Link.socket() );
 		m_Link.callRpc<createGroup, string, u32, BinSerializer>
 			(
-				typeName, groupId, initData, false, false,
+				typeName, move( groupId ), initData, false, false,
 				MM_VG_CHANNEL, nullptr
 			);
 	}

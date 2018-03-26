@@ -13,9 +13,11 @@
 #include "PacketHandler.h"
 #include "SendThread.h"
 #include "SocketSetManager.h"
+#include "ListenerManager.h"
 #include "Listener.h"
 #include "Endpoint.h"
 #include "Socket.h"
+#include "MasterServer.h"
 
 
 namespace MiepMiep
@@ -38,12 +40,12 @@ namespace MiepMiep
 
 	// -------- Network -----------------------------------------------------------------------------------------------------
 
-	Network::Network( bool allowAsyncCallbacks ):
-		m_AllowAsyncCallbacks( allowAsyncCallbacks )
+	Network::Network( bool allowAsyncCallbacks )
 	{
 		getOrAdd<JobSystem>( 0, 4 );   // N worker threads
 		getOrAdd<SendThread>();		 // starts a 'resend' flow and creates jobs per N links whom dispatch their data
 		getOrAdd<SocketSetManager>(); // each N sockets is a new reception thread, default N = 64
+		getOrAdd<NetworkListeners>( 0, allowAsyncCallbacks );
 	}
 
 	Network::~Network()
@@ -59,92 +61,64 @@ namespace MiepMiep
 
 	MM_TS void Network::processEvents()
 	{
-		getOrAdd<NetworkListeners>()->processAll();
+		get<NetworkListeners>()->processAll();
 	}
 
 	MM_TS EListenCallResult Network::startListen( u16 port )
 	{
-		//sptr<Listener> listener;
-		//{
-		//	scoped_lock lk( m_ListenerAddMutex );
-		//	u32 i = 0;
-		//	while ( has<Listener>( i ) ) i++;
-		//	listener = getOrAdd<Listener>( i );
-		//}
-		//assert( listener );
-		//listener->setPassword( pw );
-		//listener->setMaxConnections( maxConnections );
-		//if ( !listener->startOrRestartListening( port ) )
-		//{
-		//	return EListenCallResult::SocketError;
-		//}
-		return EListenCallResult::Fine;
+		return getOrAdd<ListenerManager>()->startListen( port );
 	}
 
-	MM_TS bool Network::stopListen( u16 port )
+	MM_TS void Network::stopListen( u16 port )
 	{
-		sptr<Listener> listener;
-		{
-			scoped_lock lk( m_ListenerAddMutex );
-			u32 s = 0, e = count<Listener>();
-			while ( s < e )
-			{
-				sptr<Listener> listener = get<Listener>( s );
-				if ( listener && listener->port() == port )
-				{
-					return remove<Listener>( s );
-				}
-				++s;
-			}
-		}
-		return false;
+		getOrAdd<ListenerManager>()->stopListen( port );
 	}
 
-	MM_TS void Network::registerServer( const std::function<void( const ILink& link, bool )>& callback,
+	MM_TS bool Network::registerServer( const std::function<void( const ILink& link, bool )>& callback,
 										const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
 										u32 maxClients, std::string name, std::string type, std::string password,
 										const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
-		MasterSessionData data;
-		data.m_IsP2p = isP2p;
-		data.m_IsPrivate = isPrivate;
-		data.m_Rating = rating;
-		data.m_MaxClients = maxClients;
-		data.m_Name = name;
-		data.m_Type = type;
-		data.m_Password = password;
-		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
+		auto link = getOrAdd<LinkManager>()->add(masterAddr);
+		if ( !link ) return false;
+		get<JobSystem>()->addJob( [=]
 		{
-			auto link = getOrAdd<LinkManager>()->add( *ma );
-			if ( link )
-			{
-				link->getOrAdd<MasterLinkData>()->registerServer( callback, data );
-			}
+			assert(link);
+			MasterSessionData data;
+			data.m_IsP2p = isP2p;
+			data.m_IsPrivate = isPrivate;
+			data.m_Rating = rating;
+			data.m_MaxClients = maxClients;
+			data.m_Name = name;
+			data.m_Type = type;
+			data.m_Password = password;
+			link->getOrAdd<MasterLinkData>()->registerServer( callback, data );
 		} );
+		return true;
 	}
 
-	MM_TS void Network::joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
+	MM_TS bool Network::joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
 									const IAddress& masterAddr, std::string name, std::string type,
 									float minRating, float maxRating, u32 minPlayers, float maxPlayers,
 									bool findPrivate, bool findP2p, bool findClientServer,
 									const MetaData& joinMd, const MetaData customMatchMakingMd )
 	{
-		SearchFilter sf;
-		sf.m_Name = name;
-		sf.m_Type = type;
-		sf.m_MinRating = minRating;
-		sf.m_MaxRating = maxRating;
-		sf.m_FindPrivate = findPrivate;
-		sf.m_FindP2p = findP2p;
-		sf.m_FindClientServer = findClientServer;
-		get<JobSystem>()->addJob( [=, ma = masterAddr.getCopy()]
+		auto link = getOrAdd<LinkManager>()->add( masterAddr );
+		if ( !link ) return false;
+		get<JobSystem>()->addJob( [=]
 		{
-			auto link = getOrAdd<LinkManager>()->add( *ma );
-			if ( link )
-			{
-				link->getOrAdd<MasterLinkData>()->joinServer( callback, sf );
-			}
+			assert(link);
+			SearchFilter sf;
+			sf.m_Name = name;
+			sf.m_Type = type;
+			sf.m_MinRating = minRating;
+			sf.m_MaxRating = maxRating;
+			sf.m_FindPrivate = findPrivate;
+			sf.m_FindP2p = findP2p;
+			sf.m_FindClientServer = findClientServer;
+			link->getOrAdd<MasterLinkData>()->joinServer( callback, sf );
 		} );
+		return true;
 	}
 
 	MM_TS void Network::createGroupInternal( const ISender& sender, const string& groupType, const BinSerializer& initData, byte channel, IDeliveryTrace* trace )
@@ -230,12 +204,12 @@ namespace MiepMiep
 
 	MM_TS void Network::addConnectionListener( IConnectionListener* listener )
 	{
-		getOrAdd<NetworkListeners>()->addListener<IConnectionListener>( listener );
+		get<NetworkListeners>()->addListener<IConnectionListener>( listener );
 	}
 
 	MM_TS void Network::removeConnectionListener( const IConnectionListener* listener )
 	{
-		getOrAdd<NetworkListeners>()->removeListener<IConnectionListener>( listener );
+		get<NetworkListeners>()->removeListener<IConnectionListener>( listener );
 	}
 
 	MM_TS bool Network::isListenerSocket( const ISocket& sock ) const

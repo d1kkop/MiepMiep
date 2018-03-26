@@ -41,17 +41,13 @@ namespace MiepMiep
 	enum class EJoinServerResult : byte
 	{
 		Fine,
-		NoMatchesFound,
-		InvalidPassword,
-		TimedOut,
-		MaxConnectionsReached,
-		AlreadyConnected,
-		LogicError
+		NoMatchesFound
 	};
 
 	enum class EListenCallResult
 	{
 		Fine,
+		// See log.
 		SocketError
 	};
 
@@ -153,14 +149,16 @@ namespace MiepMiep
 		MM_TS virtual void processEvents()=0;
 
 		MM_TS virtual EListenCallResult startListen( u16 port )=0;
-		MM_TS virtual bool stopListen( u16 port )=0;
+		MM_TS virtual void stopListen( u16 port )=0;
 
-		MM_TS virtual void registerServer( const std::function<void( const ILink& link, bool )>& callback,
+		/*	Returns false if creation failed. This should only ever occur when all ports on the local machine are in use. */
+		MM_TS virtual bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
 										   const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
 										   u32 maxClients, std::string name, std::string type, std::string password,
 										   const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
-		MM_TS virtual void joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
+		/*	Returns false if creation failed. This should only ever occur when all porst on the local machine are in use. */
+		MM_TS virtual bool joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
 									   const IAddress& masterAddr, std::string name, std::string type,
 									   float minRating, float maxRating, u32 minPlayers, float maxPlayers,
 									   bool findPrivate, bool findP2p, bool findClientServer,
@@ -171,7 +169,7 @@ namespace MiepMiep
 									   bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr, const ISender* sender=nullptr );
 
 		template <typename T, typename ...Args>
-		MM_TS ECreateGroupCallResult createGroup( Args... args, bool localCall=false, byte channel=0, IDeliveryTrace* trace=nullptr, const ISender* sender=nullptr );
+		MM_TS ECreateGroupCallResult createGroup( Args&&... args, bool localCall=false, byte channel=0, IDeliveryTrace* trace=nullptr, const ISender* sender=nullptr );
 		MM_TS virtual void destroyGroup( u32 groupId )=0;
 
 		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener )=0;
@@ -195,7 +193,7 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS ECreateGroupCallResult INetwork::createGroup( Args... args, bool localCall, byte channel, IDeliveryTrace* trace, const ISender* sender )
+	MM_TS ECreateGroupCallResult INetwork::createGroup( Args&&... args, bool localCall, byte channel, IDeliveryTrace* trace, const ISender* sender )
 	{
 		auto& bs=priv_get_thread_serializer();
 		T::rpc<Args...>( args..., *this, bs, localCall );
