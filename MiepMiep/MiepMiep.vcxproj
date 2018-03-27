@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="BinSerializer.cpp" />
     <ClCompile Include="JobSystem.cpp" />
-    <ClCompile Include="LinkMasterState.cpp" />
     <ClCompile Include="LinkStats.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="ListenerManager.cpp" />
@@ -51,6 +50,7 @@
     <ClCompile Include="ReliableSend.cpp" />
     <ClCompile Include="RemoteServerInfo.cpp" />
     <ClCompile Include="SendThread.cpp" />
+    <ClCompile Include="Session.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="SocketSet.cpp" />
     <ClCompile Include="SocketSetManager.cpp" />
@@ -63,7 +63,6 @@
     <ClInclude Include="BinSerializer.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="JobSystem.h" />
-    <ClInclude Include="LinkMasterState.h" />
     <ClInclude Include="LinkStats.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="ListenerManager.h" />
@@ -80,6 +79,7 @@
     <ClInclude Include="ReliableNewestAckSend.h" />
     <ClInclude Include="Rpc.h" />
     <ClInclude Include="SendThread.h" />
+    <ClInclude Include="Session.h" />
     <ClInclude Include="SocketSetManager.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Component.h" />

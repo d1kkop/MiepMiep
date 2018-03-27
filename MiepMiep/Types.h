@@ -36,6 +36,7 @@ namespace MiepMiep
 
 	class IAddress;
 	class ILink;
+	class ISession;
 	class INetwork;
 	class ISender;
 	class BinSerializer;
@@ -56,8 +57,9 @@ namespace MiepMiep
 	enum class ECreateGroupCallResult;
 
 
-	template <typename T> using sptr = std::shared_ptr<T>;
-	using MetaData = std::map<std::string, std::string>;
+	template <typename T>
+	using sptr		= std::shared_ptr<T>;
+	using MetaData	= std::map<std::string, std::string>;
 
 
 	// ---- !! FOR INTERNAL USE ONLY !! ------

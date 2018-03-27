@@ -38,14 +38,14 @@ namespace MiepMiep
 
 		MM_TS bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
 								   const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
-								   u32 maxClients, std::string name, std::string type, std::string password,
+								   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 								   const MetaData& hostMd, const MetaData& customMatchmakingMd ) override;
 
 		MM_TS bool joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
-							   const IAddress& masterAddr, std::string name, std::string type,
+							   const IAddress& masterAddr, const std::string& name, const std::string& type,
 							   float minRating, float maxRating, u32 minPlayers, float maxPlayers,
-							   bool findPrivate, bool findP2p, bool findClientServer,
-							   const MetaData& joinMd, const MetaData customMatchMakingMd ) override;
+							   bool findP2p, bool findClientServer,
+							   const MetaData& joinMd, const MetaData& customMatchmakingMd ) override;
 
 		MM_TS void createGroupInternal( const ISender& sender, const string& typeName, const BinSerializer& initData, byte channel, IDeliveryTrace* trace );
 		MM_TS void destroyGroup( u32 groupId ) override;

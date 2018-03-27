@@ -1,4 +1,5 @@
 #include "Network.h"
+#include "Session.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
 #include "LinkState.h"
@@ -70,47 +71,51 @@ namespace MiepMiep
 
 	MM_TS bool Network::registerServer( const std::function<void( const ILink& link, bool )>& callback,
 										const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
-										u32 maxClients, std::string name, std::string type, std::string password,
+										u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
-		auto link = getOrAdd<LinkManager>()->add(masterAddr, true);
+		auto link = getOrAdd<LinkManager>()->add( nullptr, masterAddr, true );	
 		if ( !link ) return false;
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link);
+			auto s = reserve_sp<Session>( MM_FL, link, "", hostMd );
+			link->setSession( s );
 			MasterSessionData data;
-			data.m_IsP2p = isP2p;
-			data.m_IsPrivate = isPrivate;
-			data.m_Rating = rating;
-			data.m_MaxClients = maxClients;
-			data.m_Name = name;
 			data.m_Type = type;
+			data.m_Name = name;
+			data.m_IsP2p = isP2p;
+			data.m_Rating = rating;
 			data.m_Password = password;
-			link->getOrAdd<MasterLinkData>()->registerServer( callback, data );
+			data.m_IsPrivate = isPrivate;
+			data.m_MaxClients = maxClients;
+			link->getOrAdd<MasterLinkData>()->registerServer( callback, data, customMatchmakingMd );
 		} );
 		return true;
 	}
 
 	MM_TS bool Network::joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
-									const IAddress& masterAddr, std::string name, std::string type,
+									const IAddress& masterAddr, const std::string& name, const std::string& type,
 									float minRating, float maxRating, u32 minPlayers, float maxPlayers,
-									bool findPrivate, bool findP2p, bool findClientServer,
-									const MetaData& joinMd, const MetaData customMatchMakingMd )
+									bool findP2p, bool findClientServer,
+									const MetaData& joinMd, const MetaData& customMatchmakingMd )
 	{
-		auto link = getOrAdd<LinkManager>()->add( masterAddr, true );
+		auto link = getOrAdd<LinkManager>()->add( nullptr, masterAddr, true );
 		if ( !link ) return false;
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link);
+			auto s = reserve_sp<Session>( MM_FL, link, "", joinMd );
+			link->setSession( s );
 			SearchFilter sf;
 			sf.m_Name = name;
 			sf.m_Type = type;
 			sf.m_MinRating = minRating;
 			sf.m_MaxRating = maxRating;
-			sf.m_FindPrivate = findPrivate;
+			sf.m_FindPrivate = false;
 			sf.m_FindP2p = findP2p;
 			sf.m_FindClientServer = findClientServer;
-			link->getOrAdd<MasterLinkData>()->joinServer( callback, sf );
+			link->getOrAdd<MasterLinkData>()->joinServer( callback, sf, customMatchmakingMd );
 		} );
 		return true;
 	}

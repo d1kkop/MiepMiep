@@ -164,11 +164,11 @@
     <ClCompile Include="MasterLinkData.cpp">
       <Filter>Link\Components\Link\Master</Filter>
     </ClCompile>
-    <ClCompile Include="LinkMasterState.cpp">
-      <Filter>Link\Components\Link\Master</Filter>
-    </ClCompile>
     <ClCompile Include="ListenerManager.cpp">
       <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Core\HighLevelTypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -307,11 +307,11 @@
     <ClInclude Include="MasterLinkData.h">
       <Filter>Link\Components\Link\Master</Filter>
     </ClInclude>
-    <ClInclude Include="LinkMasterState.h">
-      <Filter>Link\Components\Link\Master</Filter>
-    </ClInclude>
     <ClInclude Include="ListenerManager.h">
       <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Core\HighLevelTypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

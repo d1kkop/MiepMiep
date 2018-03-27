@@ -126,16 +126,25 @@ namespace MiepMiep
 		sptr<const IAddress> to_ptr() const;
 	};
 
+
 	class MM_DECLSPEC ILink
 	{
 	public:
 		MM_TS virtual INetwork& network() const=0;
+		MM_TS virtual ISession* session() const=0;
 		MM_TS virtual const IAddress& destination() const=0;
 		MM_TS virtual const IAddress& source() const=0;
 		MM_TS virtual bool  isConnected() const=0;
+		
 
 		MM_TS sptr<ILink> to_ptr();
 		MM_TS sptr<const ILink> to_ptr() const;
+	};
+
+
+	class MM_DECLSPEC ISession
+	{
+		
 	};
 
 
@@ -154,15 +163,15 @@ namespace MiepMiep
 		/*	Returns false if creation failed. This should only ever occur when all ports on the local machine are in use. */
 		MM_TS virtual bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
 										   const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
-										   u32 maxClients, std::string name, std::string type, std::string password,
+										   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										   const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		/*	Returns false if creation failed. This should only ever occur when all porst on the local machine are in use. */
 		MM_TS virtual bool joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
-									   const IAddress& masterAddr, std::string name, std::string type,
+									   const IAddress& masterAddr, const std::string& name, const std::string& type,
 									   float minRating, float maxRating, u32 minPlayers, float maxPlayers,
-									   bool findPrivate, bool findP2p, bool findClientServer,
-									   const MetaData& joinMd=MetaData(), const MetaData customMatchMakingMd=MetaData() )=0;
+									   bool findP2p, bool findClientServer,
+									   const MetaData& joinMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		template <typename T, typename ...Args>
 		MM_TS ESendCallResult callRpc( Args... args, bool localCall=false, const IAddress* specific=nullptr, bool exclude=false, bool buffer=false,

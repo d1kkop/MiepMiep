@@ -63,9 +63,9 @@ namespace MiepMiep
 	class MasterSession : public ITraceable
 	{
 	public:
-		MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList );
+		MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList, const MetaData& customMatchmakingMd );
 
-		MM_TS void onClientJoins( Link& link );
+		MM_TS void onClientJoins( Link& link, const MetaData& customMatchmakingMd );
 		MM_TS void onClientLeaves( Link& link );
 
 		MM_TS bool operator== ( const SearchFilter& sf ) const;
@@ -79,6 +79,7 @@ namespace MiepMiep
 		MasterSessionData m_Data;
 		sptr<Link> m_Host;
 		vector<sptr<Link>> m_Links;
+		bool m_NewLinksCanJoin; // Becomes false if someone leaves in p2p session.
 
 		// Hard link to session list, no Id's.
 		sptr<MasterSessionList> m_SessionList;
@@ -93,10 +94,10 @@ namespace MiepMiep
 	class MasterSessionList : public ITraceable
 	{
 	public:
-		MM_TS void addSession( const sptr<Link>& host, const MasterSessionData& initialData );
+		MM_TS void addSession( const sptr<Link>& host, const MasterSessionData& initialData, const MetaData& customMatchmakingMd );
 		MM_TS void removeSession( MsListCIt whereIt );
 		MM_TS u64 num() const;
-		MM_TS const MasterSession* findFromFilter( const SearchFilter& sf );
+		MM_TS MasterSession* findFromFilter( const SearchFilter& sf );
 
 	private:
 		mutable mutex m_SessionsMutex;
@@ -110,9 +111,9 @@ namespace MiepMiep
 		MasterServer(Network& network);
 		static EComponentType compType() { return EComponentType::MasterServer; }
 
-		MM_TS bool registerSession( const sptr<Link>& link, const MasterSessionData& data );
+		MM_TS bool registerSession( const sptr<Link>& link, const MasterSessionData& data, const MetaData& customMatchmakingMd );
 		MM_TS void removeSession( MasterSession& session );
-		MM_TS const MasterSession* findServerFromFilter( const SearchFilter& sf );
+		MM_TS MasterSession* findServerFromFilter( const SearchFilter& sf );
 
 	private:
 		mutex m_ServerListMutex;

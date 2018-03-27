@@ -39,6 +39,12 @@ namespace MiepMiep
 	}
 
 
+	bool SocketAddrPair::operator==( const SocketAddrPair& other ) const
+	{
+		return  (*m_Address == *other.m_Address) &&
+				(*m_Socket == *other.m_Socket);
+	}
+
 	// --------- LinkManager ------------------------------------------------------------------------
 
 	LinkManager::LinkManager(Network& network):
@@ -46,24 +52,24 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS sptr<Link> LinkManager::add(const IAddress& to, bool addHandler)
+	MM_TS sptr<Link> LinkManager::add( const Session* session, const IAddress& to, bool addHandler)
 	{
-		return add(to, rand(), addHandler);
+		return add(session, to, rand(), addHandler);
 	}
 
-	MM_TS sptr<Link> LinkManager::add(const IAddress& to, u32 id, bool addHandler)
+	MM_TS sptr<Link> LinkManager::add( const Session* session, const IAddress& to, u32 id, bool addHandler)
 	{
 		sptr<Link> link;
-		if ( !tryCreate(link, to, id, addHandler) )
+		if ( !tryCreate(link, session, to, id, addHandler) )
 			return nullptr;
 		insertNoExistsCheck(link);
 		return link;
 	}
 
-	MM_TS sptr<Link> LinkManager::add( const SocketAddrPair& sap, u32 id, bool addHandler )
+	MM_TS sptr<Link> LinkManager::add( const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
 		sptr<Link> link;
-		if ( !tryCreate( link, sap, id, addHandler ) )
+		if ( !tryCreate( link, session, sap, id, addHandler ) )
 			return nullptr;
 		insertNoExistsCheck( link );
 		return link;
@@ -158,9 +164,9 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const IAddress& to, u32 id, bool addHandler )
+	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const Session* session, const IAddress& to, u32 id, bool addHandler )
 	{
-		link = Link::create( m_Network, to, id, addHandler );
+		link = Link::create( m_Network, session, to, id, addHandler );
 		if ( !link ) return false;
 		auto sap = link->getSocketAddrPair();
 		if ( has( sap ) )
@@ -172,14 +178,14 @@ namespace MiepMiep
 		return true;
 	}
 
-	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const SocketAddrPair& sap, u32 id, bool addHandler )
+	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
 		if ( has( sap ) )
 		{
 			LOGW( "Tried to create a link that does already exists, creation discarded." );
 			return false;
 		}
-		link = Link::create( m_Network, sap, id, addHandler );
+		link = Link::create( m_Network, session, sap, id, addHandler );
 		return link != nullptr;
 	}
 

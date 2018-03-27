@@ -1,7 +1,8 @@
 #include "MasterServer.h"
 #include "Link.h"
+#include "Session.h"
 #include "Network.h"
-#include "LinkMasterState.h"
+#include <algorithm>
 
 
 namespace MiepMiep
@@ -41,24 +42,25 @@ namespace MiepMiep
 		RPC_BEGIN();
 		u32 linkId = get<0>(tp);
 		const sptr<IAddress>& toAddr = get<1>(tp);
-		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( *toAddr, linkId, false );
-		if ( !newLink ) return;
+		nw.getOrAdd<LinkManager>()->add( sc<Session*>(l.session()), *toAddr, linkId, false );
 	}
 
 
 	// ------ MasterSession ----------------------------------------------------------------------------
 
-	MasterSession::MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList ):
+	MasterSession::MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList, const MetaData& customMatchmakingMd ):
 		m_Host(host),
 		m_Data(data),
-		m_SessionList( sessionList.ptr<MasterSessionList>() )
+		m_SessionList( sessionList.ptr<MasterSessionList>() ),
+		m_NewLinksCanJoin(true)
 	{
+		host->updateCustomMatchmakingMd( customMatchmakingMd );
 		m_Links.emplace_back( host );
 	}
 
-	MM_TS void MasterSession::onClientJoins( Link& newLink )
+	MM_TS void MasterSession::onClientJoins( Link& newLink, const MetaData& customMatchmakingMd )
 	{
-		assert(!newLink.has<LinkMasterState>());
+		newLink.updateCustomMatchmakingMd(customMatchmakingMd);
 		scoped_lock lk( m_DataMutex );
 		if ( m_Data.m_IsP2p )
 		{
@@ -86,7 +88,24 @@ namespace MiepMiep
 
 	MM_TS void MasterSession::onClientLeaves( Link& link )
 	{
+		scoped_lock lk( m_DataMutex );
+		// TODO use map instead? 
+	#if _DEBUG
+		auto lIt = std::find_if( begin( m_Links ), end( m_Links ), [&] ( auto& l ) { return *l==link; });
+		if ( lIt == m_Links.end() )
+		{
+			LOGC( "Link %s not found in master session.", link.info() );
+		}
+	#endif
 
+		// If is P2p and someone leaves the match on matchmaking server, noone can join anymore as we cannot provide make all connections for
+		// a new incoming client.
+		if ( m_Data.m_IsP2p )
+		{
+			m_NewLinksCanJoin = false;
+		}
+
+		std::remove_if( begin( m_Links ), end( m_Links ), [&] ( auto l ) { return *l==link; } );
 	}
 
 	MM_TS void MasterSession::removeSelf()
@@ -115,9 +134,10 @@ namespace MiepMiep
 
 	// ------ SessionList -----------------------------------------------------------------------------------
 
-	MM_TS void MasterSessionList::addSession(const sptr<Link>& host, const MasterSessionData& data)
+	MM_TS void MasterSessionList::addSession(const sptr<Link>& host, const MasterSessionData& data, const MetaData& customMatchmakingMd )
 	{
-		auto sharedSession = reserve_sp<MasterSession>( MM_FL, host, data, *this );
+		auto sharedSession = reserve_sp<MasterSession>( MM_FL, host, data, *this, customMatchmakingMd );
+		host->setMasterSession( sharedSession );
 		scoped_lock lk(m_SessionsMutex);
 		m_MasterSessions.emplace_back( sharedSession );
 		sharedSession->m_SessionListIt = prev( m_MasterSessions.end() );
@@ -135,7 +155,7 @@ namespace MiepMiep
 		return m_MasterSessions.size();
 	}
 
-	MM_TS const MasterSession* MasterSessionList::findFromFilter(const SearchFilter& sf)
+	MM_TS MasterSession* MasterSessionList::findFromFilter(const SearchFilter& sf)
 	{
 		scoped_lock lk(m_SessionsMutex);
 		for ( auto& ms : m_MasterSessions )
@@ -155,7 +175,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS bool MasterServer::registerSession(const sptr<Link>& link, const MasterSessionData& data)
+	MM_TS bool MasterServer::registerSession(const sptr<Link>& link, const MasterSessionData& data, const MetaData& customMatchmakingMd )
 	{
 		sptr<MasterSessionList> sessionList;
 
@@ -179,7 +199,7 @@ namespace MiepMiep
 
 		// No longer need lock for session list. Add session.
 		assert( sessionList );
-		sessionList->addSession( link, data );
+		sessionList->addSession( link, data, customMatchmakingMd );
 
 		return true;
 	}
@@ -189,7 +209,7 @@ namespace MiepMiep
 		session.removeSelf();
 	}
 
-	MM_TS const MasterSession* MasterServer::findServerFromFilter( const SearchFilter& sf )
+	MM_TS MasterSession* MasterServer::findServerFromFilter( const SearchFilter& sf )
 	{
 		// Because servers are split among server lists, we do not need to lock all servers, only the lists of servers.
 		u32 i=0;

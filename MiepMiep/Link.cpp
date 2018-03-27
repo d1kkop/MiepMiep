@@ -1,4 +1,5 @@
 #include "Link.h"
+#include "Session.h"
 #include "Network.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
@@ -49,12 +50,35 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination, bool addHandler)
+	void Link::setSession( const sptr<Session>& session )
 	{
-		return create( network, destination, rand(), addHandler );
+		assert( !m_Session );
+		m_Session = session;
 	}
 
-	MM_TS sptr<Link> Link::create(Network& network, const IAddress& destination, u32 id, bool addHandler)
+	bool Link::operator<( const Link& o ) const
+	{
+		return getSocketAddrPair() < o.getSocketAddrPair();
+	}
+
+	bool Link::operator==( const Link& o ) const
+	{
+		return getSocketAddrPair() == o.getSocketAddrPair();
+	}
+
+	void Link::setMasterSession( const sptr<MasterSession>& session )
+	{
+		scoped_spinlock lk(m_MasterSessionMutex);
+		assert( !m_Session && !m_MasterSession );
+		m_MasterSession = session;
+	}
+
+	MM_TS sptr<Link> Link::create( Network& network, const Session* session, const IAddress& destination, bool addHandler )
+	{
+		return create( network, session, destination, rand(), addHandler );
+	}
+
+	MM_TS sptr<Link> Link::create(Network& network, const Session* session, const IAddress& destination, u32 id, bool addHandler)
 	{
 		sptr<ISocket> sock = ISocket::create();
 		if (!sock) return nullptr;
@@ -74,10 +98,10 @@ namespace MiepMiep
 			return nullptr;
 		}
 
-		return create( network, SocketAddrPair( *sock, destination ), id, addHandler );
+		return create( network, session, SocketAddrPair( *sock, destination ), id, addHandler );
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, const SocketAddrPair& sap, u32 id, bool addHandler )
+	MM_TS sptr<Link> Link::create( Network& network, const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
 		assert( sap.m_Address && sap.m_Socket );
 		if ( !sap.m_Address || !sap.m_Socket )
@@ -105,6 +129,7 @@ namespace MiepMiep
 		link->m_Id = id;
 		link->m_Socket = sap.m_Socket->to_sptr();
 		link->m_Destination = sap.m_Address->to_ptr();
+		link->m_Session = (session ? session->ptr<Session>() : nullptr);
 
 		LOG( "Created new link to %s.", link->info() );
 		return link;
@@ -113,6 +138,17 @@ namespace MiepMiep
 	MM_TS INetwork& Link::network() const
 	{
 		return m_Network;
+	}
+
+	MM_TS ISession* Link::session() const
+	{
+		return m_Session.get();
+	}
+
+	MM_TS MasterSession* Link::masterSession() const
+	{
+		scoped_spinlock lk(m_MasterSessionMutex);
+		return m_MasterSession.get();
 	}
 
 	MM_TS bool Link::isConnected() const
@@ -138,7 +174,13 @@ namespace MiepMiep
 		return SocketAddrPair( *m_Socket, *m_Destination );
 	}
 
-	MM_TS void Link::createGroup(const string& typeName, const BinSerializer& initData)
+	MM_TS void Link::updateCustomMatchmakingMd( const MetaData& md )
+	{
+		scoped_spinlock lk( m_MatchmakingDataMutex);
+		m_CustomMatchmakingMd = md;
+	}
+
+	MM_TS void Link::createGroup( const string& typeName, const BinSerializer& initData )
 	{
 		auto& varVec = PerThreadDataProvider::getConstructedVariables();
 		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( socket(), varVec, typeName, initData, nullptr ); // makes copy

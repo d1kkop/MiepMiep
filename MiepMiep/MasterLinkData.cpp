@@ -61,11 +61,11 @@ namespace MiepMiep
 		l.pushEvent<EventRegisterResult>( l.get<MasterLinkData>(), succes );
 	}
 
-	MM_RPC(masterLinkRpcRegisterServer, MasterSessionData)
+	MM_RPC(masterLinkRpcRegisterServer, MasterSessionData, MetaData)
 	{
 		RPC_BEGIN();
 		const MasterSessionData& data = get<0>(tp);
-		if ( nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data ) )
+		if ( nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data, get<1>(tp ) ) )
 		{
 			l.callRpc<masterLinkRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master register server request from %s succesful.", l.info());
@@ -87,14 +87,15 @@ namespace MiepMiep
 		l.pushEvent<EventJoinResult>( mj, bSucces ? EJoinServerResult::Fine : EJoinServerResult::NoMatchesFound );
 	}
 
-	MM_RPC(masterLinkRpcJoinServer, SearchFilter)
+	MM_RPC(masterLinkRpcJoinServer, SearchFilter, MetaData)
 	{
 		RPC_BEGIN();
 		const SearchFilter& sf = get<0>(tp);
-		auto* session = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
-		if ( session )
+		auto* mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
+		if ( mSession )
 		{
-		//	session->onClientJoins( l );
+			l.setMasterSession( mSession->ptr<MasterSession>() );
+			mSession->onClientJoins( l, get<1>(tp) );
 			l.callRpc<masterLinkRpcJoinResult, bool>( true, false, false, MM_RPC_CHANNEL, nullptr );
 			LOG("New master join request from %s succesful.", l.info());
 		}
@@ -118,16 +119,27 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS void MasterLinkData::registerServer( const function<void( const ILink& link, bool )>& cb, const MasterSessionData& data )
+	MM_TS void MasterLinkData::registerServer( const function<void( const ILink& link, bool )>& cb, const MasterSessionData& data,
+											   const MetaData& customMatchmakingMd )
 	{
-		m_RegisterCb = cb;
-		m_Link.callRpc<masterLinkRpcRegisterServer, MasterSessionData>( data, false, false, MM_RPC_CHANNEL, nullptr );
+		// Cb lock
+		{
+			scoped_lock lk( m_DataMutex );
+			m_RegisterCb = cb;
+		}
+		m_Link.callRpc<masterLinkRpcRegisterServer, MasterSessionData, MetaData>( data, customMatchmakingMd, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
-	MM_TS void MasterLinkData::joinServer( const function<void( const ILink& link, EJoinServerResult )>& cb, const SearchFilter& sf )
+	MM_TS void MasterLinkData::joinServer( const function<void( const ILink& link, EJoinServerResult )>& cb, const SearchFilter& sf,
+										   const MetaData& customMatchmakingMd )
+
 	{
-		m_JoinCb = cb;
-		m_Link.callRpc<masterLinkRpcJoinServer, SearchFilter>( sf, false, false, MM_RPC_CHANNEL, nullptr );
+		// Cb lock
+		{
+			scoped_lock lk( m_DataMutex );
+			m_JoinCb = cb;
+		}
+		m_Link.callRpc<masterLinkRpcJoinServer, SearchFilter, MetaData>( sf, customMatchmakingMd, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
 }

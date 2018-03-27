@@ -90,7 +90,7 @@ namespace MiepMiep
 		sptr<Link> link = lm->get( sap );
 		if ( !link )
 		{
-			link = lm->add( sap, linkId, false );
+			link = lm->add( nullptr, sap, linkId, false );
 			if ( !link )
 			{
 				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );

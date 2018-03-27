@@ -310,7 +310,7 @@ UTESTBEGIN(RPCBigTest)
 	assert( mdRead == g_md );
 
 	sptr<INetwork> nw = INetwork::create();
-	sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( *IAddress::resolve("localhost", 12203), true );
+	sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( nullptr, *IAddress::resolve("localhost", 12203), true );
 	bs2.setRead(0);
 	rpc_dsr_MyRpcBigTest( *nw, (ILink&) (Link&)*link, bs2 );
 
@@ -329,14 +329,14 @@ UTESTBEGIN(AutoChatServerAndClient)
 						true, false, 10, 32, "my game", "type", "lala" );
 
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001),
-					"first game", "type", 5, 15, 0, 128, true, true, true );
+					"first game", "type", 5, 15, 0, 128, true, true );
 
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), 
-					"first game", "type", 5, 15, 0, 128, true, true, true );
+					"first game", "type", 5, 15, 0, 128, true, true );
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), 
-					"first game", "type", 5, 15, 0, 128, true, true, true );
+					"first game", "type", 5, 15, 0, 128, true, true );
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), 
-					"first game", "type", 5, 15, 0, 128, true, true, true );
+					"first game", "type", 5, 15, 0, 128, true, true );
 
 	return true;
 }
