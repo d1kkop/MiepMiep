@@ -2,6 +2,7 @@
 
 
 #include "Memory.h"
+#include "ParentNetwork.h"
 #include "MiepMiep.h"
 #include <mutex>
 #include <vector>
@@ -12,13 +13,15 @@ namespace MiepMiep
 	class Link;
 
 
-	class Session: public ISession, public ITraceable
+	class Session: public ParentNetwork, public ISession, public ITraceable
 	{
 	public:
-		Session(const sptr<Link>& masterLink, const string& pw, const MetaData& md=MetaData());
+		Session(Network& network, const sptr<Link>& masterLink, const string& pw, const MetaData& md=MetaData());
 
 		MM_TS void addLink( const sptr<Link>& link );
 		MM_TS void removeLink( const sptr<Link>& link );
+
+		MM_TO_PTR( Session )
 
 	private:
 		mutex m_DataMutex;

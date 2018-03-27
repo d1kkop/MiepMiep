@@ -45,24 +45,28 @@ UTESTBEGIN(VariablesTest)
 	{
 		ts.emplace_back( [=]() 
 		{
-			sptr<Person> p = make_shared<Person>( 22, 33, 44 );
-			ECreateGroupCallResult createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33 );
-			assert ( createRes == ECreateGroupCallResult::NoLinksInNetwork );
+			network->registerServer( [=](auto& l, auto r) 
+			{ 
+				registerResult(l, r); 
+				const ISession& ses = l.session();
 
+				sptr<Person> p = make_shared<Person>( 22, 33, 44 );
+				ECreateGroupCallResult createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33, ses );
+				assert( createRes == ECreateGroupCallResult::NoLinksInNetwork );
 
-			network->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve( "localhost", 12203 ),
-									 true, false, 10, 32, "my game", "type", "lala" );
+				createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33, ses );
+				assert( createRes == ECreateGroupCallResult::Fine );
 
-			createRes = network->createGroup<personVarGroup, i32, i32, i32>(10, 20, 33);
-			assert(createRes == ECreateGroupCallResult::Fine);
+				assert( p->m_Age.getGroupId() == -1 );
+				assert( p->m_Age.getOwner() == nullptr );
+				assert( p->m_Age.getVarConrol() == EVarControl::Full );
 
-			assert( p->m_Age.getGroupId() == -1 );
-			assert( p->m_Age.getOwner() == nullptr );
-			assert( p->m_Age.getVarConrol() == EVarControl::Full );
-
-			assert( p->m_Weight.getGroupId() == -1 );
-			assert( p->m_Weight.getOwner() == nullptr );
-			assert( p->m_Weight.getVarConrol() == EVarControl::Full );
+				assert( p->m_Weight.getGroupId() == -1 );
+				assert( p->m_Weight.getOwner() == nullptr );
+				assert( p->m_Weight.getVarConrol() == EVarControl::Full );
+			}, 
+				*IAddress::resolve( "localhost", 12203 ),
+				true, false, 10, 32, "my game", "type", "lala" );
 
 			this_thread::sleep_for( std::chrono::milliseconds(20) );
 		});

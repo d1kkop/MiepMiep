@@ -140,9 +140,10 @@ namespace MiepMiep
 		return m_Network;
 	}
 
-	MM_TS ISession* Link::session() const
+	MM_TS ISession& Link::session() const
 	{
-		return m_Session.get();
+		assert(m_Session);
+		return *m_Session;
 	}
 
 	MM_TS MasterSession* Link::masterSession() const
@@ -183,7 +184,7 @@ namespace MiepMiep
 	MM_TS void Link::createGroup( const string& typeName, const BinSerializer& initData )
 	{
 		auto& varVec = PerThreadDataProvider::getConstructedVariables();
-		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( socket(), varVec, typeName, initData, nullptr ); // makes copy
+		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( sc<Session&>(session()), varVec, typeName, initData, nullptr ); // makes copy
 		varVec.clear();
 	}
 

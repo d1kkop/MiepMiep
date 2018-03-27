@@ -65,36 +65,15 @@ namespace MiepMiep
 
 	}
 
-	// Placed here because RPC is alwasy reliable ordered send.
-	MM_TS ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& payLoad, const IAddress* specific, 
-										bool exclude, bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace, const ISender* sender)
+	// Placed here because RPC is always reliable ordered send.
+	MM_TS ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& payLoad, const ISession* session, const IAddress* exclOrSpecific, 
+										bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace)
 	{
 		// Avoid rewriting the entire payload just for the rpc name in front.
 		// Instead, make a seperate serializer for the name and append 2 serializers.
 		BinSerializer bsRpcName;
 		__CHECKEDSR( bsRpcName.write( string(rpcName) ) );
 		const BinSerializer* binSerializers [] = { &bsRpcName, &payLoad };
-		if ( sender )
-		{
-			return toNetwork(nw).sendReliable( *sender, (byte)EPacketType::RPC, binSerializers, 2, specific, exclude, buffer, relay, sysBit, channel, trace );
-		}
-		else
-		{
-			bool hasMultipleSenders;
-			sptr<const ISender> sender = toNetwork(nw).getFirstNetworkIdentity( hasMultipleSenders );
-			if ( hasMultipleSenders )
-			{
-				return ESendCallResult::InternalError;
-			}
-			if ( sender )
-			{
-				return toNetwork(nw).sendReliable( *sender, (byte)EPacketType::RPC, binSerializers, 2, specific, exclude, buffer, relay, sysBit, channel, trace );
-			}
-			else 
-			{
-				LOGW( "No network sender available to send from." );
-				return ESendCallResult::NotSent;
-			}
-		}
+		return toNetwork( nw ).sendReliable( (byte)EPacketType::RPC, session, exclOrSpecific, binSerializers, 2, buffer, relay, sysBit, channel, trace );
 	}
 }

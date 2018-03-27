@@ -4,8 +4,8 @@
 
 namespace MiepMiep
 {
-
-	Session::Session( const sptr<Link>& masterLink, const string& pw, const MetaData& md ):
+	Session::Session( Network& network, const sptr<Link>& masterLink, const string& pw, const MetaData& md ):
+		ParentNetwork( network ),
 		m_MasterLink(masterLink),
 		m_Pw(pw),
 		m_MetaData(md)
@@ -21,5 +21,8 @@ namespace MiepMiep
 	{
 
 	}
+
+
+	MM_TO_PTR_IMP( Session )
 
 }

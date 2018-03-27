@@ -30,7 +30,8 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS void GroupCollection::addNewPendingGroup(const ISender& owner, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, IDeliveryTrace* trace)
+	MM_TS void GroupCollection::addNewPendingGroup( const Session& session, vector<NetVariable*>& vars, const string& typeName,
+												    const BinSerializer& initData, IDeliveryTrace* trace)
 	{
 		// Do not allow creating a group when no variables are specified.
 		// First of all, without any variables there is nothing to sync.
@@ -40,9 +41,9 @@ namespace MiepMiep
 			LOGW( "No variable group created because no variables were specified. Call discarded." );
 			return;
 		}
-		sptr<Group> g = reserve_sp<Group, GroupCollection&, const ISender&, vector<NetVariable*>&, const string&, const BinSerializer&, EVarControl>
+		sptr<Group> g = reserve_sp<Group, GroupCollection&, const Session&, vector<NetVariable*>&, const string&, const BinSerializer&, EVarControl>
 			(
-				MM_FL, *this, owner, vars, typeName, initData, EVarControl::Full
+				MM_FL, *this, session, vars, typeName, initData, EVarControl::Full
 			);
 		scoped_lock lk(m_GroupLock);
 		m_PendingGroups.emplace_back( g );
@@ -64,9 +65,7 @@ namespace MiepMiep
 			group->setId( id );
 			__CHECKED( m_Groups.count( id ) != 0 );
 			m_Groups[id] = group;
-			sptr<const ISender> sender = group->getSenderFromFirstVar();
-			assert( sender );
-			msgGroupCreate( *sender, group->typeName(), group->id(), group->initData() );
+			msgGroupCreate( &group->session(), group->typeName(), group->id(), group->initData() );
 		}
 	}
 
@@ -92,10 +91,10 @@ namespace MiepMiep
 		return link()->m_Network;
 	}
 
-	void GroupCollectionLink::msgGroupCreate(const ISender& sender, const string& typeName, u32 groupId, const BinSerializer& initData)
+	void GroupCollectionLink::msgGroupCreate(const Session* session, const string& typeName, u32 groupId, const BinSerializer& initData)
 	{
 		// Only send group create on this link.
-		assert( sc<const ISocket&>(sender) == m_Link.socket() );
+		assert(!session);
 		m_Link.callRpc<createGroup, string, u32, BinSerializer>
 			(
 				typeName, move( groupId ), initData, false, false,
@@ -117,13 +116,14 @@ namespace MiepMiep
 		return m_Network;
 	}
 
-	MM_TS void GroupCollectionNetwork::msgGroupCreate( const ISender& sender, const string& typeName, u32 groupId, const BinSerializer& initData )
+	MM_TS void GroupCollectionNetwork::msgGroupCreate( const Session* session, const string& typeName, u32 groupId, const BinSerializer& initData )
 	{
 		// Send group create to all.
+		assert(session);
 		network().callRpc2<createGroup, string, u32, BinSerializer>
 			(
-				typeName, groupId, initData, sender, false, 
-				nullptr, false, true, true, true,
+				typeName, groupId, initData, session, nullptr,
+				false, true, true, true,
 				MM_VG_CHANNEL, nullptr
 			);
 	}

@@ -1,3 +1,13 @@
-Mon Mar 26 01:43:57 2018 ------- New Session --------
-Mon Mar 26 01:43:57 2018 ----------------------------
-Mon Mar 26 01:43:57 2018 Created new link to 127.0.0.1:27002 (src_port: 52569, link: 31381, socket: 240).
+Tue Mar 27 16:29:58 2018 ------- New Session --------
+Tue Mar 27 16:29:58 2018 ----------------------------
+Tue Mar 27 16:29:58 2018 Created new link to 127.0.0.1:27002 (src_port: 55080, link: 28373, socket: 252).
+Tue Mar 27 16:30:31 2018 Stop listen was called. Old listen port was 27002. 
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 48. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::Endpoint::resolve, line 126, size 64. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 79, size 64. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 100. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::Network::joinServer::<lambda_a8813c595aea4327ea595daf6f7c12b0>::operator (), line 108, size 216. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::Link::create, line 113, size 272. **!!
+Tue Mar 27 16:30:31 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!

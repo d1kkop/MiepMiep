@@ -1,15 +1,107 @@
-Mon Mar 26 01:27:18 2018 ------- New Session --------
-Mon Mar 26 01:27:18 2018 ----------------------------
-Mon Mar 26 01:27:18 2018 Created new link to 127.0.0.1:12203 (src_port: 58032, link: 28118, socket: 22492).
-Mon Mar 26 01:27:18 2018 Created new link to 127.0.0.1:12203 (src_port: 58032, link: 28118, socket: 22492).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58033, link: 28122, socket: 12156).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58033, link: 28122, socket: 12156).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58034, link: 9960, socket: 34812).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58034, link: 9960, socket: 34812).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58035, link: 8400, socket: 32764).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58035, link: 8400, socket: 32764).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58036, link: 3728, socket: 6076).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58036, link: 3728, socket: 6076).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58037, link: 4825, socket: 18396).
-Mon Mar 26 01:27:19 2018 Created new link to 127.0.0.1:27001 (src_port: 58037, link: 4825, socket: 18396).
-Mon Mar 26 01:27:19 2018 No memory leaks detected.
+Tue Mar 27 15:29:16 2018 ------- New Session --------
+Tue Mar 27 15:29:16 2018 ----------------------------
+Tue Mar 27 15:29:16 2018 Created new link to 127.0.0.1:12203 (src_port: 59911, link: 16483, socket: 34812).
+Tue Mar 27 15:29:18 2018 Created new link to 127.0.0.1:27001 (src_port: 59912, link: 16490, socket: 32764).
+Tue Mar 27 15:29:27 2018 Created new link to 127.0.0.1:27001 (src_port: 51656, link: 27366, socket: 6076).
+Tue Mar 27 15:29:27 2018 Created new link to 127.0.0.1:27001 (src_port: 51657, link: 18300, socket: 18396).
+Tue Mar 27 15:29:27 2018 Created new link to 127.0.0.1:27001 (src_port: 51658, link: 4486, socket: 30716).
+Tue Mar 27 15:29:27 2018 Created new link to 127.0.0.1:27001 (src_port: 51659, link: 30776, socket: 4028).
+Tue Mar 27 15:29:29 2018 Stop listen was called. Old listen port was 27001. 
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 100. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 100. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::resolve, line 126, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 79, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::resolve, line 126, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::resolve, line 126, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 79, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 79, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::resolve, line 126, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 79, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::resolve, line 126, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 79, size 64. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Network::joinServer::<lambda_06cba1606ca224f184d464536e7551ff>::operator (), line 108, size 216. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Link::create, line 113, size 272. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Network::joinServer::<lambda_06cba1606ca224f184d464536e7551ff>::operator (), line 108, size 216. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Link::create, line 113, size 272. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Link::create, line 113, size 272. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Network::joinServer::<lambda_06cba1606ca224f184d464536e7551ff>::operator (), line 108, size 216. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Network::registerServer::<lambda_bfbbcd1956f12b44bf01fc92fe80d72e>::operator (), line 82, size 216. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Link::create, line 113, size 272. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Link::create, line 113, size 272. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::Network::joinServer::<lambda_06cba1606ca224f184d464536e7551ff>::operator (), line 108, size 216. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 37. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 48. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 48. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 100. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 100. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 48. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 48. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 48. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 44. **!!
+Tue Mar 27 15:29:29 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 91. **!!

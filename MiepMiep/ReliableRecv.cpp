@@ -16,10 +16,11 @@ namespace MiepMiep
 
 	struct EventRpc : EventBase
 	{
-		EventRpc(const Link& link, const RpcFunc& rpcFunc, const RecvPacket& pack, bool isSystemRpc):
+		EventRpc(const Link& link, const RpcFunc& rpcFunc, const RecvPacket& pack, u32 readPos, bool isSystemRpc):
 			EventBase(link, isSystemRpc),
 			m_RpcFunc(rpcFunc),
-			m_Pack(pack)
+			m_Pack(pack),
+			m_ReadPos(readPos)
 		{
 		}
 
@@ -29,13 +30,14 @@ namespace MiepMiep
 			bs.resetTo( m_Pack.m_Data, m_Pack.m_Length, m_Pack.m_Length );	
 			m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
 			{
-				bs.setRead( 0 );
+				bs.setRead( m_ReadPos );
 				m_RpcFunc( *m_Network, *m_Link, bs );
 			});
 		}
 
 		RpcFunc m_RpcFunc;
 		RecvPacket  m_Pack;
+		u32 m_ReadPos;
 	};
 
 
@@ -157,7 +159,7 @@ namespace MiepMiep
 		}
 		
 		auto rpcFunc = rc<RpcFunc>( rpcAddress );
-		m_Link.pushEvent<EventRpc>( rpcFunc, pack, (pack.m_Flags & MM_SYSTEM_BIT) );
+		m_Link.pushEvent<EventRpc>( rpcFunc, pack, bs.getRead(), (pack.m_Flags & MM_SYSTEM_BIT) );
 	}
 
 }

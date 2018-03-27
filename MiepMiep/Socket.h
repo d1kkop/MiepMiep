@@ -41,7 +41,7 @@ namespace MiepMiep
 	};
 
 
-	class ISocket: public ISender, public ITraceable
+	class ISocket: public ITraceable
 	{
 	protected:
 		ISocket();
@@ -60,6 +60,7 @@ namespace MiepMiep
 		virtual void close() = 0;
 		virtual bool less(const ISocket& other) const = 0;
 		virtual bool equal(const ISocket& other) const = 0;
+		virtual u64 id() const = 0;
 		virtual ESendResult send( const class Endpoint& endPoint, const byte* data, u32 len, i32* err=nullptr ) const = 0;
 		virtual ERecvResult recv( byte* buff, u32& rawSize, class Endpoint& endpointOut, i32* err=nullptr ) const = 0; // buffSize in, received size out
 
@@ -116,8 +117,7 @@ namespace MiepMiep
 
 		SOCKET getSock() const  { return m_Socket; }
 
-		// ISender
-		u64 id() const override { return  rc<u64>( rc<void*>( m_Socket ) ); }
+		u64 id() const override { return rc<u64>(rc<void*>(m_Socket)); }
 
 	protected:
 		SOCKET m_Socket;

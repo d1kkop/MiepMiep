@@ -171,18 +171,18 @@ namespace MiepMiep
 			//	return;
 			//}
 
-			bool wasAccepted = l.getOrAdd<LinkState>()->acceptFromSingleTrip();
-			if ( wasAccepted )
-			{
-				LOG( "Link to %s accepted directly.", l.info() );
-				l.callRpc<linkStateAccepted>(); // To recipient directly
-				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), l.socket(), false, &l.destination(), true /*excl*/ ); // To all others except recipient
-				l.pushEvent<EventNewConnection>( l.destination() );
-			}
-			else
-			{
-				l.callRpc<linkStateAlreadyConnected>();
-			}
+			//bool wasAccepted = l.getOrAdd<LinkState>()->acceptFromSingleTrip();
+			//if ( wasAccepted )
+			//{
+			//	LOG( "Link to %s accepted directly.", l.info() );
+			//	l.callRpc<linkStateAccepted>(); // To recipient directly
+			//	nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), l.socket(), false, &l.destination(), true /*excl*/ ); // To all others except recipient
+			//	l.pushEvent<EventNewConnection>( l.destination() );
+			//}
+			//else
+			//{
+			//	l.callRpc<linkStateAlreadyConnected>();
+			//}
 		}
 		else /* The link was not created from a listener but from a (other) link on an implictly (not chosen) bound port.
 				In this case, it is possible that the linkState already exists as two endpoints may simultaneously connect to each other. */

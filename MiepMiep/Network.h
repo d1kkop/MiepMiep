@@ -3,12 +3,14 @@
 #include "Memory.h"
 #include "Component.h"
 #include "MiepMiep.h"
+#include "Session.h"
 using namespace std;
 
 
 namespace MiepMiep
 {
 	class  Link;
+	class  Session;
 	class  Endpoint;
 	class  ISocket;
 	struct SocketAddrPair;
@@ -43,27 +45,23 @@ namespace MiepMiep
 
 		MM_TS bool joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
 							   const IAddress& masterAddr, const std::string& name, const std::string& type,
-							   float minRating, float maxRating, u32 minPlayers, float maxPlayers,
+							   float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
 							   bool findP2p, bool findClientServer,
 							   const MetaData& joinMd, const MetaData& customMatchmakingMd ) override;
 
-		MM_TS void createGroupInternal( const ISender& sender, const string& typeName, const BinSerializer& initData, byte channel, IDeliveryTrace* trace );
+		MM_TS void createGroupInternal( const Session& session, const string& typeName, const BinSerializer& initData, byte channel, IDeliveryTrace* trace );
 		MM_TS void destroyGroup( u32 groupId ) override;
 		MM_TS void createRemoteGroup( const string& typeName, u32 netId, const BinSerializer& initData, const IAddress& etp );
 
-		MM_TS ESendCallResult sendReliable(const ISender& sender, byte id, const BinSerializer* bs, u32 numSerializers, const IAddress* specific,
-										   bool exclude, bool buffer, bool relay,
-										   byte channel, IDeliveryTrace* trace) override;
-		MM_TS ESendCallResult sendReliable(const ISender& sender, byte id, const BinSerializer** bs, u32 numSerializers, const IAddress* specific, 
-										   bool exclude, bool buffer, bool relay, bool systemBit,
-										   byte channel, IDeliveryTrace* trace);
-		MM_TS ESendCallResult sendReliable(const ISender& sender, const vector<sptr<const struct NormalSendPacket>>&, const IAddress* specific, 
-										   bool exclude, bool buffer, byte channel, IDeliveryTrace* trace);
+		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, const IAddress* exlOrSpecific, const BinSerializer* bs, u32 numSerializers,
+										   bool buffer, bool relay, byte channel, IDeliveryTrace* trace) override;
+		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, const IAddress* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
+										   bool buffer, bool relay, bool systemBit,  byte channel, IDeliveryTrace* trace);
+		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const ISession* session, const IAddress* exlOrSpecific,
+										   bool buffer, byte channel, IDeliveryTrace* trace);
 
 		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
 		MM_TS void removeConnectionListener( const IConnectionListener* listener ) override;
-
-		MM_TS sptr <const ISender> getFirstNetworkIdentity(bool& hasMultiple) const;
 
 
 		MM_TS static void clearAllStatics();
@@ -84,8 +82,9 @@ namespace MiepMiep
 
 		// Send rpc with system bit (true or false). Other than that, exactly same as Inetwork.callRpc
 		template <typename T, typename ...Args> 
-		MM_TS ESendCallResult callRpc2( Args... args, const ISender& sender, bool localCall=false, const IAddress* specific=nullptr, bool exclude=false, bool buffer=false, 
-										bool relay=false, bool systemBit=true, byte channel=0, IDeliveryTrace* trace=nullptr );
+		MM_TS ESendCallResult callRpc2( Args... args, const Session* session, const IAddress* exclOrSpecific=nullptr, 
+										bool localCall=false, bool buffer=false, bool relay=false, bool systemBit=true, 
+										byte channel=0, IDeliveryTrace* trace=nullptr );
 	};
 
 
@@ -120,13 +119,13 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS ESendCallResult MiepMiep::Network::callRpc2(Args... args, const ISender& sender, bool localCall, const IAddress* specific, 
-													  bool exclude, bool buffer, bool relay, bool systemBit,
+	MM_TS ESendCallResult MiepMiep::Network::callRpc2(Args... args, const Session* session, const IAddress* exclOrSpecific,
+													  bool localCall, bool buffer, bool relay, bool systemBit,
 													  byte channel, IDeliveryTrace* trace)
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., *this, bs, localCall);
-		return priv_send_rpc( *this, T::rpcName(), bs, specific, exclude, buffer, relay, systemBit, channel, trace, &sender );
+		return priv_send_rpc( *this, T::rpcName(), bs, session, exclOrSpecific, buffer, relay, systemBit, channel, trace );
 	}
 
 

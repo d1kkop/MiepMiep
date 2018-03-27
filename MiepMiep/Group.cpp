@@ -1,14 +1,15 @@
 #include "Group.h"
+#include "Session.h"
 #include "Variables.h"
 #include "NetVariable.h"
 #include "GroupCollection.h"
 
-
 namespace MiepMiep
 {
-	Group::Group(GroupCollection& groupCollection, const ISender& initialOwner, vector<NetVariable*>& vars, 
+	Group::Group(GroupCollection& groupCollection, const Session& session, vector<NetVariable*>& vars,
 				 const string& typeName, const BinSerializer& initData, EVarControl initControlType):
 		m_GroupCollection(groupCollection),
+		m_Session(session.to_ptr()),
 		m_Variables(vars),
 		m_InitData(initData),
 		m_Id(-1),
@@ -19,7 +20,7 @@ namespace MiepMiep
 		byte k=0;
 		for ( auto* v : m_Variables )
 		{
-			v->initialize( this, &initialOwner, nullptr, initControlType, k++ );
+			v->initialize( this, nullptr, initControlType, k++ );
 		}
 	}
 
@@ -44,10 +45,10 @@ namespace MiepMiep
 		m_Variables.clear();
 	}
 
-	MM_TS void Group::setNewOwnership(byte varIdx, const IAddress* owner, const ISender* sender)
+	MM_TS void Group::setNewOwnership(byte varIdx, const IAddress* owner)
 	{
 		scoped_lock lk(m_VariablesMutex);
-		m_Variables[varIdx]->setNewOwner( owner, sender );
+		m_Variables[varIdx]->setNewOwner( owner );
 	}
 
 	MM_TS bool Group::wasUngrouped() const
@@ -74,16 +75,14 @@ namespace MiepMiep
 		m_VariablesMutex.unlock();
 	}
 
-	class Network& Group::network() const
+	Network& Group::network() const
 	{
 		return m_GroupCollection.network();
 	}
 
-	MM_TS sptr<const ISender> Group::getSenderFromFirstVar() const
+	const Session& Group::session() const
 	{
-		scoped_lock lk(m_VariablesMutex);
-		assert( !m_Variables.empty() );
-		return m_Variables[0]->getSender();
+		return *m_Session;
 	}
 
 }

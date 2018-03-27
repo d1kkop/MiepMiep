@@ -37,7 +37,7 @@ namespace MiepMiep
 
 		// ILink
 		MM_TS INetwork& network() const override;
-		MM_TS ISession* session() const override;
+		MM_TS ISession& session() const override;
 		MM_TS const IAddress& destination() const override { return *m_Destination; }
 		MM_TS const IAddress& source() const override { return *m_Source; }
 		MM_TS bool  isConnected() const override;
@@ -95,7 +95,7 @@ namespace MiepMiep
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., m_Network, bs, localCall);
-		return priv_send_rpc( m_Network, T::rpcName(), bs, &destination(), false, false, relay, true /* sys bit */, channel, trace, &socket() );
+		return priv_send_rpc( m_Network, T::rpcName(), bs, nullptr, &destination(), false /* buffer */, relay, true /* sys bit */, channel, trace );
 	}
 
 	template <typename T, typename ...Args>

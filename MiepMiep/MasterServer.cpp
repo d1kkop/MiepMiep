@@ -42,7 +42,7 @@ namespace MiepMiep
 		RPC_BEGIN();
 		u32 linkId = get<0>(tp);
 		const sptr<IAddress>& toAddr = get<1>(tp);
-		nw.getOrAdd<LinkManager>()->add( sc<Session*>(l.session()), *toAddr, linkId, false );
+		nw.getOrAdd<LinkManager>()->add( &sc<Session&>(l.session()), *toAddr, linkId, false );
 	}
 
 
@@ -98,8 +98,8 @@ namespace MiepMiep
 		}
 	#endif
 
-		// If is P2p and someone leaves the match on matchmaking server, noone can join anymore as we cannot provide make all connections for
-		// a new incoming client.
+		// If is P2p and someone leaves the match on matchmaking server, noone can join anymore as we cannot provide all connections for
+		// new incoming clients.
 		if ( m_Data.m_IsP2p )
 		{
 			m_NewLinksCanJoin = false;

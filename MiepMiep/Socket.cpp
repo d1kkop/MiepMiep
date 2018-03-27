@@ -415,14 +415,4 @@ namespace MiepMiep
 	}
 
 #endif
-
-	MM_TS sptr<ISender> ISender::to_ptr()
-	{
-		return sc<ISocket*>(this)->to_sptr();
-	}
-
-	MM_TS sptr<const ISender> ISender::to_ptr() const
-	{
-		return sc<const ISocket*>(this)->to_sptr();
-	}
 }
