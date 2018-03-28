@@ -53,11 +53,11 @@ namespace MiepMiep
 		MM_TS void destroyGroup( u32 groupId ) override;
 		MM_TS void createRemoteGroup( const string& typeName, u32 netId, const BinSerializer& initData, const IAddress& etp );
 
-		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, const IAddress* exlOrSpecific, const BinSerializer* bs, u32 numSerializers,
+		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, ILink* exlOrSpecific, const BinSerializer* bs, u32 numSerializers,
 										   bool buffer, bool relay, byte channel, IDeliveryTrace* trace) override;
-		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, const IAddress* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
+		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, ILink* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
 										   bool buffer, bool relay, bool systemBit,  byte channel, IDeliveryTrace* trace);
-		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const ISession* session, const IAddress* exlOrSpecific,
+		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const ISession* session, ILink* exlOrSpecific,
 										   bool buffer, byte channel, IDeliveryTrace* trace);
 
 		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
@@ -82,7 +82,7 @@ namespace MiepMiep
 
 		// Send rpc with system bit (true or false). Other than that, exactly same as Inetwork.callRpc
 		template <typename T, typename ...Args> 
-		MM_TS ESendCallResult callRpc2( Args... args, const Session* session, const IAddress* exclOrSpecific=nullptr, 
+		MM_TS ESendCallResult callRpc2( Args... args, const Session* session, ILink* exclOrSpecific=nullptr, 
 										bool localCall=false, bool buffer=false, bool relay=false, bool systemBit=true, 
 										byte channel=0, IDeliveryTrace* trace=nullptr );
 	};
@@ -119,7 +119,7 @@ namespace MiepMiep
 	}
 
 	template <typename T, typename ...Args>
-	MM_TS ESendCallResult MiepMiep::Network::callRpc2(Args... args, const Session* session, const IAddress* exclOrSpecific,
+	MM_TS ESendCallResult MiepMiep::Network::callRpc2(Args... args, const Session* session, ILink* exclOrSpecific,
 													  bool localCall, bool buffer, bool relay, bool systemBit,
 													  byte channel, IDeliveryTrace* trace)
 	{

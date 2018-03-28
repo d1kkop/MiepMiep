@@ -115,55 +115,6 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS bool LinkManager::forLink(const ISocket& sock, const IAddress* specific, bool exclude, const std::function<void(Link&)>& cb)
-	{
-		bool wasSentAtLeastOnce = false;
-		sptr<ListenerManager> lm = m_Network.get<ListenerManager>();
-		scoped_lock lk(m_LinksMapMutex);
-		if ( specific ) 
-		{
-			if ( !exclude )
-			{
-				SocketAddrPair sap( sock, *specific );
-				auto linkIt = m_Links.find( sap );
-				if ( linkIt != m_Links.end() )
-				{
-					cb ( *linkIt->second );
-					wasSentAtLeastOnce = true;
-				}
-			}
-			else
-			{
-				for ( auto& link : m_LinksAsArray )
-				{
-					if ( !(link->socket() == sock || lm->isListenerSocket( sock )) || link->destination() == *specific ) 
-						continue; // skip this one
-					cb ( *link );
-					wasSentAtLeastOnce = true;
-				}
-			}
-		}
-		else
-		{
-			for ( auto& link : m_LinksAsArray )
-			{
-				if ( !(link->socket() == sock || lm->isListenerSocket( sock )) )
-					continue; 
-				cb ( *link );
-				wasSentAtLeastOnce = true;
-			}
-		}
-		return wasSentAtLeastOnce;
-	}
-
-	MM_TS sptr<const Link> LinkManager::getFirstLink() const
-	{
-		scoped_lock lk(m_LinksMapMutex);
-		if ( !m_LinksAsArray.empty() )
-			return m_LinksAsArray[0];
-		return nullptr;
-	}
-
 	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const Session* session, const IAddress& to, u32 id, bool addHandler )
 	{
 		link = Link::create( m_Network, session, to, id, addHandler );

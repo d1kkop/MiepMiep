@@ -126,12 +126,12 @@ namespace MiepMiep
 	{
 		auto& vars = PerThreadDataProvider::getConstructedVariables();
 		getOrAdd<GroupCollectionNetwork>( channel )->addNewPendingGroup( session, vars, groupType, initData, trace ); // makes copy
-		vars.clear();
+		vars.clear(); // <<-- Note per thread vars, so thread safe.
 	}
 
-	ECreateGroupCallResult priv_create_group( INetwork& nw, const ISession& session, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace )
+	MM_TS ECreateGroupCallResult priv_create_group( INetwork& nw, const ISession& session, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace )
 	{
-		Network& network = static_cast<Network&>(nw);
+		Network& network = sc<Network&>(nw);
 		network.createGroupInternal( sc<const Session&>( session ), groupType, bs, channel, trace );
 		return ECreateGroupCallResult::Fine;
 	}
@@ -151,14 +151,14 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS ESendCallResult Network::sendReliable( byte id, const ISession* session, const IAddress* exlOrSpecific, const BinSerializer* bs, u32 numSerializers,
+	MM_TS ESendCallResult Network::sendReliable( byte id, const ISession* session, ILink* exlOrSpecific, const BinSerializer* bs, u32 numSerializers,
 												 bool buffer, bool relay, byte channel, IDeliveryTrace* trace )
 	{
 		const BinSerializer* bs2[] = { bs };
 		return sendReliable( id, session, exlOrSpecific, bs2, numSerializers, buffer, relay, false, channel, trace );
 	}
 
-	MM_TS ESendCallResult Network::sendReliable( byte id, const ISession* session, const IAddress* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
+	MM_TS ESendCallResult Network::sendReliable( byte id, const ISession* session, ILink* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
 												 bool buffer, bool relay, bool systemBit, byte channel, IDeliveryTrace* trace )
 	{
 		vector<sptr<const NormalSendPacket>> packets;
@@ -170,16 +170,29 @@ namespace MiepMiep
 		return sendReliable( packets, session, exlOrSpecific, buffer, channel, trace );
 	}
 
-	MM_TS ESendCallResult Network::sendReliable( const vector<sptr<const NormalSendPacket>>& data, const ISession* session, const IAddress* exlOrSpecific,
+	MM_TS ESendCallResult Network::sendReliable( const vector<sptr<const NormalSendPacket>>& data, const ISession* session, ILink* exlOrSpecific,
 												 bool buffer, byte channel, IDeliveryTrace* trace )
 	{
-		// TODO reimplement on session
-		//bool wasSent = getOrAdd<LinkManager>()->forLink( sc<const ISocket&>( sender ), session, exlOrSpecific, [&, data] ( Link& link )
-		//{
-		//	link.getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
-		//} );
-	//	return wasSent ? ESendCallResult::Fine : ESendCallResult::NotSent;
-		return ESendCallResult::NotSent;
+		const Session* ses = sc<const Session*>(session);
+		bool somethingWasQueued = false;
+		if ( ses )
+		{
+			ses->forLink( sc<Link*>(exlOrSpecific), [&] ( Link& link )
+			{
+				link.getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
+				somethingWasQueued = true;
+			});
+		}
+		else if ( exlOrSpecific )
+		{
+			sc<Link*>( exlOrSpecific )->getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
+			somethingWasQueued = true;
+		}
+		else
+		{
+			LOGW( "Nothing was send, though a reliable call was made." );
+		}
+		return (somethingWasQueued ? ESendCallResult::Fine : ESendCallResult::NotSent );
 	}
 
 	MM_TS void Network::addConnectionListener( IConnectionListener* listener )

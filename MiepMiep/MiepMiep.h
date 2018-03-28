@@ -174,7 +174,7 @@ namespace MiepMiep
 		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener )=0;
 		MM_TS virtual void removeConnectionListener( const IConnectionListener* connectionListener )=0;
 
-		MM_TS virtual ESendCallResult sendReliable( byte id, const ISession* session, const IAddress* exclOrSpecific, const BinSerializer* serializers, u32 numSerializers=1,
+		MM_TS virtual ESendCallResult sendReliable( byte id, const ISession* session, ILink* exclOrSpecific, const BinSerializer* serializers, u32 numSerializers=1,
 													bool buffer=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr )=0;
 
 		MM_TS static void setLogSettings( bool logToFile=true, bool logToIde=true );

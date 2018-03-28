@@ -95,7 +95,7 @@ namespace MiepMiep
 	{
 		auto& bs = priv_get_thread_serializer();
 		T::rpc<Args...>(args..., m_Network, bs, localCall);
-		return priv_send_rpc( m_Network, T::rpcName(), bs, nullptr, &destination(), false /* buffer */, relay, true /* sys bit */, channel, trace );
+		return priv_send_rpc( m_Network, T::rpcName(), bs, nullptr, this, false /* buffer */, relay, true /* sys bit */, channel, trace );
 	}
 
 	template <typename T, typename ...Args>

@@ -66,7 +66,7 @@ namespace MiepMiep
 	}
 
 	// Placed here because RPC is always reliable ordered send.
-	MM_TS ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& payLoad, const ISession* session, const IAddress* exclOrSpecific, 
+	MM_TS ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& payLoad, const ISession* session, ILink* exclOrSpecific, 
 										bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace)
 	{
 		// Avoid rewriting the entire payload just for the rpc name in front.

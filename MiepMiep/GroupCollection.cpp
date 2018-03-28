@@ -1,15 +1,8 @@
 #include "GroupCollection.h"
 #include "Link.h"
 #include "Network.h"
-#include "Variables.h"
-#include "LinkManager.h"
-#include "ReliableSend.h"
 #include "JobSystem.h"
-#include "PerThreadDataProvider.h"
 #include "Group.h"
-#include "Socket.h"
-#include "BinSerializer.h"
-#include "Platform.h"
 
 
 namespace MiepMiep
@@ -47,7 +40,7 @@ namespace MiepMiep
 			);
 		scoped_lock lk(m_GroupLock);
 		m_PendingGroups.emplace_back( g );
-		network().get<JobSystem>()->addJob([gc = move(ptr<GroupCollection>())] 
+		network().get<JobSystem>()->addJob([gc = move(ptr<GroupCollection>())]
 		{ 
 			gc->tryProcessPendingGroups();
 		});
