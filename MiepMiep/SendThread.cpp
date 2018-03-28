@@ -64,12 +64,12 @@ namespace MiepMiep
 			lm->forEachLink( [=](Link& link)
 			{
 				auto rs = link.get<ReliableSend>();
-				auto rn = link.get<ReliableNewSend>();
 				if ( rs )
 				{
 					rs->resendIfLatencyTimePassed( time );
 					rs->dispatchAckQueueIfAggregateTimePassed( time );
 				}
+				auto rn = link.get<ReliableNewSend>();
 				if ( rn )
 				{
 					rn->dispatchRelNewestQueueIfTimePassed ( time );

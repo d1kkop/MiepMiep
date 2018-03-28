@@ -99,21 +99,19 @@ namespace MiepMiep
 		MM_TS static sptr<IAddress> fromIpAndPort( const std::string& ipAndPort, i32* errOut=nullptr );
 
 		/*	Returns a 'static thread_local' buffer. Do not delete the returned buffer. */
-		virtual const char* toIpAndPort() const=0;
-		virtual sptr<IAddress> getCopy() const=0;
-		virtual u16 port() const=0;
+		MM_TSC virtual const char* toIpAndPort() const=0;
+		MM_TSC virtual sptr<IAddress> getCopy() const=0;
+		MM_TSC virtual u16 port() const=0;
 
-		bool operator< ( const IAddress& other ) const;
-		bool operator==( const IAddress& other ) const;
-		bool operator==( const sptr<IAddress>& other ) const { return *this == *other; }
-		bool operator!=( const IAddress& other ) const { return !(*this == other); }
-		bool operator!=( const sptr<IAddress>& other ) { return !(*this == *other); }
+		MM_TSC bool operator< ( const IAddress& other ) const;
+		MM_TSC bool operator==( const IAddress& other ) const;
+		MM_TSC bool operator!=( const IAddress& other ) const { return !(*this == other); }
 
 		virtual bool write( class BinSerializer& bs ) const=0;
 		virtual bool read( class BinSerializer& bs )=0;
 
-		sptr<IAddress> to_ptr();
-		sptr<const IAddress> to_ptr() const;
+		MM_TSC sptr<IAddress> to_ptr();
+		MM_TSC sptr<const IAddress> to_ptr() const;
 	};
 
 

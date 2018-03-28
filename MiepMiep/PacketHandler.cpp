@@ -32,6 +32,10 @@ namespace MiepMiep
 		i32 err;
 		ERecvResult res = sock.recv( buff, rawSize, etp, &err );
 
+	#if _DEBUG
+		etp.m_HostPort = etp.getPortHostOrder();
+	#endif
+
 	//	LOG( "Received data from.. %s.", etp.toIpAndPort() );
 
 		if ( err != 0 )
@@ -68,7 +72,7 @@ namespace MiepMiep
 	}
 
 
-	void IPacketHandler::handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr )
+	MM_TS void IPacketHandler::handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr )
 	{
 		u32 linkId;
 		__CHECKED( bs.read( linkId ) );
@@ -87,19 +91,10 @@ namespace MiepMiep
 	MM_TS sptr<Link> IPacketHandler::getOrCreateLink( u32 linkId, const SocketAddrPair& sap )
 	{
 		auto lm = m_Network.getOrAdd<LinkManager>();
-		sptr<Link> link = lm->get( sap );
+		sptr<Link> link = lm->getOrAdd( nullptr, sap, linkId, false, true ); // <-- Returns null if link exists but Id's do not match.
 		if ( !link )
 		{
-			link = lm->add( nullptr, sap, linkId, false );
-			if ( !link )
-			{
-				LOGW( "Failed to add link to %s.", sap.m_Address->toIpAndPort() );
-			}
-		}
-		else if ( linkId != link->id() )
-		{
-			LOGW( "Link id's do not match on %s. Incoming data is discarded.", link->info() );
-			link = nullptr; // Deliberately do not return 'valid' link.
+			LOGW( "Failed to getOrAdd link to %s.", sap.m_Address->toIpAndPort() );
 		}
 		return link;
 	}

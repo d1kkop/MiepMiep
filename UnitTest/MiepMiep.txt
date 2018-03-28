@@ -1,5 +1,10 @@
-Wed Mar 28 02:27:47 2018 ------- New Session --------
-Wed Mar 28 02:27:47 2018 ----------------------------
-Wed Mar 28 02:27:47 2018 Created new link to 127.0.0.1:12203 (src_port: 62012, link: 14437, socket: 34812).
-Wed Mar 28 02:27:49 2018 Created new link to 127.0.0.1:27001 (src_port: 62014, link: 14444, socket: 32764).
-Wed Mar 28 02:27:49 2018 Created new link to 127.0.0.1:27001 (src_port: 62015, link: 1603, socket: 6076).
+Wed Mar 28 17:43:39 2018 ------- New Session --------
+Wed Mar 28 17:43:39 2018 ----------------------------
+Wed Mar 28 17:43:39 2018 Created new link to 127.0.0.1:12203 (src_port: 63691, link: 30047, socket: 22492ll).
+Wed Mar 28 17:43:41 2018 Link 127.0.0.1:12203 (src_port: 63691, link: 30047, socket: 22492ll) destroyed.
+Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63692, link: 30054, socket: 20444ll).
+Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63693, link: 4831, socket: 32764ll).
+Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63694, link: 2297, socket: 18396ll).
+Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63695, link: 13899, socket: 30716ll).
+Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63696, link: 19939, socket: 4028ll).
+Wed Mar 28 17:43:43 2018 Stop listen was called. Old listen port was 27001. 

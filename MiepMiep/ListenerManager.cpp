@@ -40,10 +40,4 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS bool ListenerManager::isListenerSocket( const ISocket& sock ) const
-	{
-		scoped_lock lk(m_ListenersMutex);
-		return m_ListenerSockets.count( sock.to_sptr() ) != 0;
-	}
-
 }

@@ -24,32 +24,33 @@ namespace MiepMiep
 	public:
 		Link(Network& network);
 		~Link() override;
-		void setSession( const sptr<Session>& session ); // Set immediately on construction before link is returend, therefore no locks required.
+		MM_TSC void setSession( const sptr<Session>& session ); // Set immediately on construction before link is returend, therefore no locks required.
 
-		bool operator<  ( const Link& o ) const;
-		bool operator== ( const Link& o ) const;
+		MM_TSC bool operator<  ( const Link& o ) const;
+		MM_TSC bool operator== ( const Link& o ) const;
 
 		MM_TS void setMasterSession( const sptr<MasterSession>& session );
+		MM_TS MasterSession* masterSession() const;
 
 		MM_TS static sptr<Link> create(Network& network, const Session* session, const IAddress& destination, bool addHandler);
 		MM_TS static sptr<Link> create(Network& network, const Session* session, const IAddress& destination, u32 id, bool addHandler);
 		MM_TS static sptr<Link> create(Network& network, const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler);
 
 		// ILink
-		MM_TS INetwork& network() const override;
-		MM_TS ISession& session() const override;
-		MM_TS const IAddress& destination() const override { return *m_Destination; }
-		MM_TS const IAddress& source() const override { return *m_Source; }
+		MM_TSC INetwork& network() const override;
+		MM_TSC ISession& session() const override;
+		MM_TSC const IAddress& destination() const override { return *m_Destination; }
+		MM_TSC const IAddress& source() const override { return *m_Source; }
 		MM_TS bool  isConnected() const override;
 
 		// These are thread safe beacuse they are set before the newly created link object is returned from creation.
-		MM_TS u32 id() const { return m_Id; }
-		MM_TS const ISocket& socket() const { return *m_Socket; }
-		MM_TS const char* ipAndPort() const;
-		MM_TS const char* info() const;
-		MM_TS MasterSession* masterSession() const;
-		MM_TS SocketAddrPair getSocketAddrPair() const;
+		MM_TSC u32 id() const { return m_Id; }
+		MM_TSC const ISocket& socket() const { return *m_Socket; }
+		MM_TSC const char* ipAndPort() const;
+		MM_TSC const char* info() const;
+		MM_TSC SocketAddrPair getSocketAddrPair() const;
 
+		
 		MM_TS void updateCustomMatchmakingMd( const MetaData& md );
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );

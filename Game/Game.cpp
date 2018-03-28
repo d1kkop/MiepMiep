@@ -62,13 +62,43 @@ namespace MyGame
 		//	md[to_string( i )] = "metadata meta data meta data ta ta ata at ta taaaaa!!! " + to_string( i );
 		//}
 
-	//	m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp,
-	//							    true, false, 10, 32, "first game", "type", "lala" );
+		MetaData serverHostMd =
+		{
+			{ "hostKey1", "hostValue1" },
+			{ "hostKey2", "hostValue2" },
+			{ "hostKey3", "hostValue3" },
+		};
 
+		MetaData serverMatchMd = 
+		{
+			{ "servKey1", "servValue1" },
+			{ "servKey2", "servValue2" },
+			{ "servKey3", "servValue3" },
+		};
+
+		m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp,
+								    true, false, 10, 32, "first game", "type", "lala", 
+									serverHostMd, serverMatchMd );
+
+		MetaData joinMd =
+		{
+			{ "joinKey1", "joinValue1" },
+			{ "joinKey2", "joinValue2" },
+			{ "joinKey3", "joinValue3" },
+		};
+
+		MetaData joinMatchMd =
+		{
+			{ "joinMatchKey1", "joinMatchValue1" },
+			{ "joinMatchKey2", "joinMatchValue2" },
+			{ "joinMatchKey3", "joinMatchValue3" },
+		};
+		 
 		// Note the above is an async process, so make sure it is actually registered, otherwise join will fail immediately!
 		std::this_thread::sleep_for( milliseconds(20) );
-		m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
-							   "first game", "type", 5, 15, 0, 128, true, true );
+		//m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
+		//					   "first game", "type", 5, 15, 0, 128, true, true, 
+		//					   joinMd, joinMatchMd );
 
 		this_thread::sleep_for( milliseconds(20000) );
 		return true;

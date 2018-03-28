@@ -58,7 +58,9 @@ namespace MiepMiep
 	{
 		RPC_BEGIN();
 		bool succes = get<0>(tp);
-		l.pushEvent<EventRegisterResult>( l.get<MasterLinkData>(), succes );
+		sptr<MasterLinkData> mj = l.get<MasterLinkData>();
+		assert(mj);
+		l.pushEvent<EventRegisterResult>( mj, succes );
 	}
 
 	MM_RPC(masterLinkRpcRegisterServer, MasterSessionData, MetaData)

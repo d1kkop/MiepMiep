@@ -24,22 +24,40 @@ namespace MiepMiep
 	{
 	}
 
-	SocketAddrPair::operator bool() const
+	SocketAddrPair::SocketAddrPair( sptr<ISocket>& sock, sptr<IAddress>& addr ):
+		m_Socket( sock ),
+		m_Address( addr )
+	{
+
+	}
+
+	SocketAddrPair::SocketAddrPair( sptr<const ISocket>& sock, sptr<const IAddress>& addr ):
+		m_Socket(sock),
+		m_Address(addr)
+	{
+	}
+
+	MM_TSC SocketAddrPair::operator bool() const
 	{
 		return m_Socket && m_Address;
 	}
 
-	bool SocketAddrPair::operator<( const SocketAddrPair& other ) const
+	MM_TSC bool SocketAddrPair::operator<( const SocketAddrPair& other ) const
 	{
-		if ( *m_Address < *other.m_Address ) return true;
-		if ( !(*m_Address == *other.m_Address) ) return false;
-		if ( *m_Socket < *other.m_Socket ) return true;
-		if ( !(*m_Socket == *other.m_Socket) ) return false;
-		return false;
+		if ( *m_Address == *other.m_Address )
+			return *m_Socket < *other.m_Socket;
+		return *m_Address < *other.m_Address;
 	}
 
 
-	bool SocketAddrPair::operator==( const SocketAddrPair& other ) const
+	MM_TSC const char* SocketAddrPair::info() const
+	{
+		static thread_local char buff[80];
+		Platform::formatPrint( buff, 80, "s: %d a: %s", m_Socket?m_Socket->id():-1, m_Address?m_Address->toIpAndPort():"" );
+		return buff;
+	}
+
+	MM_TSC bool SocketAddrPair::operator==( const SocketAddrPair& other ) const
 	{
 		return  (*m_Address == *other.m_Address) &&
 				(*m_Socket == *other.m_Socket);
@@ -59,30 +77,92 @@ namespace MiepMiep
 
 	MM_TS sptr<Link> LinkManager::add( const Session* session, const IAddress& to, u32 id, bool addHandler)
 	{
-		sptr<Link> link;
-		if ( !tryCreate(link, session, to, id, addHandler) )
+		sptr<Link> link = Link::create( m_Network, session, to, id, addHandler );
+		if ( !link ) return nullptr;
+		auto sap = link->getSocketAddrPair();
+		scoped_lock lk( m_LinksMapMutex );
+		if ( m_Links.count( sap ) != 0 )
+		{
+			LOGW( "Tried to create a link that does already exist, creation discarded." );
 			return nullptr;
-		insertNoExistsCheck(link);
+		}
+		assert( link );
+		m_LinksAsArray.emplace_back(link);
+		m_Links[sap] = link;
 		return link;
 	}
 
 	MM_TS sptr<Link> LinkManager::add( const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
-		sptr<Link> link;
-		if ( !tryCreate( link, session, sap, id, addHandler ) )
+		sptr<Link> link = Link::create( m_Network, session, sap, id, addHandler );
+		if ( !link ) return nullptr;
+		scoped_lock lk( m_LinksMapMutex );
+		if ( m_Links.count( sap ) != 0 )
+		{
+			LOGW( "Tried to create a link that does already exist, creation discarded." );
 			return nullptr;
-		insertNoExistsCheck( link );
+		}
+		assert( link );
+		m_LinksAsArray.emplace_back( link );
+		m_Links[sap] = link;
+		return link;
+	}
+
+	MM_TS sptr<MiepMiep::Link> LinkManager::getOrAdd( const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool returnNullIfIdsDontMatch )
+	{
+		scoped_lock lk( m_LinksMapMutex );
+	/*	LOG( "List links..." );
+		for ( auto& kvp : m_Links )
+		{
+			LOG( "In map: key %s, value %s.", kvp.first.info(), kvp.second->info() );
+		}*/
+
+		//for ( auto& l : m_LinksAsArray )
+		//{
+		//	if ( l->getSocketAddrPair() == sap )
+		//	{
+		//		LOG( "Wanted %s, Found %s.", sap.info(), l->info() );
+		//		return l;
+		//	}
+		//}
+
+		auto lIt = m_Links.find( sap );
+		if ( lIt != m_Links.end() )
+		{
+		//	LOG("Wanted %s, Found %s.", sap.info(), lIt->second->info());
+			const sptr<Link>& l = lIt->second;
+			if ( !returnNullIfIdsDontMatch || id == l->id() )
+				return l;
+			// Did find, but id's did not match.
+		//	LOG( "FAILED to find %s id's did not match.", sap.info() );
+			return nullptr;
+		}
+	//	LOG( "FAILED to find %s", sap.info() );
+		sptr<Link> link = Link::create( m_Network, session, sap, id, addHandler );
+		if ( !link ) return nullptr;
+		m_LinksAsArray.emplace_back( link );
+		m_Links[sap] = link;
 		return link;
 	}
 
 	MM_TS sptr<Link> LinkManager::get( const SocketAddrPair& sap )
 	{
 		scoped_lock lk(m_LinksMapMutex);
+
+		//LOG("List links...");
+		//for ( auto& kvp : m_Links )
+		//{
+		//	LOG( "In map: key %s, value %s.", kvp.first.info(), kvp.second->info() );
+		//}
+
 		auto lit = m_Links.find( sap );
 		if ( lit != m_Links.end() )
 		{
+	//		LOG("Wanted %s, Found %s.", sap.info(), lit->second->info());
 			return lit->second;
 		}
+
+	//	LOG( "FAILED to find %s.", sap.info() );
 		return nullptr;
 	}
 
@@ -114,39 +194,4 @@ namespace MiepMiep
 			});
 		}
 	}
-
-	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const Session* session, const IAddress& to, u32 id, bool addHandler )
-	{
-		link = Link::create( m_Network, session, to, id, addHandler );
-		if ( !link ) return false;
-		auto sap = link->getSocketAddrPair();
-		if ( has( sap ) )
-		{
-			LOGW( "Tried to create a link that does already exists, creation discarded." );
-			return false;
-		}
-		assert(link);
-		return true;
-	}
-
-	MM_TS bool LinkManager::tryCreate( sptr<Link>& link, const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler )
-	{
-		if ( has( sap ) )
-		{
-			LOGW( "Tried to create a link that does already exists, creation discarded." );
-			return false;
-		}
-		link = Link::create( m_Network, session, sap, id, addHandler );
-		return link != nullptr;
-	}
-
-	MM_TS void LinkManager::insertNoExistsCheck( const sptr<Link>& link )
-	{
-		scoped_lock lk( m_LinksMapMutex );
-		auto sap = link->getSocketAddrPair();
-		assert( m_Links.count(sap) == 0 );
-		m_Links[sap] = link;
-		m_LinksAsArray.emplace_back( link );
-	}
-
 }

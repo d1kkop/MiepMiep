@@ -17,7 +17,7 @@
 
 
 #define MM_TS	/* Thread safe function. */
-#define MM_TSC	/* Thread safe because data altered/read is only ever set from construction. No locks are involved. */
+#define MM_TSC	/* Thread safe in a sense that data from this function is only ever initialized from constructor. No locks are required to read this data. */
 
 
 #include <map>

@@ -38,18 +38,25 @@ namespace MiepMiep
 		return a==b;
 	}
 
-	sptr<IAddress> IAddress::to_ptr()
+	MM_TSC sptr<IAddress> IAddress::to_ptr()
 	{
 		return sc<Endpoint&>(*this).ptr<Endpoint>();
 	}
 
-	sptr<const IAddress> IAddress::to_ptr() const
+	MM_TSC sptr<const IAddress> IAddress::to_ptr() const
 	{
 		return sc<const Endpoint&>(*this).ptr<const Endpoint>();
 	}
 
 
 	// --- Endpoint ---------------------------------------------------------------------------------------
+
+	Endpoint::Endpoint()
+	{
+	#if MM_WIN32SOCKET
+		memset(&m_SockAddr, 0, sizeof(m_SockAddr));
+	#endif
+	}
 
 	MM_TS sptr<Endpoint> Endpoint::createEmpty()
 	{
@@ -77,6 +84,9 @@ namespace MiepMiep
 			return nullptr;
 		}
 		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
+	#if _DEBUG
+		etp->m_HostPort = Util::ntohs( addr.Ipv4.sin_port );
+	#endif
 		Platform::memCpy( &etp->m_SockAddr, sizeof(etp->m_SockAddr), &addr, addrNameLen );
 		return etp;
 
@@ -86,7 +96,7 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	sptr<Endpoint> Endpoint::resolve(const string& name, u16 port, i32* errorOut)
+	MM_TS sptr<Endpoint> Endpoint::resolve(const string& name, u16 port, i32* errorOut)
 	{
 		if ( errorOut ) *errorOut = 0;
 
@@ -126,6 +136,9 @@ namespace MiepMiep
 				sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
 				Platform::memCpy( &etp->m_SockAddr, sizeof(etp->m_SockAddr), inf->ai_addr, inf->ai_addrlen );
 				freeaddrinfo(addrInfo);
+			#if _DEBUG
+				etp->m_HostPort = port;
+			#endif
 				return etp;
 			}
 
@@ -137,7 +150,7 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	sptr<Endpoint> Endpoint::fromIpAndPort(const string& ipAndPort, i32* errOut)
+	MM_TS sptr<Endpoint> Endpoint::fromIpAndPort(const string& ipAndPort, i32* errOut)
 	{
 		if ( errOut ) *errOut = -1;
 		for ( u64 i=ipAndPort.length(); i!=0; i-- )
@@ -155,7 +168,7 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	const char* Endpoint::toIpAndPort() const
+	MM_TSC const char* Endpoint::toIpAndPort() const
 	{
 		#if MM_SDLSOCKET
 			IPaddress iph;
@@ -190,19 +203,22 @@ namespace MiepMiep
 		return "";
 	}
 
-	sptr<IAddress> Endpoint::getCopy() const
+	MM_TSC sptr<IAddress> Endpoint::getCopy() const
 	{
 		return getCopyDerived();
 	}
 
-	sptr<Endpoint> Endpoint::getCopyDerived() const
+	MM_TSC sptr<Endpoint> Endpoint::getCopyDerived() const
 	{
 		sptr<Endpoint> etp = reserve_sp<Endpoint>(MM_FL);
 		Platform::copy(etp->getLowLevelAddr(), getLowLevelAddr(), getLowLevelAddrSize());
+	#if _DEBUG
+		etp->m_HostPort = m_HostPort;
+	#endif
 		return etp;
 	}
 
-	u16 Endpoint::port() const
+	MM_TSC u16 Endpoint::port() const
 	{
 		return getPortHostOrder();
 	}
@@ -219,22 +235,22 @@ namespace MiepMiep
 		return true;
 	}
 
-	bool Endpoint::operator<(const Endpoint& other) const
+	MM_TSC bool Endpoint::operator<(const Endpoint& other) const
 	{
 		return ::memcmp(getLowLevelAddr(), other.getLowLevelAddr(), getLowLevelAddrSize()) < 0;
 	}
 
-	bool Endpoint::operator==(const Endpoint& other) const
+	MM_TSC bool Endpoint::operator==(const Endpoint& other) const
 	{
 		return ::memcmp(getLowLevelAddr(), other.getLowLevelAddr(), getLowLevelAddrSize()) == 0;
 	}
 
-	u16 Endpoint::getPortHostOrder() const
+	MM_TSC u16 Endpoint::getPortHostOrder() const
 	{
 		return Util::ntohs(getPortNetworkOrder());
 	}
 
-	u16 Endpoint::getPortNetworkOrder() const
+	MM_TSC u16 Endpoint::getPortNetworkOrder() const
 	{
 		#if MM_SDLSOCKET
 			return m_IpAddress.port;
@@ -245,7 +261,7 @@ namespace MiepMiep
 		return -1;
 	}
 
-	byte* Endpoint::getLowLevelAddr()
+	MM_TSC byte* Endpoint::getLowLevelAddr()
 	{
 		#if MM_SDLSOCKET
 			return &m_IpAddress;
@@ -256,13 +272,13 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	const byte* Endpoint::getLowLevelAddr() const
+	MM_TSC const byte* Endpoint::getLowLevelAddr() const
 	{
 		return const_cast<Endpoint*>(this)->getLowLevelAddr();
 		//return const_cast<byte*>( getLowLevelAddr() );
 	}
 
-	u32 Endpoint::getLowLevelAddrSize() const
+	MM_TSC u32 Endpoint::getLowLevelAddrSize() const
 	{
 		#if MM_SDLSOCKET
 			return sizeof(m_IpAddress);

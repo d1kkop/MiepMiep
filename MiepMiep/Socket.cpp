@@ -358,13 +358,13 @@ namespace MiepMiep
 	bool BSDSocket::less(const ISocket& other) const
 	{
 		const BSDSocket& b = sc<const BSDSocket&>(other);
-		return (this->m_Socket < b.m_Socket);
+		return (id() < b.id());// && !(this->m_Socket == INVALID_SOCKET || b.m_Socket == INVALID_SOCKET);
 	}
 
 	bool BSDSocket::equal(const ISocket& other) const
 	{
 		const BSDSocket& b = sc<const BSDSocket&>(other);
-		return (this->m_Socket == b.m_Socket) && (this->m_Socket != INVALID_SOCKET);
+		return (id() == b.id());// && (this->m_Socket != INVALID_SOCKET);
 	}
 
 	ESendResult BSDSocket::send(const Endpoint& endPoint, const byte* data, u32 len, i32* err) const

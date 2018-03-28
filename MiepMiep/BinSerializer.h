@@ -109,3 +109,29 @@ namespace MiepMiep
 		return bs.readOrWrite(t, _write);
 	}
 }
+
+
+// Example adding own read/write to binSerializer.
+
+/*
+
+namespace MiepMiep
+{
+	struct MyCustomType
+	{
+		i32 a;
+		float b;
+		string c;
+	};
+
+	template<>
+	inline bool readOrWrite( BinSerializer& bs, MyCustomType& ct, bool _write )
+	{
+		if ( !bs.readOrWrite( ct.a, _write ) ) return false;
+		if ( !bs.readOrWrite( ct.b, _write ) ) return false;
+		if ( !bs.readOrWrite( ct.c, _write ) ) return false;
+		return true;
+	}
+}
+
+*/

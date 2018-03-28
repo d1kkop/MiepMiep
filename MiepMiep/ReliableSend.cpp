@@ -1,17 +1,12 @@
 #include "ReliableSend.h"
 #include "Network.h"
 #include "Link.h"
-#include "PerThreadDataProvider.h"
-#include "PacketHandler.h"
 #include "LinkStats.h"
 #include "Util.h"
-#include "Platform.h"
-#include "MiepMiep.h"
 
 
 namespace MiepMiep
 {
-
 	ReliableSend::ReliableSend(Link& link):
 		ParentLink(link),
 		m_SendSequence(0),
@@ -50,7 +45,7 @@ namespace MiepMiep
 		}
 	}
 
-	void ReliableSend::resendIfLatencyTimePassed(u64 time)
+	MM_TS void ReliableSend::resendIfLatencyTimePassed(u64 time)
 	{
 		u32 delay = m_Link.getOrAdd<LinkStats>()->reliableResendDelay();
 		if ( time - m_LastResendTS > delay )
@@ -60,7 +55,7 @@ namespace MiepMiep
 		}
 	}
 
-	void ReliableSend::dispatchAckQueueIfAggregateTimePassed(u64 time)
+	MM_TS void ReliableSend::dispatchAckQueueIfAggregateTimePassed(u64 time)
 	{
 
 	}
@@ -69,11 +64,12 @@ namespace MiepMiep
 	MM_TS ESendCallResult priv_send_rpc(INetwork& nw, const char* rpcName, BinSerializer& payLoad, const ISession* session, ILink* exclOrSpecific, 
 										bool buffer, bool relay, bool sysBit, byte channel, IDeliveryTrace* trace)
 	{
+		assert( !buffer || (session) ); // Can only buffer to a session.
 		// Avoid rewriting the entire payload just for the rpc name in front.
 		// Instead, make a seperate serializer for the name and append 2 serializers.
 		BinSerializer bsRpcName;
 		__CHECKEDSR( bsRpcName.write( string(rpcName) ) );
 		const BinSerializer* binSerializers [] = { &bsRpcName, &payLoad };
-		return toNetwork( nw ).sendReliable( (byte)EPacketType::RPC, session, exclOrSpecific, binSerializers, 2, buffer, relay, sysBit, channel, trace );
+		return toNetwork( nw ).sendReliable( (byte)EPacketType::RPC, session, sc<Link*>( exclOrSpecific ), binSerializers, 2, buffer, relay, sysBit, channel, trace );
 	}
 }

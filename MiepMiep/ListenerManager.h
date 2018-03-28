@@ -20,7 +20,6 @@ namespace MiepMiep
 
 		MM_TS EListenCallResult startListen( u16 port );
 		MM_TS void stopListen( u16 port );
-		MM_TS bool isListenerSocket( const ISocket& sock ) const;
 
 	private:
 		mutable mutex m_ListenersMutex;

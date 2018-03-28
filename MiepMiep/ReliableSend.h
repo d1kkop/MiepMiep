@@ -3,6 +3,7 @@
 #include "Memory.h"
 #include "Component.h"
 #include "ParentLink.h"
+#include <atomic>
 
 
 namespace MiepMiep
@@ -20,13 +21,13 @@ namespace MiepMiep
 		MM_TS void enqueue( const vector<sptr<const NormalSendPacket>>& rsp, class IDeliveryTrace* trace );
 		MM_TS void resend();
 
-		void resendIfLatencyTimePassed( u64 time );
-		void dispatchAckQueueIfAggregateTimePassed( u64 time );
+		MM_TS void resendIfLatencyTimePassed( u64 time );
+		MM_TS void dispatchAckQueueIfAggregateTimePassed( u64 time );
 
 	private:
 		mutex m_SendQueueMutex;
 		u32 m_SendSequence;
-		u64 m_LastResendTS;
+		atomic<u64> m_LastResendTS;
 		map<u32, sptr<const NormalSendPacket>> m_SendQueue;
 	};
 }

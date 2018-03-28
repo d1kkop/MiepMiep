@@ -48,29 +48,36 @@ namespace MiepMiep
 				ss->removeSocket( m_Socket );
 			}
 		}
+		LOG( "Link %s destroyed.", info() );
 	}
 
-	void Link::setSession( const sptr<Session>& session )
+	MM_TSC void Link::setSession( const sptr<Session>& session )
 	{
 		assert( !m_Session );
 		m_Session = session;
 	}
 
-	bool Link::operator<( const Link& o ) const
+	MM_TSC bool Link::operator<( const Link& o ) const
 	{
 		return getSocketAddrPair() < o.getSocketAddrPair();
 	}
 
-	bool Link::operator==( const Link& o ) const
+	MM_TSC bool Link::operator==( const Link& o ) const
 	{
 		return getSocketAddrPair() == o.getSocketAddrPair();
 	}
 
-	void Link::setMasterSession( const sptr<MasterSession>& session )
+	MM_TS void Link::setMasterSession( const sptr<MasterSession>& session )
 	{
 		scoped_spinlock lk(m_MasterSessionMutex);
 		assert( !m_Session && !m_MasterSession );
 		m_MasterSession = session;
+	}
+
+	MM_TS MasterSession* Link::masterSession() const
+	{
+		scoped_spinlock lk( m_MasterSessionMutex );
+		return m_MasterSession.get();
 	}
 
 	MM_TS sptr<Link> Link::create( Network& network, const Session* session, const IAddress& destination, bool addHandler )
@@ -127,29 +134,23 @@ namespace MiepMiep
 		}
 
 		link->m_Id = id;
-		link->m_Socket = sap.m_Socket->to_sptr();
-		link->m_Destination = sap.m_Address->to_ptr();
+		link->m_Socket = sap.m_Socket;
+		link->m_Destination = sap.m_Address;
 		link->m_Session = (session ? session->ptr<Session>() : nullptr);
 
 		LOG( "Created new link to %s.", link->info() );
 		return link;
 	}
 
-	MM_TS INetwork& Link::network() const
+	MM_TSC INetwork& Link::network() const
 	{
 		return m_Network;
 	}
 
-	MM_TS ISession& Link::session() const
+	MM_TSC ISession& Link::session() const
 	{
 		assert(m_Session);
 		return *m_Session;
-	}
-
-	MM_TS MasterSession* Link::masterSession() const
-	{
-		scoped_spinlock lk(m_MasterSessionMutex);
-		return m_MasterSession.get();
 	}
 
 	MM_TS bool Link::isConnected() const
@@ -158,19 +159,20 @@ namespace MiepMiep
 		return ls && ls->state() == ELinkState::Connected;
 	}
 
-	MM_TS const char* Link::ipAndPort() const
+	MM_TSC const char* Link::ipAndPort() const
 	{
+		assert(m_Destination);
 		return m_Destination->toIpAndPort();
 	}
 
-	MM_TS const char* Link::info() const
+	MM_TSC const char* Link::info() const
 	{
 		static thread_local char buff[128];
 		Platform::formatPrint(buff, sizeof(buff), "%s (src_port: %d, link: %d, socket: %d)", ipAndPort(), source().port(), m_Id, socket().id());
 		return buff;
 	}
 
-	MM_TS SocketAddrPair Link::getSocketAddrPair() const
+	MM_TSC SocketAddrPair Link::getSocketAddrPair() const
 	{
 		return SocketAddrPair( *m_Socket, *m_Destination );
 	}

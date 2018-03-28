@@ -341,3 +341,37 @@ UTESTBEGIN(AutoChatServerAndClient)
 	return true;
 }
 UNITTESTEND(AutoChatServerAndClient)
+
+
+UTESTBEGIN( SapLookupInMap )
+{
+	sptr<ISocket> s1 = ISocket::create();
+	sptr<ISocket> s2 = ISocket::create();
+	sptr<ISocket> s3 = s1;
+	if ( !s1->open() ) return false;
+	if ( !s1->bind(0) ) return false;
+	if ( !s2->open() ) return false;
+	if ( !s2->bind( 23001 ) ) return false;
+	sptr<IAddress> a1 = IAddress::resolve( "localhost", 23001 );
+	sptr<IAddress> a2 = IAddress::resolve( "localhost", 23001 );
+	sptr<IAddress> a3 = a1->getCopy();
+	if ( !a1 ) return false;
+
+	map<SocketAddrPair, int> myMap;
+	myMap[ SocketAddrPair( s1, a1 ) ] = 3;
+	assert( myMap.count( SocketAddrPair( s1, a1 ) ) == 1 );
+	assert( myMap[ SocketAddrPair( s1, a1 ) ] == 3 );
+	assert( myMap.count( SocketAddrPair( s2, a2 ) ) == 0 );
+	myMap[SocketAddrPair( s2, a2 )] = 225;
+	assert( myMap[SocketAddrPair( s1, a1 )] == 3 );
+	assert( myMap[SocketAddrPair( s2, a2 )] == 225 );
+	assert( myMap.count( SocketAddrPair( s3, a3 ) ) == 1 );
+	assert( myMap[SocketAddrPair( s3, a3 )] == 3 );
+	assert( myMap.count( SocketAddrPair( s1, a3 ) ) == 1 );
+	assert( myMap[SocketAddrPair( s1, a3 )] == 3 );
+	assert( myMap.count( SocketAddrPair( s3, a1 ) ) == 1 );
+	assert( myMap[SocketAddrPair( s3, a1 )] == 3 );
+
+	return true;
+}
+UNITTESTEND( SapLookupInMap )

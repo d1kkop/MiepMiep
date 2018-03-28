@@ -55,9 +55,9 @@ namespace MiepMiep
 
 		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, ILink* exlOrSpecific, const BinSerializer* bs, u32 numSerializers,
 										   bool buffer, bool relay, byte channel, IDeliveryTrace* trace) override;
-		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, ILink* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
+		MM_TS ESendCallResult sendReliable(byte id, const ISession* session, Link* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
 										   bool buffer, bool relay, bool systemBit,  byte channel, IDeliveryTrace* trace);
-		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const ISession* session, ILink* exlOrSpecific,
+		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const ISession* session, Link* exlOrSpecific,
 										   bool buffer, byte channel, IDeliveryTrace* trace);
 
 		MM_TS void addConnectionListener( IConnectionListener* listener ) override;

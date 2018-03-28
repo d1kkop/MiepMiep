@@ -155,10 +155,10 @@ namespace MiepMiep
 												 bool buffer, bool relay, byte channel, IDeliveryTrace* trace )
 	{
 		const BinSerializer* bs2[] = { bs };
-		return sendReliable( id, session, exlOrSpecific, bs2, numSerializers, buffer, relay, false, channel, trace );
+		return sendReliable( id, session, sc<Link*>( exlOrSpecific ), bs2, numSerializers, buffer, relay, false, channel, trace );
 	}
 
-	MM_TS ESendCallResult Network::sendReliable( byte id, const ISession* session, ILink* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
+	MM_TS ESendCallResult Network::sendReliable( byte id, const ISession* session, Link* exlOrSpecific, const BinSerializer** bs, u32 numSerializers,
 												 bool buffer, bool relay, bool systemBit, byte channel, IDeliveryTrace* trace )
 	{
 		vector<sptr<const NormalSendPacket>> packets;
@@ -170,14 +170,14 @@ namespace MiepMiep
 		return sendReliable( packets, session, exlOrSpecific, buffer, channel, trace );
 	}
 
-	MM_TS ESendCallResult Network::sendReliable( const vector<sptr<const NormalSendPacket>>& data, const ISession* session, ILink* exlOrSpecific,
+	MM_TS ESendCallResult Network::sendReliable( const vector<sptr<const NormalSendPacket>>& data, const ISession* session, Link* exlOrSpecific,
 												 bool buffer, byte channel, IDeliveryTrace* trace )
 	{
 		const Session* ses = sc<const Session*>(session);
 		bool somethingWasQueued = false;
 		if ( ses )
 		{
-			ses->forLink( sc<Link*>(exlOrSpecific), [&] ( Link& link )
+			ses->forLink( exlOrSpecific, [&] ( Link& link )
 			{
 				link.getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
 				somethingWasQueued = true;
@@ -185,7 +185,7 @@ namespace MiepMiep
 		}
 		else if ( exlOrSpecific )
 		{
-			sc<Link*>( exlOrSpecific )->getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
+			exlOrSpecific->getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
 			somethingWasQueued = true;
 		}
 		else
