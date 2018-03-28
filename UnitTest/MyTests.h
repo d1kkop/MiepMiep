@@ -326,7 +326,7 @@ UTESTBEGIN(AutoChatServerAndClient)
 	nw->startListen( 27001 );
 
 	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001),
-						true, false, 10, 32, "my game", "type", "lala" );
+						true, false, true, 10, 32, "my game", "type", "lala" );
 
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001),
 					"first game", "type", 5, 15, 0, 128, true, true );

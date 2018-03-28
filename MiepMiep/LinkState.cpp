@@ -9,8 +9,8 @@
 #include "NetworkListeners.h"
 #include "PerThreadDataProvider.h"
 #include "MiepMiep.h"
+#include "MasterServer.h"
 #include "Endpoint.h"
-#include "Socket.h"
 
 
 namespace MiepMiep
@@ -25,11 +25,10 @@ namespace MiepMiep
 
 		void process() override
 		{
-			auto ls = m_Link->get<LinkState>();
-			if ( ls )
+			m_NetworkListener->processEvents<IConnectionListener>( [this] ( IConnectionListener* l )
 			{
-				ls->getConnectCb()(m_Result);
-			}
+				l->onConnectResult( *m_Link, m_Result );
+			} );
 		}
 
 		EConnectResult m_Result;
@@ -95,27 +94,6 @@ namespace MiepMiep
 
 	/* Connection results */
 
-	MM_RPC( linkStateAlreadyConnected )
-	{
-		RPC_BEGIN();
-		l.pushEvent<EventConnectResult>( EConnectResult::AlreadyConnected );
-		LOG( "Link to %s ignored, already connected.", l.info() );
-	}
-
-	MM_RPC( linkStatePasswordFail )
-	{
-		RPC_BEGIN();
-		l.pushEvent<EventConnectResult>( EConnectResult::InvalidPassword );
-		LOG( "Link to %s ignored, invalid password.", l.info() );
-	}
-
-	MM_RPC( linkStateMaxClientsReached )
-	{
-		RPC_BEGIN();
-		l.pushEvent<EventConnectResult>( EConnectResult::MaxConnectionsReached );
-		LOG( "Link to %s ignored, max connections reached.", l.info() );
-	}
-
 	MM_RPC( linkStateAccepted )
 	{
 		RPC_BEGIN();
@@ -134,61 +112,26 @@ namespace MiepMiep
 
 	/* Incoming connect atempt */
 
-	// [Pw, meta]
-	MM_RPC( linkStateConnect, string, MetaData )
+	// [meta]
+	MM_RPC( linkStateConnect, MetaData )
 	{
 		RPC_BEGIN();
 
-		// Link has no originator (read: listener) if link is set up through master server.
-		// In that case, the password and max clients check is done on the master server.
-		// Furthermore, links in that case do not have a listener, but are linked to eachother through the master server
-		// which uses the links implicitly bound ports.
-		// This is different then when using a listener, which uses a chosen port instead.
-	//	auto originator = l.originator();
-		if ( true )
+		// Is already part of this session.
+		if ( s.hasLink( l ) )
 		{
-			// If has originator, that is, it was created from a listener.
-			// The link should have no linkState (yet).
-			if ( l.has<LinkState>() )
-			{
-				l.callRpc<linkStateAlreadyConnected>();
-				return;
-			}
-
-			// TODO replace for get session
-			//// Password check
-			//const string& pw = get<0>( tp );
-			//if ( originator->getPassword() != pw )
-			//{
-			//	l.callRpc<linkStatePasswordFail>();
-			//	return;
-			//}
-
-			//// Max clients check
-			//if ( originator->getNumClients() >= originator->getMaxClients() )
-			//{
-			//	l.callRpc<linkStateMaxClientsReached>();
-			//	return;
-			//}
-
-			//bool wasAccepted = l.getOrAdd<LinkState>()->acceptFromSingleTrip();
-			//if ( wasAccepted )
-			//{
-			//	LOG( "Link to %s accepted directly.", l.info() );
-			//	l.callRpc<linkStateAccepted>(); // To recipient directly
-			//	nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), l.socket(), false, &l.destination(), true /*excl*/ ); // To all others except recipient
-			//	l.pushEvent<EventNewConnection>( l.destination() );
-			//}
-			//else
-			//{
-			//	l.callRpc<linkStateAlreadyConnected>();
-			//}
+			LOGW( "Link %s tried to connect that is already part of the session.", l.info() );
+			return;
 		}
-		else /* The link was not created from a listener but from a (other) link on an implictly (not chosen) bound port.
-				In this case, it is possible that the linkState already exists as two endpoints may simultaneously connect to each other. */
+
+		// No longer check pw and max clients as that is done on master server. For local area networks, password and max clients has no use.
+		l.callRpc<linkStateAccepted>(); // To recipient directly
+
+		// Relay this event if not p2p and is host.
+		if ( !s.msd().m_IsP2p && s.imBoss() )
 		{
-			// For a connect request, do nothing. Since both parties connect, only accept the connection from a round trip instead of a single trip.
-			l.callRpc<linkStateAccepted>(); // Send back accepted but do NOT accept the link on this side from a single trip.
+			nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), &s, &l /* <-- excl */,
+																 No_Local, No_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace  );
 		}
 	}
 
@@ -201,14 +144,13 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS bool LinkState::connect( const string& pw, const MetaData& md, const function<void( EConnectResult )>& connectCb )
+	MM_TS bool LinkState::connect( const MetaData& md )
 	{
 		// Check state
 		{
 			scoped_spinlock lk(m_StateMutex);
-			m_ConnectCb = connectCb;
 
-			if ( m_WasAccepted )
+			if ( m_State == ELinkState::Connected )
 			{
 				LOG( "Connect returned immediately succesful as it was already accepted." );
 				return true;
@@ -217,12 +159,11 @@ namespace MiepMiep
 			if ( m_State != ELinkState::Unknown )
 			{
 				LOGW( "Can only connect if state is set to 'Unknown." );
-				assert( false );
 				return false;
 			}
 			m_State = ELinkState::Connecting;
 		}
-		return m_Link.callRpc<linkStateConnect, string, MetaData>( pw, md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
+		return m_Link.callRpc<linkStateConnect, MetaData>( md, false, false, MM_RPC_CHANNEL, nullptr) == ESendCallResult::Fine;
 	}
 
 	MM_TS bool LinkState::acceptFromSingleTrip()

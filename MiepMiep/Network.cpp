@@ -70,7 +70,7 @@ namespace MiepMiep
 	}
 
 	MM_TS bool Network::registerServer( const std::function<void( const ILink& link, bool )>& callback,
-										const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
+										const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
 										u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
@@ -79,7 +79,7 @@ namespace MiepMiep
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link);
-			auto s = reserve_sp<Session>( MM_FL, *this, link, "", hostMd );
+			auto s = reserve_sp<Session>( MM_FL, *this, link, hostMd );
 			link->setSession( s );
 			MasterSessionData data;
 			data.m_Type = type;
@@ -89,6 +89,7 @@ namespace MiepMiep
 			data.m_Password = password;
 			data.m_IsPrivate  = isPrivate;
 			data.m_MaxClients = maxClients;
+			data.m_CanJoinAfterStart = canJoinAfterStart;
 			link->getOrAdd<MasterLinkData>()->registerServer( callback, data, customMatchmakingMd );
 		} );
 		return true;
@@ -105,7 +106,7 @@ namespace MiepMiep
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link);
-			auto s = reserve_sp<Session>( MM_FL, *this, link, "", joinMd );
+			auto s = reserve_sp<Session>( MM_FL, *this, link, joinMd );
 			link->setSession( s );
 			SearchFilter sf;
 			sf.m_Name = name;

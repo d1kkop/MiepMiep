@@ -88,6 +88,7 @@ namespace MiepMiep
 		virtual void onNewConnection( const ILink& link, const IAddress& remote ) { }
 		virtual void onDisconnect( const ILink& link, EDisconnectReason reason, const IAddress& remote ) { }
 		virtual void onOwnerChanged( const ILink& link, NetVar& variable, const IAddress* newOwner ) { }
+		virtual void onNewHost( const ILink& link, const IAddress* host ) { }
 	};
 
 
@@ -132,7 +133,15 @@ namespace MiepMiep
 
 	class MM_DECLSPEC ISession
 	{
-		
+	public:
+		/*	Link to matchmaking server. */
+		MM_TS virtual const ILink& master()  const=0;
+
+		/*	Current authorative address in the session. This is always the server in a client-serv architecture.
+			In p2p, this is only one peer that can make session wide authorative decisions.
+			Returns nullptr if we are authorative (boss). */
+		MM_TS virtual const IAddress* host() const=0;
+		MM_TS bool imBoss() const { return host()==nullptr; }
 	};
 
 
@@ -150,7 +159,7 @@ namespace MiepMiep
 
 		/*	Returns false if creation failed. This should only ever occur when all ports on the local machine are in use. */
 		MM_TS virtual bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
-										   const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
+										   const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
 										   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										   const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
@@ -162,7 +171,7 @@ namespace MiepMiep
 									   const MetaData& joinMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		template <typename T, typename ...Args>
-		MM_TS ESendCallResult callRpc( Args... args, const ISession* session, const IAddress* exclOrSpecific=nullptr, bool localCall=false, bool buffer=false,
+		MM_TS ESendCallResult callRpc( Args... args, const ISession* session, ILink* exclOrSpecific=nullptr, bool localCall=false, bool buffer=false,
 									   bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr );
 
 		template <typename T, typename ...Args>
@@ -180,12 +189,12 @@ namespace MiepMiep
 
 
 	template <typename T, typename ...Args>
-	MM_TS ESendCallResult INetwork::callRpc( Args... args, const ISession* session, const IAddress* exclOrSpecific, bool localCall,
+	MM_TS ESendCallResult INetwork::callRpc( Args... args, const ISession* session, ILink* exclOrSpecific, bool localCall,
 											 bool buffer, bool relay, byte channel, IDeliveryTrace* trace )
 	{
 		auto& bs=priv_get_thread_serializer();
 		T::rpc<Args...>( args..., *this, bs, localCall );
-		return priv_send_rpc( *this, T::rpcName(), bs, session, exclude, buffer, relay, false, channel, trace );
+		return priv_send_rpc( *this, T::rpcName(), bs, session, exclOrSpecific, buffer, relay, false, channel, trace );
 	}
 
 	template <typename T, typename ...Args>

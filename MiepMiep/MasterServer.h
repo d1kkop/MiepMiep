@@ -44,12 +44,14 @@ namespace MiepMiep
 
 	// ----- MasterSession client/server shared per link data  ------------------------------------------------------------------
 
+	// TODO change for variable group instead!
 	struct MasterSessionData : public ITraceable
 	{
 		bool  m_IsP2p;
 		bool  m_IsPrivate;
 		float m_Rating;
 		u32	  m_MaxClients;
+		bool  m_CanJoinAfterStart;
 		std::string m_Name;
 		std::string m_Type;
 		std::string m_Password;
@@ -65,17 +67,18 @@ namespace MiepMiep
 	public:
 		MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList, const MetaData& customMatchmakingMd );
 
-		MM_TS void onClientJoins( Link& link, const MetaData& customMatchmakingMd );
-		MM_TS void onClientLeaves( Link& link );
-
-		MM_TS bool operator== ( const SearchFilter& sf ) const;
-
+		MM_TS bool start();
+		MM_TS bool tryJoin( Link& link, const MetaData& customMatchmakingMd );
+		MM_TS bool onClientLeaves( Link& link );
 		MM_TS void removeSelf();
+		MM_TS bool operator== ( const SearchFilter& sf ) const;
+		bool canJoinNoLock() const;
 
 		//	bool readOrWrite( BinSerializer& bs, bool write );
 
 	private:
 		mutable mutex m_DataMutex;
+		bool m_Started;
 		MasterSessionData m_Data;
 		sptr<Link> m_Host;
 		vector<sptr<Link>> m_Links;

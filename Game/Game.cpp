@@ -77,7 +77,7 @@ namespace MyGame
 		};
 
 		m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp,
-								    true, false, 10, 32, "first game", "type", "lala", 
+								    true, false, true, 10.f, 32, "first game", "type", "", 
 									serverHostMd, serverMatchMd );
 
 		MetaData joinMd =
@@ -96,9 +96,9 @@ namespace MyGame
 		 
 		// Note the above is an async process, so make sure it is actually registered, otherwise join will fail immediately!
 		std::this_thread::sleep_for( milliseconds(20) );
-		//m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
-		//					   "first game", "type", 5, 15, 0, 128, true, true, 
-		//					   joinMd, joinMatchMd );
+		m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
+							   "first game", "type", 5, 15, 0, 128, true, true, 
+							   joinMd, joinMatchMd );
 
 		this_thread::sleep_for( milliseconds(20000) );
 		return true;
@@ -137,7 +137,7 @@ namespace MyGame
 			cout << "connected to: " << link.destination().toIpAndPort() << endl;
 			break;
 		case EJoinServerResult::NoMatchesFound:
-			cout << "no matches found" << link.destination().toIpAndPort() << endl;
+			cout << "no matches found " << link.destination().toIpAndPort() << endl;
 		}
 	}
 

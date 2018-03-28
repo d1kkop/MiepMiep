@@ -158,6 +158,7 @@ namespace MiepMiep
 			return;
 		}
 		
+		LOG( "Handling RPC: %s.", rpcName.c_str() );
 		auto rpcFunc = rc<RpcFunc>( rpcAddress );
 		m_Link.pushEvent<EventRpc>( rpcFunc, pack, bs.getRead(), (pack.m_Flags & MM_SYSTEM_BIT) );
 	}

@@ -39,7 +39,7 @@ namespace MiepMiep
 		MM_TS void stopListen( u16 port ) override;
 
 		MM_TS bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
-								   const IAddress& masterAddr, bool isP2p, bool isPrivate, float rating,
+								   const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
 								   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 								   const MetaData& hostMd, const MetaData& customMatchmakingMd ) override;
 

@@ -2,11 +2,16 @@
 #include "Link.h"
 #include "Session.h"
 #include "Network.h"
+#include "LinkStats.h"
+#include "LinkState.h"
+#include "NetworkListeners.h"
 #include <algorithm>
 
 
 namespace MiepMiep
 {
+	// ------ Custom Serialization --------------------------------------------------------------------------------
+
 	template <>
 	bool readOrWrite( BinSerializer& bs, SearchFilter& sf, bool _write )
 	{
@@ -27,6 +32,7 @@ namespace MiepMiep
 	bool readOrWrite( BinSerializer& bs, MasterSessionData& md, bool _write )
 	{
 		__CHECKEDB( bs.readOrWrite( md.m_IsP2p, _write ) );
+		__CHECKEDB( bs.readOrWrite( md.m_CanJoinAfterStart, _write ) );
 		__CHECKEDB( bs.readOrWrite( md.m_IsPrivate, _write ) );
 		__CHECKEDB( bs.readOrWrite( md.m_Rating, _write ) );
 		__CHECKEDB( bs.readOrWrite( md.m_MaxClients, _write ) );
@@ -37,18 +43,57 @@ namespace MiepMiep
 	}
 
 
+	// ------ Event --------------------------------------------------------------------------------
+
+	struct EventNewHost : EventBase
+	{
+		EventNewHost( const Link& link, const sptr<const IAddress>& newHost ):
+			EventBase( link, false ),
+			m_NewHost( newHost )
+		{
+		}
+
+		void process() override
+		{
+			m_NetworkListener->processEvents<IConnectionListener>( [this] ( IConnectionListener* l )
+			{
+				// If empty, we become host.
+				l->onNewHost( *m_Link, m_NewHost.get() );
+			} );
+		}
+
+		sptr<const IAddress> m_NewHost;
+	};
+
+
+	// ------ RPC --------------------------------------------------------------------------------
+
+	// Note this is executed on the client, not the matchmaker.
 	MM_RPC( masterSessionConnectTo, u32, sptr<IAddress> )
 	{
 		RPC_BEGIN();
 		u32 linkId = get<0>(tp);
 		const sptr<IAddress>& toAddr = get<1>(tp);
-		nw.getOrAdd<LinkManager>()->add( &sc<Session&>(l.session()), *toAddr, linkId, false );
+		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( &s, *toAddr, linkId, false /*addHandler*/ );
+		if ( newLink )
+		{
+			newLink->getOrAdd<LinkState>()->connect( s.metaData() );
+		}
+	}
+
+	// Note this is executed on the client, not the matchmaker.
+	MM_RPC( masterSessionNewHost, sptr<IAddress> )
+	{
+		RPC_BEGIN();
+		const sptr<IAddress>& host = get<0>( tp );
+		l.pushEvent<EventNewHost>( host );
 	}
 
 
 	// ------ MasterSession ----------------------------------------------------------------------------
 
 	MasterSession::MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList, const MetaData& customMatchmakingMd ):
+		m_Started(false),
 		m_Host(host),
 		m_Data(data),
 		m_SessionList( sessionList.ptr<MasterSessionList>() ),
@@ -58,10 +103,24 @@ namespace MiepMiep
 		m_Links.emplace_back( host );
 	}
 
-	MM_TS void MasterSession::onClientJoins( Link& newLink, const MetaData& customMatchmakingMd )
+	MM_TS bool MasterSession::start()
 	{
-		newLink.updateCustomMatchmakingMd(customMatchmakingMd);
+		scoped_lock lk( m_DataMutex);
+		if ( !m_Started )
+		{
+			m_Started = true;
+			return true;
+		}
+		return false;
+	}
+
+	MM_TS bool MasterSession::tryJoin( Link& newLink, const MetaData& customMatchmakingMd )
+	{
+		newLink.updateCustomMatchmakingMd( customMatchmakingMd );
 		scoped_lock lk( m_DataMutex );
+		if ( !canJoinNoLock() )
+			return false;
+		newLink.setMasterSession( ptr<MasterSession>() );
 		if ( m_Data.m_IsP2p )
 		{
 			// Have all existing links connect to new link and new link connect to all existing links.
@@ -75,37 +134,71 @@ namespace MiepMiep
 		}
 		else
 		{
+			assert(m_Host); // Can join only returns true, if session has host.
 			// For client-server architecture, only have new client join to host.
-			if ( m_Host ) // Host could have left session
-			{
-				u32 linkId = rand();
-				m_Host->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink.destination().getCopy() );
-				newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, m_Host->destination().getCopy() );
-			}
+			u32 linkId = rand();
+			m_Host->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink.destination().getCopy() );
+			newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, m_Host->destination().getCopy() );
 		}
 		m_Links.emplace_back( newLink.to_ptr() );
+		assert( m_Host ); // Can join only returns true, if session has host.
+		newLink.callRpc<masterSessionNewHost, sptr<IAddress>>( m_Host->destination().getCopy() );
+		return true;
 	}
 
-	MM_TS void MasterSession::onClientLeaves( Link& link )
+	MM_TS bool MasterSession::onClientLeaves( Link& link )
 	{
+		bool removeSessionOnReturn = false;
 		scoped_lock lk( m_DataMutex );
+
 		// TODO use map instead? 
 	#if _DEBUG
 		auto lIt = std::find_if( begin( m_Links ), end( m_Links ), [&] ( auto& l ) { return *l==link; });
 		if ( lIt == m_Links.end() )
 		{
-			LOGC( "Link %s not found in master session.", link.info() );
+			assert(false);
+			LOGW( "Link %s not found in master session.", link.info() );
 		}
 	#endif
 
-		// If is P2p and someone leaves the match on matchmaking server, noone can join anymore as we cannot provide all connections for
-		// new incoming clients.
-		if ( m_Data.m_IsP2p )
+		// If is P2p and session already started, new links can no longer join if someone left because
+		// we do not have all addresses anymore that might be in the (game)session.
+		if ( m_Data.m_IsP2p && m_Started )
 		{
 			m_NewLinksCanJoin = false;
 		}
 
+		// If leaving link is host, determine new host.
+		if ( link == *m_Host )
+		{
+			u32 highestScore = 0;
+			m_Host.reset();
+			for ( auto& l : m_Links )
+			{
+				if ( *l == link ) continue; // skip leaving host
+				u32 score = l->getOrAdd<LinkStats>()->hostScore();
+				if ( score > highestScore )
+				{
+					highestScore = score;
+					m_Host = l;
+				}
+			}
+			if ( !m_Host )
+			{
+				// Session, has no links left, have it remove itself.
+				assert(m_Links.empty());
+				removeSessionOnReturn = true;
+			}
+			else
+			{
+				link.network().callRpc<masterSessionNewHost, sptr<IAddress>>(
+					m_Host->destination().getCopy(), &link.session(), &link, 
+					No_Local, No_Buffer, No_Relay, MM_RPC_CHANNEL, No_Trace );
+			}
+		}
+
 		std::remove_if( begin( m_Links ), end( m_Links ), [&] ( auto l ) { return *l==link; } );
+		return removeSessionOnReturn;
 	}
 
 	MM_TS void MasterSession::removeSelf()
@@ -123,12 +216,20 @@ namespace MiepMiep
 		scoped_lock lk( m_DataMutex );
 		auto& d = m_Data;
 		return
+			canJoinNoLock() && 
 			d.m_Name == sf.m_Name &&
 			d.m_Type == sf.m_Type &&
 			(!d.m_IsPrivate || sf.m_FindPrivate) &&
 			((d.m_IsP2p && sf.m_FindP2p) || (!d.m_IsP2p && sf.m_FindClientServer)) &&
-			((u32)m_Links.size() >= sf.m_MinPlayers && sf.m_MaxPlayers <= d.m_MaxClients) &&
+			((u32)m_Links.size() >= sf.m_MinPlayers && d.m_MaxClients <= sf.m_MaxPlayers) &&
 			(d.m_Rating >= sf.m_MinRating && d.m_Rating <= sf.m_MaxRating);
+	}
+
+	bool MasterSession::canJoinNoLock() const
+	{
+		// Becomes false if session was started in p2p and someone left or
+		// if was started and no late join is allowed.
+		return m_Host && m_NewLinksCanJoin && (!m_Started || m_Data.m_CanJoinAfterStart);
 	}
 
 

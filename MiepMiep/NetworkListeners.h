@@ -18,19 +18,19 @@ namespace MiepMiep
 	{
 		MM_TS void addListener( T* listener )
 		{
-			scoped_lock lk(m_ListenerMutex);
+			rscoped_lock lk(m_ListenerMutex);
 			m_Listeners.emplace_back( listener );
 		}
 
 		MM_TS void removeListener( const T* listener )
 		{
-			scoped_lock lk( m_ListenerMutex );
+			rscoped_lock lk( m_ListenerMutex );
 			std::remove( m_Listeners.begin(), m_Listeners.end(), listener );
 		}
 
 		MM_TS void forListeners( const std::function<void (T*)>& cb )
 		{
-			scoped_lock lk( m_ListenerMutex );
+			rscoped_lock lk( m_ListenerMutex );
 			for ( auto l : m_Listeners )
 			{
 				cb ( l );
@@ -38,7 +38,7 @@ namespace MiepMiep
 		}
 
 	private:
-		mutex m_ListenerMutex;
+		mutable rmutex m_ListenerMutex;
 		vector<T*> m_Listeners;
 	};
 

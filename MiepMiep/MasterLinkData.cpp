@@ -53,6 +53,7 @@ namespace MiepMiep
 
 	// ---------- RPC -------------------------------------------------------------------------------
 
+	// Executes on client.
 	// [bool : succes or fail]
 	MM_RPC(masterLinkRpcRegisterResult, bool)
 	{
@@ -63,9 +64,10 @@ namespace MiepMiep
 		l.pushEvent<EventRegisterResult>( mj, succes );
 	}
 
+	// Executes on master server!
 	MM_RPC(masterLinkRpcRegisterServer, MasterSessionData, MetaData)
 	{
-		RPC_BEGIN();
+		RPC_BEGIN_NO_S();
 		const MasterSessionData& data = get<0>(tp);
 		if ( nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data, get<1>(tp ) ) )
 		{
@@ -79,6 +81,7 @@ namespace MiepMiep
 		}
 	}
 
+	// Executes on client.
 	// [bool : succes or fail]
 	MM_RPC(masterLinkRpcJoinResult, bool)
 	{
@@ -89,15 +92,15 @@ namespace MiepMiep
 		l.pushEvent<EventJoinResult>( mj, bSucces ? EJoinServerResult::Fine : EJoinServerResult::NoMatchesFound );
 	}
 
+	// Executes on master server!
 	MM_RPC(masterLinkRpcJoinServer, SearchFilter, MetaData)
 	{
-		RPC_BEGIN();
+		RPC_BEGIN_NO_S();
 		const SearchFilter& sf = get<0>(tp);
+		const MetaData& joinMatchmakingMd = get<1>(tp);
 		auto* mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
-		if ( mSession )
+		if ( mSession && mSession->tryJoin( l, joinMatchmakingMd ) )
 		{
-			l.setMasterSession( mSession->ptr<MasterSession>() );
-			mSession->onClientJoins( l, get<1>(tp) );
 			l.callRpc<masterLinkRpcJoinResult, bool>( true, false, false, MM_RPC_CHANNEL, nullptr );
 			LOG("New master join request from %s succesful.", l.info());
 		}
@@ -108,6 +111,23 @@ namespace MiepMiep
 		}
 	}
 
+
+	MM_RPC( masterLinkRpcStartSession )
+	{
+		RPC_BEGIN();
+		MasterSession* mses = l.masterSession();
+		if ( mses )
+		{
+			if ( !mses->start() )
+			{
+				LOGW( "Tried to start an already started master session." );
+			}
+		}
+		else
+		{
+			LOGW( "Link %s tried to start a master session while it had no such session associated with it.", l.info() );
+		}
+	}
 
 
 	// ---------- MasterJoinData -------------------------------------------------------------------------------

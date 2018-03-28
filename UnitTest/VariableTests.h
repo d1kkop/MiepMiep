@@ -66,7 +66,7 @@ UTESTBEGIN(VariablesTest)
 				assert( p->m_Weight.getVarConrol() == EVarControl::Full );
 			}, 
 				*IAddress::resolve( "localhost", 12203 ),
-				true, false, 10, 32, "my game", "type", "lala" );
+				true, false, true, 10, 32, "my game", "type", "lala" );
 
 			this_thread::sleep_for( std::chrono::milliseconds(20) );
 		});
