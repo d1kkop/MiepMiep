@@ -101,7 +101,7 @@ namespace MiepMiep
 		}
 		else
 		{
-			l.callRpc<masterLinkRpcJoinResult, bool>( false, false, false, MM_RPC_CHANNEL, nullptr);
+			l.callRpc<masterLinkRpcJoinResult, bool>(false, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master join server request from %s failed.", l.info());
 		}
 	}

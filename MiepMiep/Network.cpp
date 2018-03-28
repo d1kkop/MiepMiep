@@ -87,7 +87,7 @@ namespace MiepMiep
 			data.m_IsP2p = isP2p;
 			data.m_Rating = rating;
 			data.m_Password = password;
-			data.m_IsPrivate = isPrivate;
+			data.m_IsPrivate  = isPrivate;
 			data.m_MaxClients = maxClients;
 			link->getOrAdd<MasterLinkData>()->registerServer( callback, data, customMatchmakingMd );
 		} );
@@ -110,10 +110,10 @@ namespace MiepMiep
 			SearchFilter sf;
 			sf.m_Name = name;
 			sf.m_Type = type;
-			sf.m_MinRating = minRating;
-			sf.m_MaxRating = maxRating;
-			sf.m_MinPlayers = minPlayers;
-			sf.m_MaxPlayers = maxPlayers;
+			sf.m_MinRating   = minRating;
+			sf.m_MaxRating   = maxRating;
+			sf.m_MinPlayers  = minPlayers;
+			sf.m_MaxPlayers  = maxPlayers;
 			sf.m_FindPrivate = false;
 			sf.m_FindP2p = findP2p;
 			sf.m_FindClientServer = findClientServer;
