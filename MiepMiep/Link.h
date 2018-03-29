@@ -50,8 +50,10 @@ namespace MiepMiep
 		MM_TSC const char* info() const;
 		MM_TSC SocketAddrPair getSocketAddrPair() const;
 
+		MM_TSC Session& ses() const;
 		
 		MM_TS void updateCustomMatchmakingMd( const MetaData& md );
+		MM_TS bool disconnect(bool isKick, bool sendMsg);
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );
@@ -102,9 +104,9 @@ namespace MiepMiep
 	template <typename T, typename ...Args>
 	MM_TS void Link::pushEvent(Args&&... args)
 	{
-		sptr<T> evt = make_shared<T>(*this, args...);
+		sptr<T> evt = make_shared<T>(to_ptr(), args...);
 		sptr<IEvent> evtDown = static_pointer_cast<IEvent>(evt);
-		m_Network.get<NetworkListeners>()->pushEvent( evtDown );
+		m_Network.get<NetworkEvents>()->pushEvent( evtDown );
 	}
 
 	template <typename T, typename ...Args>

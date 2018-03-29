@@ -172,26 +172,13 @@ namespace MiepMiep
 		return m_Links.count( sap ) != 0;
 	}
 
+	// TODO make actually parallel
 	MM_TS void LinkManager::forEachLink( const std::function<void( Link& )>& cb, u32 clusterSize )
 	{
-		if ( 0 == clusterSize )
+		scoped_lock lk(m_LinksMapMutex);
+		for ( auto& link : m_LinksAsArray )
 		{
-			scoped_lock lk(m_LinksMapMutex);
-			for ( auto& link : m_LinksAsArray )
-			{
-				cb( *link );
-			}
-		}
-		else
-		{
-			Util::cluster( m_LinksAsArray.size(), clusterSize, [&]( auto s, auto e )
-			{
-				while ( s < e )
-				{
-					cb( *m_LinksAsArray[s] );
-					++s;
-				}
-			});
+			cb( *link );
 		}
 	}
 }

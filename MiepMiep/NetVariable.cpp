@@ -2,7 +2,7 @@
 #include "Link.h"
 #include "Network.h"
 #include "Group.h"
-#include "NetworkListeners.h"
+#include "NetworkEvents.h"
 #include "GroupCollection.h"
 #include "PerThreadDataProvider.h"
 
@@ -11,12 +11,12 @@ namespace MiepMiep
 {
 	// ---- Event ------------------------------------------------------------
 
-	struct EventOwnerChanged : EventBase
+	struct EventOwnerChanged : IEvent
 	{
-		EventOwnerChanged(const Link& link, const IAddress* newOwner, const Group& group, byte varIdx):
-			EventBase(link, false),
-			m_NewOwner( newOwner ? newOwner->to_ptr() : nullptr ),
-			m_Group(group.ptr<Group>()),
+		EventOwnerChanged(const sptr<Link>& link, const sptr<IAddress> newOwner, const sptr<Group>& group, byte varIdx):
+			IEvent( link, false ),
+			m_NewOwner( newOwner ),
+			m_Group(group),
 			m_VarBit(varIdx)
 		{
 		}
@@ -37,9 +37,9 @@ namespace MiepMiep
 				}
 
 				// Safe to obtain ref to userVar as we have acquired the variables-lock.
-				m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
+				m_Link->ses().forListeners( [&] ( ISessionListener* l )
 				{
-					l->onOwnerChanged( *m_Link, *userVar, m_NewOwner.get() );
+					l->onOwnerChanged( m_Link->session(), *userVar, m_NewOwner.get() );
 				});
 
 				m_Group->unlockVariablesMutex();
@@ -75,12 +75,12 @@ namespace MiepMiep
 		if ( !owner ) // we become owner
 		{
 			g->setNewOwnership( bit, nullptr );
-			l.pushEvent<EventOwnerChanged, const IAddress*, Group&, byte&>( nullptr, *g,  bit );
+			l.pushEvent<EventOwnerChanged>( nullptr, g,  bit );
 		}
 		else
 		{
 			g->setNewOwnership( bit, owner.get() );
-			l.pushEvent<EventOwnerChanged, const IAddress*, Group&, byte&>( owner.get(), *g,  bit );
+			l.pushEvent<EventOwnerChanged>( owner, g,  bit );
 		}
 	}
 

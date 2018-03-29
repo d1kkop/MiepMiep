@@ -38,16 +38,21 @@ namespace MiepMiep
 		MM_TS EListenCallResult startListen( u16 port ) override;
 		MM_TS void stopListen( u16 port ) override;
 
-		MM_TS bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
+		MM_TS bool registerServer( const std::function<void( const ISession&, bool )>& callback,
 								   const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
 								   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 								   const MetaData& hostMd, const MetaData& customMatchmakingMd ) override;
 
-		MM_TS bool joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
+		MM_TS bool joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
 							   const IAddress& masterAddr, const std::string& name, const std::string& type,
 							   float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
 							   bool findP2p, bool findClientServer,
 							   const MetaData& joinMd, const MetaData& customMatchmakingMd ) override;
+
+		MM_TS bool kick( ILink& link ) override;
+		MM_TS bool disconnect( ILink& link ) override;
+		MM_TS bool disconnect( ISession& session ) override;
+		MM_TS bool disconnectAll() override;
 
 		MM_TS void createGroupInternal( const Session& session, const string& typeName, const BinSerializer& initData, byte channel, IDeliveryTrace* trace );
 		MM_TS void destroyGroup( u32 groupId ) override;
@@ -60,8 +65,8 @@ namespace MiepMiep
 		MM_TS ESendCallResult sendReliable(const vector<sptr<const struct NormalSendPacket>>&, const ISession* session, Link* exlOrSpecific,
 										   bool buffer, byte channel, IDeliveryTrace* trace);
 
-		MM_TS void addConnectionListener( IConnectionListener* listener ) override;
-		MM_TS void removeConnectionListener( const IConnectionListener* listener ) override;
+		MM_TS void addSessionListener( ISession& session, ISessionListener* listener ) override;
+		MM_TS void removeSessionListener( ISession& session, const ISessionListener* listener ) override;
 
 
 		MM_TS static void clearAllStatics();

@@ -4,7 +4,7 @@
 #include "Network.h"
 #include "LinkStats.h"
 #include "LinkState.h"
-#include "NetworkListeners.h"
+#include "NetworkEvents.h"
 #include <algorithm>
 
 
@@ -32,6 +32,7 @@ namespace MiepMiep
 	bool readOrWrite( BinSerializer& bs, MasterSessionData& md, bool _write )
 	{
 		__CHECKEDB( bs.readOrWrite( md.m_IsP2p, _write ) );
+		__CHECKEDB( bs.readOrWrite( md.m_UsedMatchmaker, _write ) );
 		__CHECKEDB( bs.readOrWrite( md.m_CanJoinAfterStart, _write ) );
 		__CHECKEDB( bs.readOrWrite( md.m_IsPrivate, _write ) );
 		__CHECKEDB( bs.readOrWrite( md.m_Rating, _write ) );
@@ -45,20 +46,20 @@ namespace MiepMiep
 
 	// ------ Event --------------------------------------------------------------------------------
 
-	struct EventNewHost : EventBase
+	struct EventNewHost : IEvent
 	{
-		EventNewHost( const Link& link, const sptr<const IAddress>& newHost ):
-			EventBase( link, false ),
+		EventNewHost( const sptr<Link>& link, const sptr<const IAddress>& newHost ):
+			IEvent( link, false ),
 			m_NewHost( newHost )
 		{
 		}
 
 		void process() override
 		{
-			m_NetworkListener->processEvents<IConnectionListener>( [this] ( IConnectionListener* l )
+			m_Link->ses().forListeners( [&]( ISessionListener* l )
 			{
 				// If empty, we become host.
-				l->onNewHost( *m_Link, m_NewHost.get() );
+				l->onNewHost( m_Link->session(), m_NewHost.get() );
 			} );
 		}
 
@@ -68,7 +69,7 @@ namespace MiepMiep
 
 	// ------ RPC --------------------------------------------------------------------------------
 
-	// Note this is executed on the client, not the matchmaker.
+	// Executed on client.
 	MM_RPC( masterSessionConnectTo, u32, sptr<IAddress> )
 	{
 		RPC_BEGIN();
@@ -81,7 +82,7 @@ namespace MiepMiep
 		}
 	}
 
-	// Note this is executed on the client, not the matchmaker.
+	// Executed on client.
 	MM_RPC( masterSessionNewHost, sptr<IAddress> )
 	{
 		RPC_BEGIN();

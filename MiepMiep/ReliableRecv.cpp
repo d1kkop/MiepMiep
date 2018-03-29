@@ -4,7 +4,7 @@
 #include "PacketHandler.h"
 #include "JobSystem.h"
 #include "PerThreadDataProvider.h"
-#include "NetworkListeners.h"
+#include "NetworkEvents.h"
 #include "Platform.h"
 
 
@@ -14,10 +14,10 @@ namespace MiepMiep
 
 	using RpcFunc = void (*)( INetwork&, const ILink&, BinSerializer& );
 
-	struct EventRpc : EventBase
+	struct EventRpc : IEvent
 	{
-		EventRpc(const Link& link, const RpcFunc& rpcFunc, const RecvPacket& pack, u32 readPos, bool isSystemRpc):
-			EventBase(link, isSystemRpc),
+		EventRpc(const sptr<Link>& link, const RpcFunc& rpcFunc, const RecvPacket& pack, u32 readPos, bool isSystemRpc):
+			IEvent( link, isSystemRpc),
 			m_RpcFunc(rpcFunc),
 			m_Pack(pack),
 			m_ReadPos(readPos)
@@ -28,11 +28,7 @@ namespace MiepMiep
 		{
 			auto& bs = PerThreadDataProvider::getSerializer(false);
 			bs.resetTo( m_Pack.m_Data, m_Pack.m_Length, m_Pack.m_Length );	
-			m_NetworkListener->processEvents<IConnectionListener>( [&] (IConnectionListener* l) 
-			{
-				bs.setRead( m_ReadPos );
-				m_RpcFunc( *m_Network, *m_Link, bs );
-			});
+			m_RpcFunc( m_Link->m_Network, *m_Link, bs );
 		}
 
 		RpcFunc m_RpcFunc;

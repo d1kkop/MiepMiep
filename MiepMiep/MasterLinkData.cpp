@@ -5,7 +5,7 @@
 #include "Platform.h"
 #include "Socket.h"
 #include "MasterServer.h"
-#include "NetworkListeners.h"
+#include "NetworkEvents.h"
 #include "LinkState.h"
 #include "MasterServer.h"
 
@@ -14,10 +14,10 @@ namespace MiepMiep
 {
 	// ---------- Event -------------------------------------------------------------------------------
 
-	struct EventRegisterResult : EventBase
+	struct EventRegisterResult : IEvent
 	{
-		EventRegisterResult( const Link& link, const sptr<MasterLinkData>& mj, bool succes ):
-			EventBase( link, false ),
+		EventRegisterResult( const sptr<Link>& link, const sptr<MasterLinkData>& mj, bool succes ):
+			IEvent( link, false ),
 			m_Mj( mj ),
 			m_Succes( succes )
 		{
@@ -25,17 +25,17 @@ namespace MiepMiep
 
 		void process() override
 		{
-			if ( m_Mj ) m_Mj->getRegisterCb()(*m_Link, m_Succes);
+			m_Mj->getRegisterCb()(m_Link->session(), m_Succes);
 		}
 
 		sptr<const MasterLinkData> m_Mj;
 		bool m_Succes;
 	};
 
-	struct EventJoinResult : EventBase
+	struct EventJoinResult : IEvent
 	{
-		EventJoinResult( const Link& link, const sptr<MasterLinkData>& mj, EJoinServerResult joinRes  ):
-			EventBase( link, false ),
+		EventJoinResult( const sptr<Link>& link, const sptr<MasterLinkData>& mj, EJoinServerResult joinRes  ):
+			IEvent( link, false ),
 			m_Mj( mj ),
 			m_JoinRes( joinRes )
 		{
@@ -43,7 +43,7 @@ namespace MiepMiep
 
 		void process() override
 		{
-			if ( m_Mj ) m_Mj->getJoinCb()(*m_Link, m_JoinRes);
+			m_Mj->getJoinCb()(m_Link->session(), m_JoinRes);
 		}
 
 		sptr<const MasterLinkData> m_Mj;
@@ -141,7 +141,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS void MasterLinkData::registerServer( const function<void( const ILink& link, bool )>& cb, const MasterSessionData& data,
+	MM_TS void MasterLinkData::registerServer( const function<void( const ISession&, bool )>& cb, const MasterSessionData& data,
 											   const MetaData& customMatchmakingMd )
 	{
 		// Cb lock
@@ -152,7 +152,7 @@ namespace MiepMiep
 		m_Link.callRpc<masterLinkRpcRegisterServer, MasterSessionData, MetaData>( data, customMatchmakingMd, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
-	MM_TS void MasterLinkData::joinServer( const function<void( const ILink& link, EJoinServerResult )>& cb, const SearchFilter& sf,
+	MM_TS void MasterLinkData::joinServer( const function<void( const ISession&, EJoinServerResult )>& cb, const SearchFilter& sf,
 										   const MetaData& customMatchmakingMd )
 	{
 		// Cb lock

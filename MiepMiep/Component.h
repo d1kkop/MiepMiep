@@ -22,7 +22,7 @@ namespace MiepMiep
 		ListenerManager,
 		SendThreadManager,
 		JobSystem,
-		NetworkListeners,
+		NetworkEvents,
 		GroupCollectionLink,
 		GroupCollectionNetwork,
 		GroupCreateFunctions,

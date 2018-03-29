@@ -5,7 +5,7 @@
 #include "LinkState.h"
 #include "ReliableSend.h"
 #include "JobSystem.h"
-#include "NetworkListeners.h"
+#include "NetworkEvents.h"
 #include "MasterLinkData.h"
 #include "SendThread.h"
 #include "SocketSetManager.h"
@@ -40,7 +40,7 @@ namespace MiepMiep
 		getOrAdd<JobSystem>( 0, 4 );   // N worker threads
 		getOrAdd<SendThread>();		 // starts a 'resend' flow and creates jobs per N links whom dispatch their data
 		getOrAdd<SocketSetManager>(); // each N sockets is a new reception thread, default N = 64
-		getOrAdd<NetworkListeners>( 0, allowAsyncCallbacks );
+		getOrAdd<NetworkEvents>( 0, allowAsyncCallbacks );
 	}
 
 	Network::~Network()
@@ -56,7 +56,7 @@ namespace MiepMiep
 
 	MM_TS void Network::processEvents()
 	{
-		get<NetworkListeners>()->processAll();
+		get<NetworkEvents>()->processQueuedEvents();
 	}
 
 	MM_TS EListenCallResult Network::startListen( u16 port )
@@ -69,7 +69,7 @@ namespace MiepMiep
 		getOrAdd<ListenerManager>()->stopListen( port );
 	}
 
-	MM_TS bool Network::registerServer( const std::function<void( const ILink& link, bool )>& callback,
+	MM_TS bool Network::registerServer( const std::function<void( const ISession&, bool )>& callback,
 										const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
 										u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										const MetaData& hostMd, const MetaData& customMatchmakingMd )
@@ -89,13 +89,14 @@ namespace MiepMiep
 			data.m_Password = password;
 			data.m_IsPrivate  = isPrivate;
 			data.m_MaxClients = maxClients;
+			data.m_UsedMatchmaker = true;
 			data.m_CanJoinAfterStart = canJoinAfterStart;
 			link->getOrAdd<MasterLinkData>()->registerServer( callback, data, customMatchmakingMd );
 		} );
 		return true;
 	}
 
-	MM_TS bool Network::joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
+	MM_TS bool Network::joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
 									const IAddress& masterAddr, const std::string& name, const std::string& type,
 									float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
 									bool findP2p, bool findClientServer,
@@ -121,6 +122,34 @@ namespace MiepMiep
 			link->getOrAdd<MasterLinkData>()->joinServer( callback, sf, customMatchmakingMd );
 		} );
 		return true;
+	}
+
+	MM_TS bool Network::kick( ILink& link )
+	{
+		return sc<Link&>( link ).disconnect( true, true );
+	}
+
+	MM_TS bool Network::disconnect( ILink& link )
+	{
+		return sc<Link&>(link).disconnect( false, true );
+	}
+
+	MM_TS bool Network::disconnect( ISession& session )
+	{
+		return sc<Session&>(session).disconnect();
+	}
+
+	MM_TS bool Network::disconnectAll()
+	{
+		auto lm = get<LinkManager>();
+		if ( lm )
+		{
+			lm->forEachLink( [&] ( Link& link )
+			{
+				link.disconnect( false, true );
+			}, 128 );
+		}
+		return true; // TODO , remove true or check num that disconnected
 	}
 
 	MM_TS void Network::createGroupInternal( const Session& session, const string& groupType, const BinSerializer& initData, byte channel, IDeliveryTrace* trace )
@@ -196,14 +225,14 @@ namespace MiepMiep
 		return (somethingWasQueued ? ESendCallResult::Fine : ESendCallResult::NotSent );
 	}
 
-	MM_TS void Network::addConnectionListener( IConnectionListener* listener )
+	MM_TS void Network::addSessionListener( ISession& session, ISessionListener* listener )
 	{
-		get<NetworkListeners>()->addListener<IConnectionListener>( listener );
+	//	get<NetworkListeners>()->addListener<ISessionListener>( listener );
 	}
 
-	MM_TS void Network::removeConnectionListener( const IConnectionListener* listener )
+	MM_TS void Network::removeSessionListener( ISession& session, const ISessionListener* listener )
 	{
-		get<NetworkListeners>()->removeListener<IConnectionListener>( listener );
+	//	get<NetworkListeners>()->removeListener<ISessionListener>( listener );
 	}
 
 	MM_TS void Network::clearAllStatics()

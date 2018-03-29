@@ -42,7 +42,7 @@ namespace MyGame
 		BinSerializer bs;
 
 		m_Network = INetwork::create( true );
-		m_Network->addConnectionListener( this );
+	//	m_Network->addConnectionListener( this );
 
 
 		m_Network->startListen( 27002 );
@@ -113,36 +113,32 @@ namespace MyGame
 	{
 		if ( m_Network )
 		{
-			m_Network->removeConnectionListener( this );
+		//	m_Network->removeConnectionListener( this );
 		}
 	}
 
-	void Game::onRegisterResult( const ILink& link, bool succes )
+	void Game::onRegisterResult( const ISession& session, bool succes )
 	{
 		if ( succes )
 		{
-			cout << "Succesfully registered server at " << link.destination().toIpAndPort() << endl;
+			cout << "Succesfully registered server at " << session.matchMaker().destination().toIpAndPort() << endl;
 		}
 		else
 		{
-			cout << "Failed to registered server at " << link.destination().toIpAndPort() << endl;
+			cout << "Failed to registered server at " << session.matchMaker().destination().toIpAndPort() << endl;
 		}
 	}
 
-	void Game::onJoinResult( const ILink& link, EJoinServerResult res )
+	void Game::onJoinResult( const ISession& session, EJoinServerResult res )
 	{
 		switch ( res )
 		{
 		case EJoinServerResult::Fine:
-			cout << "connected to: " << link.destination().toIpAndPort() << endl;
+			cout << "connected to: " << session.matchMaker().destination().toIpAndPort() << endl;
 			break;
 		case EJoinServerResult::NoMatchesFound:
-			cout << "no matches found " << link.destination().toIpAndPort() << endl;
+			cout << "no matches found " << session.matchMaker().destination().toIpAndPort() << endl;
 		}
 	}
 
-	void Game::onConnectResult( const ILink& link, EConnectResult res )
-	{
-		int k = 0;
-	}
 }

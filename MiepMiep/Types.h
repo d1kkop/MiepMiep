@@ -40,7 +40,7 @@ namespace MiepMiep
 	class INetwork;
 	class BinSerializer;
 	class IDeliveryTrace;
-	class IConnectionListener;
+	class ISessionListener;
 
 	enum class EPacketType : byte;
 	enum class EConnectResult : byte;
@@ -59,6 +59,22 @@ namespace MiepMiep
 	template <typename T>
 	using sptr		= std::shared_ptr<T>;
 	using MetaData	= std::map<std::string, std::string>;
+
+
+	// For clarity instead of a range of  true/false params which make little sense when reading back.
+
+	constexpr bool No_Local  = false;
+	constexpr bool No_Relay  = false;
+	constexpr bool No_Buffer = false;
+	constexpr bool No_SysBit = false;
+
+	constexpr bool Do_Local  = true;
+	constexpr bool Do_Relay  = true;
+	constexpr bool Do_Buffer = true;
+	constexpr bool Do_SysBit = true;
+
+	constexpr auto No_Trace = nullptr;
+
 
 
 	// ---- !! FOR INTERNAL USE ONLY !! ------

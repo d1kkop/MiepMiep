@@ -45,10 +45,9 @@ UTESTBEGIN(VariablesTest)
 	{
 		ts.emplace_back( [=]() 
 		{
-			network->registerServer( [=](auto& l, auto r) 
+			network->registerServer( [=](auto& ses, auto r) 
 			{ 
-				registerResult(l, r); 
-				const ISession& ses = l.session();
+				registerResult(ses, r); 
 
 				sptr<Person> p = make_shared<Person>( 22, 33, 44 );
 				ECreateGroupCallResult createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33, ses );

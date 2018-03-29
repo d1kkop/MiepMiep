@@ -13,7 +13,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS const ILink& Session::master() const
+	MM_TS const ILink& Session::matchMaker() const
 	{
 		scoped_spinlock lk(m_DataMutex);
 		return *m_MasterLink;
@@ -31,10 +31,15 @@ namespace MiepMiep
 		m_Links.emplace_back( link );
 	}
 
-	MM_TS void Session::removeLink( const sptr<Link>& link )
+	MM_TS void Session::removeLink( const sptr<const Link>& link )
 	{
 		scoped_lock lk( m_LinksMutex );
 		std::remove(m_Links.begin(), m_Links.end(), link);
+	}
+
+	MM_TS void Session::removeLink( const Link& link )
+	{
+		removeLink( link.to_ptr() );
 	}
 
 	MM_TS bool Session::hasLink( const Link& link ) const
@@ -55,6 +60,15 @@ namespace MiepMiep
 			if ( l.get() == exclude ) continue;
 			cb ( *l );
 		}
+	}
+
+	MM_TS bool Session::disconnect()
+	{
+		forLink( nullptr, [] ( Link& link )
+		{
+			link.disconnect( false, true );
+		});
+		return true; // TODO make more sense on return
 	}
 
 	MM_TSC const MasterSessionData& Session::msd() const

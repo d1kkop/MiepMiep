@@ -84,17 +84,4 @@ namespace MiepMiep
 	template <typename T, typename F>
 	inline T scc (F&& f) { return static_cast<T>(const_cast<T>(f)); }
 
-	// For clarity instead of a range of  true/false params which make little sense when reading back.
-
-	constexpr bool No_Local  = false;
-	constexpr bool No_Relay  = false;
-	constexpr bool No_Buffer = false;
-	constexpr bool No_SysBit = false;
-
-	constexpr bool Do_Local  = true;
-	constexpr bool Do_Relay  = true;
-	constexpr bool Do_Buffer = true;
-	constexpr bool Do_SysBit = true;
-
-	constexpr auto No_Trace = nullptr;
 }

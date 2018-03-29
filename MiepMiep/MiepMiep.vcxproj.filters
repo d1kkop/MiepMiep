@@ -119,9 +119,6 @@
     <ClCompile Include="JobSystem.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
-    <ClCompile Include="NetworkListeners.cpp">
-      <Filter>Network\Components</Filter>
-    </ClCompile>
     <ClCompile Include="Listener.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
@@ -169,6 +166,9 @@
     </ClCompile>
     <ClCompile Include="Session.cpp">
       <Filter>Core\HighLevelTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkEvents.cpp">
+      <Filter>Network\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -262,9 +262,6 @@
     <ClInclude Include="Rpc.h">
       <Filter>ZUser</Filter>
     </ClInclude>
-    <ClInclude Include="NetworkListeners.h">
-      <Filter>Network\Components</Filter>
-    </ClInclude>
     <ClInclude Include="Listener.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
@@ -312,6 +309,9 @@
     </ClInclude>
     <ClInclude Include="Session.h">
       <Filter>Core\HighLevelTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkEvents.h">
+      <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -26,7 +26,7 @@
     <ClCompile Include="ListenerManager.cpp" />
     <ClCompile Include="MasterLinkData.cpp" />
     <ClCompile Include="MasterServer.cpp" />
-    <ClCompile Include="NetworkListeners.cpp" />
+    <ClCompile Include="NetworkEvents.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="ParentLink.cpp" />
     <ClCompile Include="ParentNetwork.cpp" />
@@ -68,7 +68,7 @@
     <ClInclude Include="ListenerManager.h" />
     <ClInclude Include="MasterLinkData.h" />
     <ClInclude Include="MasterServer.h" />
-    <ClInclude Include="NetworkListeners.h" />
+    <ClInclude Include="NetworkEvents.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="ParentLink.h" />
     <ClInclude Include="ParentNetwork.h" />

@@ -48,6 +48,7 @@ namespace MiepMiep
 	struct MasterSessionData : public ITraceable
 	{
 		bool  m_IsP2p;
+		bool  m_UsedMatchmaker;
 		bool  m_IsPrivate;
 		float m_Rating;
 		u32	  m_MaxClients;

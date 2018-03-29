@@ -177,10 +177,29 @@ namespace MiepMiep
 		return SocketAddrPair( *m_Socket, *m_Destination );
 	}
 
+	MM_TSC Session& Link::ses() const
+	{
+		return sc<Session&>( session() );
+	}
+
 	MM_TS void Link::updateCustomMatchmakingMd( const MetaData& md )
 	{
 		scoped_spinlock lk( m_MatchmakingDataMutex);
 		m_CustomMatchmakingMd = md;
+	}
+
+	MM_TS bool Link::disconnect(bool isKick, bool sendMsg)
+	{
+		auto ls = get<LinkState>();
+		if ( ls )
+		{
+			return ls->disconnect( isKick, sendMsg );
+		}
+		else
+		{
+			LOGW( "Link %s received disconnect while it had no linkState.", info() );
+		}
+		return false;
 	}
 
 	MM_TS void Link::createGroup( const string& typeName, const BinSerializer& initData )

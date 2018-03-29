@@ -22,12 +22,12 @@ using namespace chrono;
 using namespace MiepMiep;
 
 
-void registerResult( const ILink& link, bool result )
+void registerResult( const ISession& session, bool result )
 {
 }
 
 
-void joinResult( const ILink& link, EJoinServerResult result )
+void joinResult( const ISession& session, EJoinServerResult result )
 {
 }
 

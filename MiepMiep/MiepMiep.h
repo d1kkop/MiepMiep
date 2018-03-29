@@ -81,14 +81,15 @@ namespace MiepMiep
 	};
 
 
-	class MM_DECLSPEC IConnectionListener
+	class MM_DECLSPEC ISessionListener
 	{
 	public:
-		virtual void onConnectResult( const ILink& link, EConnectResult res ) { }
-		virtual void onNewConnection( const ILink& link, const IAddress& remote ) { }
-		virtual void onDisconnect( const ILink& link, EDisconnectReason reason, const IAddress& remote ) { }
-		virtual void onOwnerChanged( const ILink& link, NetVar& variable, const IAddress* newOwner ) { }
-		virtual void onNewHost( const ILink& link, const IAddress* host ) { }
+		virtual void onConnect( const ISession& session, const IAddress& remote ) { }
+		virtual void onDisconnect( const ISession& session, const IAddress& remote, EDisconnectReason reason ) { }
+		virtual void onOwnerChanged( const ISession& session, NetVar& variable, const IAddress* newOwner ) { }
+		virtual void onNewHost( const ISession& session, const IAddress* host ) { }
+		virtual void onLostHost( const ISession& session ) { }
+		virtual void onLostMasterLink( const ISession& session, const ILink& link ) { }
 	};
 
 
@@ -135,7 +136,7 @@ namespace MiepMiep
 	{
 	public:
 		/*	Link to matchmaking server. */
-		MM_TS virtual const ILink& master()  const=0;
+		MM_TS virtual const ILink& matchMaker()  const=0;
 
 		/*	Current authorative address in the session. This is always the server in a client-serv architecture.
 			In p2p, this is only one peer that can make session wide authorative decisions.
@@ -158,17 +159,22 @@ namespace MiepMiep
 		MM_TS virtual void stopListen( u16 port )=0;
 
 		/*	Returns false if creation failed. This should only ever occur when all ports on the local machine are in use. */
-		MM_TS virtual bool registerServer( const std::function<void( const ILink& link, bool )>& callback,
+		MM_TS virtual bool registerServer( const std::function<void( const ISession&, bool )>& callback,
 										   const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
 										   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										   const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		/*	Returns false if creation failed. This should only ever occur when all porst on the local machine are in use. */
-		MM_TS virtual bool joinServer( const std::function<void( const ILink& link, EJoinServerResult )>& callback,
+		MM_TS virtual bool joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
 									   const IAddress& masterAddr, const std::string& name, const std::string& type,
 									   float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
 									   bool findP2p, bool findClientServer,
 									   const MetaData& joinMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
+
+		MM_TS virtual bool kick( ILink& link )=0;
+		MM_TS virtual bool disconnect( ILink& link )=0;
+		MM_TS virtual bool disconnect( ISession& session )=0;
+		MM_TS virtual bool disconnectAll()=0;
 
 		template <typename T, typename ...Args>
 		MM_TS ESendCallResult callRpc( Args... args, const ISession* session, ILink* exclOrSpecific=nullptr, bool localCall=false, bool buffer=false,
@@ -178,8 +184,8 @@ namespace MiepMiep
 		MM_TS ECreateGroupCallResult createGroup( Args&&... args, const ISession& session, bool localCall=false, byte channel=0, IDeliveryTrace* trace=nullptr );
 		MM_TS virtual void destroyGroup( u32 groupId )=0;
 
-		MM_TS virtual void addConnectionListener( IConnectionListener* connectionListener )=0;
-		MM_TS virtual void removeConnectionListener( const IConnectionListener* connectionListener )=0;
+		MM_TS virtual void addSessionListener( ISession& session, ISessionListener* sessionListener )=0;
+		MM_TS virtual void removeSessionListener( ISession& session, const ISessionListener* sessionListener )=0;
 
 		MM_TS virtual ESendCallResult sendReliable( byte id, const ISession* session, ILink* exclOrSpecific, const BinSerializer* serializers, u32 numSerializers=1,
 													bool buffer=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr )=0;

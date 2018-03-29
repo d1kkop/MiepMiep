@@ -5,7 +5,7 @@ using namespace MiepMiep;
 
 namespace MyGame
 {
-	class Game : IConnectionListener
+	class Game : ISessionListener
 	{
 	public:
 		Game();
@@ -15,10 +15,8 @@ namespace MyGame
 		void run();
 		void stop();
 
-		void onRegisterResult( const ILink& link, bool result );
-		void onJoinResult( const ILink& link, EJoinServerResult result );
-
-		void onConnectResult( const ILink& link, EConnectResult res ) override;
+		void onRegisterResult( const ISession& session, bool result );
+		void onJoinResult( const ISession& session, EJoinServerResult result );
 
 		sptr<INetwork> m_Network;
 	};
