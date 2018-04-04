@@ -26,6 +26,7 @@
     <ClCompile Include="ListenerManager.cpp" />
     <ClCompile Include="MasterLinkData.cpp" />
     <ClCompile Include="MasterServer.cpp" />
+    <ClCompile Include="MasterSession.cpp" />
     <ClCompile Include="NetworkEvents.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="ParentLink.cpp" />
@@ -51,6 +52,7 @@
     <ClCompile Include="RemoteServerInfo.cpp" />
     <ClCompile Include="SendThread.cpp" />
     <ClCompile Include="Session.cpp" />
+    <ClCompile Include="SessionBase.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="SocketSet.cpp" />
     <ClCompile Include="SocketSetManager.cpp" />
@@ -68,6 +70,7 @@
     <ClInclude Include="ListenerManager.h" />
     <ClInclude Include="MasterLinkData.h" />
     <ClInclude Include="MasterServer.h" />
+    <ClInclude Include="MasterSession.h" />
     <ClInclude Include="NetworkEvents.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="ParentLink.h" />
@@ -77,9 +80,11 @@
     <ClInclude Include="ReliableAckSend.h" />
     <ClInclude Include="ReliableNewestAckRecv.h" />
     <ClInclude Include="ReliableNewestAckSend.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Rpc.h" />
     <ClInclude Include="SendThread.h" />
     <ClInclude Include="Session.h" />
+    <ClInclude Include="SessionBase.h" />
     <ClInclude Include="SocketSetManager.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="Component.h" />
@@ -110,6 +115,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\TODO" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MiepMiep.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

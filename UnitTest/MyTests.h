@@ -310,9 +310,10 @@ UTESTBEGIN(RPCBigTest)
 	assert( mdRead == g_md );
 
 	sptr<INetwork> nw = INetwork::create();
-	sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( nullptr, *IAddress::resolve("localhost", 12203), true );
-	bs2.setRead(0);
-	rpc_dsr_MyRpcBigTest( *nw, (ILink&) (Link&)*link, bs2 );
+	////sptr<Session> s   = reserve_sp<Se
+	//sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( nullptr, *IAddress::resolve("localhost", 12203), true );
+	//bs2.setRead(0);
+	//rpc_dsr_MyRpcBigTest( *nw, (ILink&) (Link&)*link, bs2 );
 
 	return true;
 }

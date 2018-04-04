@@ -1,10 +1,36 @@
-Thu Mar 29 01:25:04 2018 ------- New Session --------
-Thu Mar 29 01:25:04 2018 ----------------------------
-Thu Mar 29 01:25:04 2018 Created new link to 127.0.0.1:27002 (src_port: 60646, link: 22151, socket: 248).
-Thu Mar 29 01:25:04 2018 Created new link to 127.0.0.1:60646 (src_port: 27002, link: 22151, socket: 108).
-Thu Mar 29 01:25:04 2018 Received reliable seq: 0
-Thu Mar 29 01:25:04 2018 Handling RPC: masterLinkRpcRegisterServer.
-Thu Mar 29 01:25:04 2018 Created new link to 127.0.0.1:27002 (src_port: 60647, link: 19525, socket: 328).
-Thu Mar 29 01:25:04 2018 Created new link to 127.0.0.1:60647 (src_port: 27002, link: 19525, socket: 108).
-Thu Mar 29 01:25:04 2018 Received reliable seq: 0
-Thu Mar 29 01:25:04 2018 Handling RPC: masterLinkRpcJoinServer.
+Wed Apr  4 01:58:07 2018 ------- New Session --------
+Wed Apr  4 01:58:07 2018 ----------------------------
+Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:27002 (src_port: 65097, link: 8518, socket: 248) to session 17557.
+Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:27002 (src_port: 65097, link: 8518, socket: 248).
+Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65097 (src_port: 27002, link: 8518, socket: 108).
+Wed Apr  4 01:58:07 2018 Received reliable seq: 0
+Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcRegisterServer.
+Wed Apr  4 01:58:07 2018 New master register server request from 127.0.0.1:65097 (src_port: 27002, link: 8518, socket: 108) succesful.
+Wed Apr  4 01:58:07 2018 Received reliable seq: 0
+Wed Apr  4 01:58:07 2018 Received reliable seq: 1
+Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionNewHost.
+Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcRegisterResult.
+Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:27002 (src_port: 65098, link: 23453, socket: 268) to session 23319.
+Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:27002 (src_port: 65098, link: 23453, socket: 268).
+Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65098 (src_port: 27002, link: 23453, socket: 108).
+Wed Apr  4 01:58:07 2018 Received reliable seq: 0
+Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcJoinServer.
+Wed Apr  4 01:58:07 2018 New master join request from 127.0.0.1:65098 (src_port: 27002, link: 23453, socket: 108) succesful.
+Wed Apr  4 01:58:07 2018 Received reliable seq: 0
+Wed Apr  4 01:58:07 2018 Received reliable seq: 1
+Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionConnectTo.
+Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:65097 (src_port: 65098, link: 41, socket: 268) to session 23319.
+Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65097 (src_port: 65098, link: 41, socket: 268).
+Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionNewHost.
+Wed Apr  4 01:58:07 2018 Received reliable seq: 2
+Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcJoinResult.
+Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:65098 (src_port: 65097, link: 41, socket: 248) to session 17557.
+Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65098 (src_port: 65097, link: 41, socket: 248).
+Wed Apr  4 01:58:07 2018 Received reliable seq: 0
+Wed Apr  4 01:58:07 2018 Handling RPC: linkStateConnect.
+Wed Apr  4 01:58:07 2018 Received reliable seq: 0
+Wed Apr  4 01:58:07 2018 Handling RPC: linkStateAccepted.
+Wed Apr  4 01:58:07 2018 Link to 127.0.0.1:65097 (src_port: 65098, link: 41, socket: 268) accepted from connect request.
+Wed Apr  4 01:58:07 2018 Received reliable seq: 2
+Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionConnectTo.
+Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:65098 (src_port: 65097, link: 18467, socket: 248) to session 17557.

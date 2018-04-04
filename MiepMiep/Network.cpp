@@ -74,13 +74,20 @@ namespace MiepMiep
 										u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
-		auto link = getOrAdd<LinkManager>()->add( nullptr, masterAddr, true );	
+		i32 err;
+		auto sock = ISocket::create( 0, &err );
+		if ( !sock )
+		{
+			LOGW( "Could not create socket, error %d.", err );
+			return false;
+		}
+		auto s = reserve_sp<Session>( MM_FL, *this, hostMd );
+		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), true );	
 		if ( !link ) return false;
 		get<JobSystem>()->addJob( [=]
 		{
-			assert(link);
-			auto s = reserve_sp<Session>( MM_FL, *this, link, hostMd );
-			link->setSession( s );
+			assert(link && s);
+			s->setMasterLink( link );
 			MasterSessionData data;
 			data.m_Type = type;
 			data.m_Name = name;
@@ -102,13 +109,20 @@ namespace MiepMiep
 									bool findP2p, bool findClientServer,
 									const MetaData& joinMd, const MetaData& customMatchmakingMd )
 	{
-		auto link = getOrAdd<LinkManager>()->add( nullptr, masterAddr, true );
+		i32 err;
+		auto sock = ISocket::create( 0, &err );
+		if ( !sock )
+		{
+			LOGW( "Could not create socket, error %d.", err );
+			return false;
+		}
+		auto s = reserve_sp<Session>( MM_FL, *this, joinMd );
+		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), true );
 		if ( !link ) return false;
 		get<JobSystem>()->addJob( [=]
 		{
-			assert(link);
-			auto s = reserve_sp<Session>( MM_FL, *this, link, joinMd );
-			link->setSession( s );
+			assert(link && s);
+			s->setMasterLink( link );
 			SearchFilter sf;
 			sf.m_Name = name;
 			sf.m_Type = type;

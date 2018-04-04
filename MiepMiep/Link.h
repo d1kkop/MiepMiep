@@ -24,33 +24,33 @@ namespace MiepMiep
 	public:
 		Link(Network& network);
 		~Link() override;
-		MM_TSC void setSession( const sptr<Session>& session ); // Set immediately on construction before link is returend, therefore no locks required.
+		MM_TSC bool setSession( SessionBase& session );
 
 		MM_TSC bool operator<  ( const Link& o ) const;
 		MM_TSC bool operator== ( const Link& o ) const;
+		MM_TSC bool operator!= ( const Link& o ) const { return !(*this == o); }
 
-		MM_TS void setMasterSession( const sptr<MasterSession>& session );
-		MM_TS MasterSession* masterSession() const;
-
-		MM_TS static sptr<Link> create(Network& network, const Session* session, const IAddress& destination, bool addHandler);
-		MM_TS static sptr<Link> create(Network& network, const Session* session, const IAddress& destination, u32 id, bool addHandler);
-		MM_TS static sptr<Link> create(Network& network, const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler);
+		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler );
+		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler );
+		MM_TS static sptr<Link> create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler );
 
 		// ILink
 		MM_TSC INetwork& network() const override;
 		MM_TSC ISession& session() const override;
-		MM_TSC const IAddress& destination() const override { return *m_Destination; }
+		MM_TSC const IAddress& destination() const override { return *m_SockAddrPair.m_Address; }
 		MM_TSC const IAddress& source() const override { return *m_Source; }
-		MM_TS bool  isConnected() const override;
+		MM_TS  bool  isConnected() const override;
+		MM_TSC SessionBase* getSession() const override;
 
 		// These are thread safe beacuse they are set before the newly created link object is returned from creation.
 		MM_TSC u32 id() const { return m_Id; }
-		MM_TSC const ISocket& socket() const { return *m_Socket; }
+		MM_TSC const ISocket& socket() const { return *m_SockAddrPair.m_Socket; }
 		MM_TSC const char* ipAndPort() const;
 		MM_TSC const char* info() const;
-		MM_TSC SocketAddrPair getSocketAddrPair() const;
+		MM_TSC const SocketAddrPair& getSocketAddrPair() const;
 
-		MM_TSC Session& ses() const;
+		MM_TSC Session& normalSession() const;
+		MM_TSC MasterSession& masterSession() const;
 		
 		MM_TS void updateCustomMatchmakingMd( const MetaData& md );
 		MM_TS bool disconnect(bool isKick, bool sendMsg);
@@ -82,12 +82,9 @@ namespace MiepMiep
 		// All these fields could have their own component, but that is a lot of boilerplate for a single field.
 		u32 m_Id;
 		bool m_SocketWasAddedToHandler;
-		sptr<const class IAddress>  m_Destination;
-		sptr<const class IAddress>  m_Source;
-		sptr<const class ISocket>   m_Socket;
-		sptr<Session> m_Session;
-		mutable SpinLock m_MasterSessionMutex;
-		sptr<MasterSession> m_MasterSession;
+		sptr<SessionBase> m_Session;
+		SocketAddrPair m_SockAddrPair;
+		sptr<const class IAddress> m_Source;
 		SpinLock m_MatchmakingDataMutex;
 		MetaData m_CustomMatchmakingMd;
 	};

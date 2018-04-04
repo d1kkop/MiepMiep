@@ -10,7 +10,7 @@ namespace MiepMiep
 	class ISocket;
 	class Endpoint;
 	class Link;
-	class Session;
+	class SessionBase;
 	class Listener;
 
 
@@ -39,10 +39,9 @@ namespace MiepMiep
 		LinkManager(Network& network);
 		static EComponentType compType() { return EComponentType::LinkManager; }
 
-		MM_TS sptr<Link> add( const Session* session, const IAddress& to, bool addHandler );
-		MM_TS sptr<Link> add( const Session* session, const IAddress& to, u32 id, bool addHandler );
-		MM_TS sptr<Link> add( const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler );
-		MM_TS sptr<Link> getOrAdd( const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool returnNullIfIdsDontMatch=true );
+		MM_TS sptr<Link> add( SessionBase& session, const SocketAddrPair& sap, bool addHandler );
+		MM_TS sptr<Link> add( SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler );
+		MM_TS sptr<Link> getOrAdd( SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool returnNullIfIdsDontMatch=true );
 		MM_TS sptr<Link> get( const SocketAddrPair& sap );
 		MM_TS bool		 has( const SocketAddrPair& sap ) const;
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb, u32 clusterSize=0 );

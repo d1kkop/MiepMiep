@@ -37,7 +37,7 @@ namespace MiepMiep
 				}
 
 				// Safe to obtain ref to userVar as we have acquired the variables-lock.
-				m_Link->ses().forListeners( [&] ( ISessionListener* l )
+				m_Link->getSession()->forListeners( [&] ( ISessionListener* l )
 				{
 					l->onOwnerChanged( m_Link->session(), *userVar, m_NewOwner.get() );
 				});

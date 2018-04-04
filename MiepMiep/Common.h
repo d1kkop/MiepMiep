@@ -15,6 +15,7 @@ using namespace std;
 #define MM_VG_CHANNEL  0
 #define MM_SOCK_SELECT_TIMEOUT 100
 #define MM_NEWER_SEQ_RANGE (UINT_MAX>>2)
+#define MM_NO_IMPLEMENTATION_ERR -9999
 
 
 /* Serialization properties */
@@ -56,9 +57,9 @@ using namespace std;
 #define RPC_BEGIN() \
 	assert(link); \
 	if (!link) { LOGW("Unexpectd local RPC call."); return; } \
-	auto& nw = toNetwork(network); \
+	auto& nw = toNetwork( network ); \
 	auto& l  = sc<Link&>( const_cast<ILink&>(*link) ); \
-	auto& s  = sc<Session&>(l.session())
+	auto& s  = sc<SessionBase&>(l.session())
 
 #define RPC_BEGIN_NO_S() \
 	assert(link); \

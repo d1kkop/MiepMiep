@@ -48,6 +48,7 @@ namespace MiepMiep
 
 	public:
 		static sptr<ISocket> create();
+		static sptr<ISocket> create( u16 port, i32* error, IPProto proto = IPProto::Ipv4, const SocketOptions=SocketOptions() );
 		~ISocket() override;
 
 		bool operator< (const ISocket& right) const;

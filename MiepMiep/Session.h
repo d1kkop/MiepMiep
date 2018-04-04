@@ -1,13 +1,7 @@
 #pragma once
 
 
-#include "Memory.h"
-#include "ParentNetwork.h"
-#include "MiepMiep.h"
-#include "Threading.h"
-#include "NetworkEvents.h"
-#include <mutex>
-#include <vector>
+#include "SessionBase.h"
 
 
 namespace MiepMiep
@@ -16,35 +10,35 @@ namespace MiepMiep
 	struct MasterSessionData;
 
 
-	class Session: public ParentNetwork, public ISession, public EventListener<ISessionListener>, public ITraceable
+	class Session: public SessionBase
 	{
 	public:
-		Session(Network& network, const sptr<Link>& masterLink, const MetaData& md=MetaData());
+		Session(Network& network, const MetaData& md=MetaData());
+		MM_TSC void setMasterLink( const sptr<Link>& link );
 
 		// ISession
+		MM_TS sptr<const IAddress> host() const override;
 		MM_TS const ILink& matchMaker() const override;
-		MM_TS const IAddress* host() const override;
 
-		MM_TS void addLink( const sptr<Link>& link );
+		// SessionBase
+		MM_TS void removeLink( Link& link ) override;
+
+		MM_TS void updateHost( const sptr<const IAddress>& hostAddr );
 		MM_TS void removeLink( const sptr<const Link>& link );
-		MM_TS void removeLink( const Link& link );
-		MM_TS bool hasLink( const Link& link ) const;
-		MM_TS void forLink( const Link* exclude, const std::function<void (Link&)>& cb ) const;
 		MM_TS bool disconnect();
 
 		// TODO change for varaible group
 		MM_TSC const MetaData& metaData() const { return m_MetaData; }
-		MM_TSC const MasterSessionData& msd() const;
 
 		MM_TO_PTR( Session )
 
-	private:
-		mutable SpinLock m_DataMutex;
-		sptr<MasterSessionData> m_MasterData;
+	protected:
+		// SessionBase
+		MM_TS bool addLink( const sptr<Link>& link ) override;
+
+	protected:
+		sptr<const IAddress> m_Host;
 		sptr<Link> m_MasterLink;		// Is also the packet handler for this session.
-		sptr<const IAddress> m_Host;	// Host in cl-serv of super peer inp2p.
 		MetaData m_MetaData;
-		mutable mutex m_LinksMutex;
-		vector<sptr<Link>> m_Links;
 	};
 }

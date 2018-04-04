@@ -27,6 +27,26 @@ namespace MiepMiep
 		return nullptr;
 	}
 
+	sptr<ISocket> ISocket::create( u16 port, i32* error, IPProto proto, const SocketOptions options )
+	{
+		auto sock = create();
+		if ( !sock )
+		{
+			if (error) *error = MM_NO_IMPLEMENTATION_ERR;
+			return nullptr;
+		}
+		if ( !sock->open( proto, options, error ) )
+		{
+			return nullptr;
+		}
+		if ( !sock->bind( port, error ) )
+		{
+			return nullptr;
+		}
+		if ( error) *error = 0;
+		return sock;
+	}
+
 	ISocket::~ISocket()
 	{
 		Platform::shutdown();

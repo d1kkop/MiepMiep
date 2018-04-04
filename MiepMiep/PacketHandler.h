@@ -11,8 +11,10 @@ namespace MiepMiep
 {
 	class BinSerializer;
 	class Network;
+	class Session;
 	class Link;
 	class ISocket;
+	class SessionBase;
 	struct SocketAddrPair;
 
 
@@ -24,6 +26,7 @@ namespace MiepMiep
 		MM_TS void recvFromSocket( const ISocket& sock );
 		MM_TS void handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr );
 		MM_TS sptr<Link> getOrCreateLink( u32 linkId, const SocketAddrPair& sap );
+		MM_TSC virtual SessionBase* getSession() const { return nullptr; }
 	};
 
 

@@ -100,7 +100,7 @@ namespace MyGame
 							   "first game", "type", 5, 15, 0, 128, true, true, 
 							   joinMd, joinMatchMd );
 
-		this_thread::sleep_for( milliseconds(20000) );
+		this_thread::sleep_for( milliseconds(200000) );
 		return true;
 	}
 
@@ -138,6 +138,7 @@ namespace MyGame
 			break;
 		case EJoinServerResult::NoMatchesFound:
 			cout << "no matches found " << session.matchMaker().destination().toIpAndPort() << endl;
+			break;
 		}
 	}
 

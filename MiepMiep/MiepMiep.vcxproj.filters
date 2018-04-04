@@ -51,6 +51,9 @@
     <Filter Include="Link\Components\Link\Master">
       <UniqueIdentifier>{ed232246-9597-4c9a-b887-d81017135be9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MSession">
+      <UniqueIdentifier>{7e7b0619-83a3-45b9-9cea-8e21d7ec2a8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Util.cpp">
@@ -164,11 +167,17 @@
     <ClCompile Include="ListenerManager.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
-    <ClCompile Include="Session.cpp">
-      <Filter>Core\HighLevelTypes</Filter>
-    </ClCompile>
     <ClCompile Include="NetworkEvents.cpp">
       <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>MSession</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionBase.cpp">
+      <Filter>MSession</Filter>
+    </ClCompile>
+    <ClCompile Include="MasterSession.cpp">
+      <Filter>MSession</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -307,16 +316,28 @@
     <ClInclude Include="ListenerManager.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
-    <ClInclude Include="Session.h">
-      <Filter>Core\HighLevelTypes</Filter>
-    </ClInclude>
     <ClInclude Include="NetworkEvents.h">
       <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>MSession</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionBase.h">
+      <Filter>MSession</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Link</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterSession.h">
+      <Filter>MSession</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\TODO">
       <Filter>Core</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MiepMiep.rc" />
   </ItemGroup>
 </Project>

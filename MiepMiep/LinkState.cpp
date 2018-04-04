@@ -9,7 +9,7 @@
 #include "NetworkEvents.h"
 #include "PerThreadDataProvider.h"
 #include "MiepMiep.h"
-#include "MasterServer.h"
+#include "MasterSession.h"
 #include "Endpoint.h"
 
 
@@ -25,7 +25,7 @@ namespace MiepMiep
 
 		void process() override
 		{
-			m_Link->ses().forListeners( [&] ( ISessionListener* l )
+			m_Link->getSession()->forListeners( [&] ( ISessionListener* l )
 			{
 				l->onConnect( m_Link->session(), *m_NewAddr );
 			});
@@ -43,7 +43,7 @@ namespace MiepMiep
 
 		void process() override
 		{
-			m_Link->ses().forListeners( [&] ( ISessionListener* l )
+			m_Link->getSession()->forListeners( [&] ( ISessionListener* l )
 			{
 				l->onDisconnect( m_Link->session(), *m_DiscAddr, m_Reason );
 			} );
@@ -89,7 +89,7 @@ namespace MiepMiep
 				 didDisconnect ) /* Only send disconnect if did actually disconnect. */
 			{
 				l.pushEvent<EventNewConnection>( l.destination().to_ptr() );
-				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), &s, &l /* <-- excl link */,
+				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), &l.normalSession(), &l /* <-- excl link */,
 																	 No_Local, No_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace );
 			}
 
@@ -110,7 +110,6 @@ namespace MiepMiep
 			{
 				l.pushEvent<EventNewConnection>( l.destination().to_ptr() );
 				LOG( "Link to %s accepted from connect request.", l.info() );
-				return;
 			}
 		}
 		else
@@ -126,25 +125,25 @@ namespace MiepMiep
 	{
 		RPC_BEGIN();
 
-		// Is already part of this session.
-		if ( s.hasLink( l ) )
-		{
-			LOGW( "Link %s tried to connect that is already part of the session.", l.info() );
-			return;
-		}
+		//// Is already part of this session.
+		//if ( s.hasLink( l ) )
+		//{
+		//	LOGW( "Link %s tried to connect that is already part of the session.", l.info() );
+		//	return;
+		//}
 
-		// No longer check pw and max clients as that is done on master server. For local area networks, password and max clients has no use.
-		if ( !l.getOrAdd<LinkState>()->canReceiveConnect() )
+		// No longer check pw and max clients as that is done on master server. For local area networks, password and max clients have no use.
+		if ( l.getOrAdd<LinkState>()->canReceiveConnect() )
 		{
 			l.callRpc<linkStateAccepted>(); // To recipient directly
 
-			// Relay this event if not p2p and is host and is not set up using with a matchmaking server.
+			// Relay this event if not p2p and is host and is not set up using a matchmaking server.
 			if ( !s.msd().m_IsP2p && !s.msd().m_UsedMatchmaker && s.imBoss() &&
 				 l.getOrAdd<LinkState>()->accept() ) /* Only relay event if did actually change state to connected. */
 			{
 				l.pushEvent<EventNewConnection>( l.destination().to_ptr() );
-				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), &s, &l /* <-- excl link */,
-																		No_Local, No_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace );
+				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), &l.normalSession(), &l /* <-- excl link */,
+																	 No_Local, Do_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace );
 			}
 		}
 		else
@@ -185,7 +184,7 @@ namespace MiepMiep
 		{
 			scoped_spinlock lk( m_StateMutex );
 			// State is unknown when new link is added on server and accepted directly from a connect request.
-			if ( !(m_State == ELinkState::Unknown || m_State == ELinkState::Connecting) ) 
+			if ( !m_WasAccepted && !(m_State == ELinkState::Unknown || m_State == ELinkState::Connecting) ) 
 			{
 				LOGW( "Can only accept from request if state is set to 'Connecting' or 'Unknown'. State change discarded." );
 				return false;
@@ -214,7 +213,6 @@ namespace MiepMiep
 			}
 			m_RemoteConnectReceived = true;
 		}
-
 		return true;
 	}
 

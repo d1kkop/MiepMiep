@@ -13,6 +13,7 @@
 #include "ReliableAckRecv.h"
 #include "ReliableNewestAckRecv.h"
 #include "SocketSetManager.h"
+#include "MasterSession.h"
 #include "Util.h"
 
 
@@ -30,6 +31,7 @@ namespace MiepMiep
 		return sc<const Link&>(*this).ptr<const Link>();
 	}
 
+
 	// -------- Link ----------------------------------------------------------------------------------------------------
 
 	Link::Link(Network& network):
@@ -45,16 +47,21 @@ namespace MiepMiep
 			sptr<SocketSetManager> ss = m_Network.get<SocketSetManager>();
 			if ( ss )
 			{
-				ss->removeSocket( m_Socket );
+				ss->removeSocket( m_SockAddrPair.m_Socket );
 			}
 		}
 		LOG( "Link %s destroyed.", info() );
 	}
 
-	MM_TSC void Link::setSession( const sptr<Session>& session )
+	MM_TSC bool Link::setSession( SessionBase& session )
 	{
 		assert( !m_Session );
-		m_Session = session;
+		if ( session.addLink( to_ptr() ) )
+		{
+			m_Session = session.to_ptr();
+			return true;
+		}
+		return false;
 	}
 
 	MM_TSC bool Link::operator<( const Link& o ) const
@@ -67,76 +74,47 @@ namespace MiepMiep
 		return getSocketAddrPair() == o.getSocketAddrPair();
 	}
 
-	MM_TS void Link::setMasterSession( const sptr<MasterSession>& session )
+	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler )
 	{
-		scoped_spinlock lk(m_MasterSessionMutex);
-		assert( !m_Session && !m_MasterSession );
-		m_MasterSession = session;
+		return create( network, session, sap, rand(), addHandler );
 	}
 
-	MM_TS MasterSession* Link::masterSession() const
+	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
-		scoped_spinlock lk( m_MasterSessionMutex );
-		return m_MasterSession.get();
+		return create( network, &session, sap, id, addHandler );
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, const Session* session, const IAddress& destination, bool addHandler )
+	MM_TS sptr<Link> Link::create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
-		return create( network, session, destination, rand(), addHandler );
-	}
-
-	MM_TS sptr<Link> Link::create(Network& network, const Session* session, const IAddress& destination, u32 id, bool addHandler)
-	{
-		sptr<ISocket> sock = ISocket::create();
-		if (!sock) return nullptr;
-
-		i32 err;
-		sock->open(IPProto::Ipv4, SocketOptions(), &err);
-		if (err != 0)
-		{
-			LOGW("Socket open error %d, cannot create link.", err);
-			return nullptr;
-		}
-
-		sock->bind(0, &err);
-		if (err != 0)
-		{
-			LOGW("Socket bind error %d, cannot create link.", err);
-			return nullptr;
-		}
-
-		return create( network, session, SocketAddrPair( *sock, destination ), id, addHandler );
-	}
-
-	MM_TS sptr<Link> Link::create( Network& network, const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler )
-	{
-		assert( sap.m_Address && sap.m_Socket );
-		if ( !sap.m_Address || !sap.m_Socket )
-		{
-			LOGC( "Invalid socket address pair provided. Link creation discarded." );
-			return nullptr;
-		}
-
 		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
 
-		i32 err;
+		i32 err=0;
 		link->m_Source = Endpoint::createSource( *sap.m_Socket, &err );
 		if ( err != 0 )
 		{
-			LOGW( "Failed to obtain locally bound port.", err );
+			LOGW( "Local endpoint could not be resolved, error %d.", err );
 			return nullptr;
 		}
 
 		if ( addHandler )
 		{
-			network.getOrAdd<SocketSetManager>()->addSocket( sap.m_Socket, link->ptr<Link>() );
+			link->m_Network.getOrAdd<SocketSetManager>()->addSocket( sap.m_Socket, link->ptr<IPacketHandler>() );
 			link->m_SocketWasAddedToHandler = true;
 		}
 
 		link->m_Id = id;
-		link->m_Socket = sap.m_Socket;
-		link->m_Destination = sap.m_Address;
-		link->m_Session = (session ? session->ptr<Session>() : nullptr);
+		link->m_SockAddrPair = sap;
+		if ( session )
+		{
+			if ( session->addLink( link ) )
+			{
+				link->m_Session = session->to_ptr();
+			}
+			else
+			{
+				return nullptr;
+			}
+		}
 
 		LOG( "Created new link to %s.", link->info() );
 		return link;
@@ -159,10 +137,15 @@ namespace MiepMiep
 		return ls && ls->state() == ELinkState::Connected;
 	}
 
+	MM_TSC SessionBase* Link::getSession() const
+	{
+		return m_Session.get();
+	}
+
 	MM_TSC const char* Link::ipAndPort() const
 	{
-		assert(m_Destination);
-		return m_Destination->toIpAndPort();
+		assert(m_SockAddrPair.m_Address);
+		return m_SockAddrPair.m_Address->toIpAndPort();
 	}
 
 	MM_TSC const char* Link::info() const
@@ -172,14 +155,19 @@ namespace MiepMiep
 		return buff;
 	}
 
-	MM_TSC SocketAddrPair Link::getSocketAddrPair() const
+	MM_TSC const SocketAddrPair& Link::getSocketAddrPair() const
 	{
-		return SocketAddrPair( *m_Socket, *m_Destination );
+		return m_SockAddrPair;
 	}
 
-	MM_TSC Session& Link::ses() const
+	MM_TSC Session& Link::normalSession() const
 	{
 		return sc<Session&>( session() );
+	}
+
+	MM_TSC MasterSession& Link::masterSession() const
+	{
+		return sc<MasterSession&>( session() );
 	}
 
 	MM_TS void Link::updateCustomMatchmakingMd( const MetaData& md )
@@ -258,14 +246,14 @@ namespace MiepMiep
 
 	MM_TS void Link::send(const byte* data, u32 length)
 	{
-		if ( !m_Socket )
+		if ( !m_SockAddrPair.m_Socket )
 		{
 			LOGC( "Invalid socket, cannot send." );
 			return;
 		}
 
 		i32 err = 0;
-		ESendResult res = m_Socket->send( sc<const Endpoint&>( *m_Destination ), data, length, &err );
+		ESendResult res = m_SockAddrPair.m_Socket->send( sc<const Endpoint&>( *m_SockAddrPair.m_Address ), data, length, &err );
 	
 	//	thread_local static u32 kt=0;	
 	//	LOG( "Send ... %d", kt++ );
@@ -277,4 +265,5 @@ namespace MiepMiep
 	}
 
 	MM_TO_PTR_IMP( Link )
+
 }

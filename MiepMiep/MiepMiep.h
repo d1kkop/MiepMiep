@@ -125,7 +125,6 @@ namespace MiepMiep
 		MM_TS virtual const IAddress& destination() const=0;
 		MM_TS virtual const IAddress& source() const=0;
 		MM_TS virtual bool  isConnected() const=0;
-		
 
 		MM_TS sptr<ILink> to_ptr();
 		MM_TS sptr<const ILink> to_ptr() const;
@@ -139,17 +138,24 @@ namespace MiepMiep
 		MM_TS virtual const ILink& matchMaker()  const=0;
 
 		/*	Current authorative address in the session. This is always the server in a client-serv architecture.
-			In p2p, this is only one peer that can make session wide authorative decisions.
+			In p2p, this is only one peer that can make session-wide authorative decisions.
 			Returns nullptr if we are authorative (boss). */
-		MM_TS virtual const IAddress* host() const=0;
+		MM_TS virtual sptr<const IAddress> host() const=0;
 		MM_TS bool imBoss() const { return host()==nullptr; }
+
+		MM_TS sptr<ISession> to_ptr();
+		MM_TS sptr<const ISession> to_ptr() const;
 	};
 
 
 	class MM_DECLSPEC INetwork
 	{
 	public:
-		/*	If asyncCallbacks == true, all network events may be called from different threads!
+		/*	If asyncCallbacks == true, all network events may be called from different threads
+			and may be in a different order than that they were sent!
+			Suppose A and B are sent reliable ordered. B is received first, then A.
+			When A arrives, both A and B are processed as a seperate job across possibly different threads.
+			B may therefore be processed before A, eventhough it was sent reliable orderderd!
 			The default is false. When false, 'processEvents' must be called to handle network events. */
 		MM_TS static  sptr<INetwork> create( bool allowAsyncCallbacks=false );
 
@@ -158,13 +164,13 @@ namespace MiepMiep
 		MM_TS virtual EListenCallResult startListen( u16 port )=0;
 		MM_TS virtual void stopListen( u16 port )=0;
 
-		/*	Returns false if creation failed. This should only ever occur when all ports on the local machine are in use. */
+		/*	Returns only false when all ports on local machine are in use. */
 		MM_TS virtual bool registerServer( const std::function<void( const ISession&, bool )>& callback,
 										   const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
 										   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
 										   const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
-		/*	Returns false if creation failed. This should only ever occur when all porst on the local machine are in use. */
+		/*	Returns only false when all ports on local machine are in use. */
 		MM_TS virtual bool joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
 									   const IAddress& masterAddr, const std::string& name, const std::string& type,
 									   float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,

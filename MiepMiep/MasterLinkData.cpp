@@ -1,13 +1,7 @@
 #include "MasterLinkData.h"
-#include "MiepMiep.h"
-#include "Network.h"
-#include "Link.h"
-#include "Platform.h"
-#include "Socket.h"
-#include "MasterServer.h"
 #include "NetworkEvents.h"
-#include "LinkState.h"
 #include "MasterServer.h"
+#include "MasterSession.h"
 
 
 namespace MiepMiep
@@ -69,7 +63,9 @@ namespace MiepMiep
 	{
 		RPC_BEGIN_NO_S();
 		const MasterSessionData& data = get<0>(tp);
-		if ( nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data, get<1>(tp ) ) )
+		const MetaData& registerMd = get<1>(tp);
+		l.updateCustomMatchmakingMd( registerMd );
+		if ( nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data ) )
 		{
 			l.callRpc<masterLinkRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master register server request from %s succesful.", l.info());
@@ -98,8 +94,9 @@ namespace MiepMiep
 		RPC_BEGIN_NO_S();
 		const SearchFilter& sf = get<0>(tp);
 		const MetaData& joinMatchmakingMd = get<1>(tp);
-		auto* mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
-		if ( mSession && mSession->tryJoin( l, joinMatchmakingMd ) )
+		l.updateCustomMatchmakingMd( joinMatchmakingMd ); // TODO change for var group perhaps
+		auto mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
+		if ( mSession && l.setSession( *mSession ) )
 		{
 			l.callRpc<masterLinkRpcJoinResult, bool>( true, false, false, MM_RPC_CHANNEL, nullptr );
 			LOG("New master join request from %s succesful.", l.info());
@@ -111,21 +108,14 @@ namespace MiepMiep
 		}
 	}
 
-
+	// Executed on master server.
 	MM_RPC( masterLinkRpcStartSession )
 	{
 		RPC_BEGIN();
-		MasterSession* mses = l.masterSession();
-		if ( mses )
+		MasterSession& mses = l.masterSession();
+		if ( !mses.start() )
 		{
-			if ( !mses->start() )
-			{
-				LOGW( "Tried to start an already started master session." );
-			}
-		}
-		else
-		{
-			LOGW( "Link %s tried to start a master session while it had no such session associated with it.", l.info() );
+			LOGW( "Tried to start an already started master session." );
 		}
 	}
 

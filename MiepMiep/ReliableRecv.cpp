@@ -28,6 +28,7 @@ namespace MiepMiep
 		{
 			auto& bs = PerThreadDataProvider::getSerializer(false);
 			bs.resetTo( m_Pack.m_Data, m_Pack.m_Length, m_Pack.m_Length );	
+			bs.setRead( m_ReadPos );
 			m_RpcFunc( m_Link->m_Network, *m_Link, bs );
 		}
 
@@ -98,21 +99,18 @@ namespace MiepMiep
 
 	MM_TS void ReliableRecv::proceedRecvQueue()
 	{
-		sptr<ReliableRecv> sThis = ptr<ReliableRecv>();
 		auto& queue = m_OrderedPackets;
 		
 		scoped_lock lk(m_RecvMutex);
 		auto packIt = queue.find(m_RecvSequence);
 		while ( packIt != queue.end() )
 		{
-			sptr<const RecvPacket> pack = packIt->second.first;
+			sptr<const RecvPacket>& pack = packIt->second.first;
 			u32 numFragments = packIt->second.second;
-			queue.erase( packIt );
 
-			m_Link.getInNetwork<JobSystem>()->addJob( [rr = move(ptr<ReliableRecv>()), p = move(pack)]
-			{
-				rr->handlePacket( *p );
-			});
+			// -- To ensure that packets remain ordered, no seperate job per packet is allowed. --
+			handlePacket( *pack );
+			queue.erase( packIt );
 			
 			m_RecvSequence += numFragments;
 			// try find next ordered sequence

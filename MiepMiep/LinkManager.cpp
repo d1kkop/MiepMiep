@@ -28,7 +28,6 @@ namespace MiepMiep
 		m_Socket( sock ),
 		m_Address( addr )
 	{
-
 	}
 
 	SocketAddrPair::SocketAddrPair( sptr<const ISocket>& sock, sptr<const IAddress>& addr ):
@@ -63,6 +62,7 @@ namespace MiepMiep
 				(*m_Socket == *other.m_Socket);
 	}
 
+
 	// --------- LinkManager ------------------------------------------------------------------------
 
 	LinkManager::LinkManager(Network& network):
@@ -70,16 +70,15 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS sptr<Link> LinkManager::add( const Session* session, const IAddress& to, bool addHandler)
+	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap, bool addHandler )
 	{
-		return add(session, to, rand(), addHandler);
+		return add(session, sap, rand(), addHandler);
 	}
 
-	MM_TS sptr<Link> LinkManager::add( const Session* session, const IAddress& to, u32 id, bool addHandler)
+	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
-		sptr<Link> link = Link::create( m_Network, session, to, id, addHandler );
+		sptr<Link> link = Link::create( m_Network, session, sap, id );
 		if ( !link ) return nullptr;
-		auto sap = link->getSocketAddrPair();
 		scoped_lock lk( m_LinksMapMutex );
 		if ( m_Links.count( sap ) != 0 )
 		{
@@ -92,30 +91,14 @@ namespace MiepMiep
 		return link;
 	}
 
-	MM_TS sptr<Link> LinkManager::add( const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler )
-	{
-		sptr<Link> link = Link::create( m_Network, session, sap, id, addHandler );
-		if ( !link ) return nullptr;
-		scoped_lock lk( m_LinksMapMutex );
-		if ( m_Links.count( sap ) != 0 )
-		{
-			LOGW( "Tried to create a link that does already exist, creation discarded." );
-			return nullptr;
-		}
-		assert( link );
-		m_LinksAsArray.emplace_back( link );
-		m_Links[sap] = link;
-		return link;
-	}
-
-	MM_TS sptr<MiepMiep::Link> LinkManager::getOrAdd( const Session* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool returnNullIfIdsDontMatch )
+	MM_TS sptr<Link> LinkManager::getOrAdd( SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool returnNullIfIdsDontMatch )
 	{
 		scoped_lock lk( m_LinksMapMutex );
-	/*	LOG( "List links..." );
-		for ( auto& kvp : m_Links )
-		{
-			LOG( "In map: key %s, value %s.", kvp.first.info(), kvp.second->info() );
-		}*/
+		//LOG( "List links..." );
+		//for ( auto& kvp : m_Links )
+		//{
+		//	LOG( "In map: key %s, value %s.", kvp.first.info(), kvp.second->info() );
+		//}
 
 		//for ( auto& l : m_LinksAsArray )
 		//{
@@ -135,11 +118,16 @@ namespace MiepMiep
 				return l;
 			// Did find, but id's did not match.
 		//	LOG( "FAILED to find %s id's did not match.", sap.info() );
+			assert(false);
 			return nullptr;
 		}
 	//	LOG( "FAILED to find %s", sap.info() );
 		sptr<Link> link = Link::create( m_Network, session, sap, id, addHandler );
-		if ( !link ) return nullptr;
+		if ( !link )
+		{
+			assert(false);
+			return nullptr;
+		}
 		m_LinksAsArray.emplace_back( link );
 		m_Links[sap] = link;
 		return link;
