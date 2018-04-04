@@ -172,7 +172,41 @@ namespace MiepMiep
 	}
 
 
+
+
 	// --- PacketHelper ------------------------------------------------------------------------------------------
+
+	byte PacketHelper::makeChannelAndFlags( byte channel, bool relay, bool sysBit, bool isFirstFragment, bool isLastFragment )
+	{
+		assert( channel <= MM_CHANNEL_MASK );
+		byte channelAndFlags = channel & MM_CHANNEL_MASK;
+		channelAndFlags |= relay? MM_RELAY_BIT : 0;
+		channelAndFlags |= sysBit? MM_SYSTEM_BIT : 0;
+		channelAndFlags |= isFirstFragment ? MM_FRAGMENT_FIRST_BIT : 0;
+		channelAndFlags |= isLastFragment ? MM_FRAGMENT_LAST_BIT : 0;
+		return channelAndFlags;
+	}
+
+	bool PacketHelper::beginUnfragmented( BinSerializer& bs, u32 linkId, u32 seq, byte compType, byte dataId, byte channel, bool relay, bool sysBit )
+	{
+		bs.reset();
+		__CHECKEDB( bs.write( linkId ) );
+		__CHECKEDB( bs.write( seq ) );
+		__CHECKEDB( bs.write( compType ) );
+		__CHECKEDB( bs.write( dataId ) );
+		__CHECKEDB( bs.write( makeChannelAndFlags( channel, relay, sysBit, true, true ) ) );
+		return true;
+	}
+
+	bool PacketHelper::beginUnfragmented( BinSerializer& bs, byte compType, byte dataId, byte channel, bool relay, bool sysBit )
+	{
+		bs.reset();
+		__CHECKEDB( bs.moveWrite(8) ); // reserved for linkId and seq
+		__CHECKEDB( bs.write( compType ) );
+		__CHECKEDB( bs.write( dataId ) );
+		__CHECKEDB( bs.write( makeChannelAndFlags( channel, relay, sysBit, true, true ) ) );
+		return true;
+	}
 
 	bool PacketHelper::createNormalPacket(vector<sptr<const struct NormalSendPacket>>& framgentsOut,  
 										  byte compType, byte dataId,
@@ -182,10 +216,7 @@ namespace MiepMiep
 		// actual fragmentSize is somewhat lower due to fragment hdr overhead, subtract this, so that fragmentSize is never exceeded
 		fragmentSize -= MM_FRAGMENT_HDR_SIZE;
 		assert ( fragmentSize > MM_FRAGMENT_HDR_SIZE*2 );
-		byte channelAndFlags = channel & MM_CHANNEL_MASK;
-		channelAndFlags |= relay? MM_RELAY_BIT : 0;
-		channelAndFlags |= sysBit? MM_SYSTEM_BIT : 0;
-		channelAndFlags |= MM_FRAGMENT_FIRST_BIT;
+		byte channelAndFlags = makeChannelAndFlags(channel, relay, sysBit, true, false );
 		// --
 		u32 totalLength = 0;
 		for ( u32 i=0; i< numSerializers; ++i )

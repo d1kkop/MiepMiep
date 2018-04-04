@@ -21,8 +21,8 @@ namespace MiepMiep
 		MM_TS void enqueue( const vector<sptr<const NormalSendPacket>>& rsp, class IDeliveryTrace* trace );
 		MM_TS void resend();
 
-		MM_TS void resendIfLatencyTimePassed( u64 time );
-		MM_TS void dispatchAckQueueIfAggregateTimePassed( u64 time );
+		// Resend only if 'a' interval has passed.
+		MM_TS void intervalDispatch( u64 time );
 
 	private:
 		mutex m_SendQueueMutex;

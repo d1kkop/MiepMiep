@@ -12,6 +12,8 @@
 #include "ReliableNewRecv.h"
 #include "ReliableAckRecv.h"
 #include "ReliableNewestAckRecv.h"
+#include "ReliableAckSend.h"
+#include "ReliableAckRecv.h"
 #include "SocketSetManager.h"
 #include "MasterSession.h"
 #include "Util.h"
@@ -217,6 +219,7 @@ namespace MiepMiep
 		switch ( et )
 		{
 		case EComponentType::ReliableSend:
+			getOrAdd<ReliableAckSend>(channel)->addAck( pi.m_Sequence );
 			getOrAdd<ReliableRecv>(channel)->receive( bs, pi );
 			break;
 

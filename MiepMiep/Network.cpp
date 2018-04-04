@@ -234,7 +234,7 @@ namespace MiepMiep
 		}
 		else
 		{
-			LOGW( "Nothing was send, though a reliable call was made." );
+			LOGW( "Nothing was sent, though a reliable call was made." );
 		}
 		return (somethingWasQueued ? ESendCallResult::Fine : ESendCallResult::NotSent );
 	}

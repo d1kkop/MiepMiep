@@ -24,11 +24,14 @@ namespace MiepMiep
 
 		float resendLatencyMultiplier() const		{ return m_ResendLatencyMultiplier; }
 		u32 reliableResendDelay() const				{ return u32(latency() * resendLatencyMultiplier()); }
+		u32 ackAggregateTime() const				{ return m_AckAggregateTime; }
+		u32 mtuAdjusted() const						{ return u32( mtu()*0.8f ); }
 
 	private:
 		atomic<u32> m_Latency;
 		atomic<u32> m_Mtu;
 		atomic<u32> m_HostScore;
+		atomic<u32> m_AckAggregateTime;
 		float m_ResendLatencyMultiplier;
 	};
 }

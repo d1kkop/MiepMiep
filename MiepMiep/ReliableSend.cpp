@@ -45,7 +45,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS void ReliableSend::resendIfLatencyTimePassed(u64 time)
+	MM_TS void ReliableSend::intervalDispatch(u64 time)
 	{
 		u32 delay = m_Link.getOrAdd<LinkStats>()->reliableResendDelay();
 		if ( time - m_LastResendTS > delay )
@@ -53,11 +53,6 @@ namespace MiepMiep
 			m_LastResendTS = time;
 			resend();
 		}
-	}
-
-	MM_TS void ReliableSend::dispatchAckQueueIfAggregateTimePassed(u64 time)
-	{
-
 	}
 
 	// Placed here because RPC is always reliable ordered send.

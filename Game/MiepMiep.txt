@@ -1,36 +1,80 @@
-Wed Apr  4 01:58:07 2018 ------- New Session --------
-Wed Apr  4 01:58:07 2018 ----------------------------
-Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:27002 (src_port: 65097, link: 8518, socket: 248) to session 17557.
-Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:27002 (src_port: 65097, link: 8518, socket: 248).
-Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65097 (src_port: 27002, link: 8518, socket: 108).
-Wed Apr  4 01:58:07 2018 Received reliable seq: 0
-Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcRegisterServer.
-Wed Apr  4 01:58:07 2018 New master register server request from 127.0.0.1:65097 (src_port: 27002, link: 8518, socket: 108) succesful.
-Wed Apr  4 01:58:07 2018 Received reliable seq: 0
-Wed Apr  4 01:58:07 2018 Received reliable seq: 1
-Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionNewHost.
-Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcRegisterResult.
-Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:27002 (src_port: 65098, link: 23453, socket: 268) to session 23319.
-Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:27002 (src_port: 65098, link: 23453, socket: 268).
-Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65098 (src_port: 27002, link: 23453, socket: 108).
-Wed Apr  4 01:58:07 2018 Received reliable seq: 0
-Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcJoinServer.
-Wed Apr  4 01:58:07 2018 New master join request from 127.0.0.1:65098 (src_port: 27002, link: 23453, socket: 108) succesful.
-Wed Apr  4 01:58:07 2018 Received reliable seq: 0
-Wed Apr  4 01:58:07 2018 Received reliable seq: 1
-Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionConnectTo.
-Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:65097 (src_port: 65098, link: 41, socket: 268) to session 23319.
-Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65097 (src_port: 65098, link: 41, socket: 268).
-Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionNewHost.
-Wed Apr  4 01:58:07 2018 Received reliable seq: 2
-Wed Apr  4 01:58:07 2018 Handling RPC: masterLinkRpcJoinResult.
-Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:65098 (src_port: 65097, link: 41, socket: 248) to session 17557.
-Wed Apr  4 01:58:07 2018 Created new link to 127.0.0.1:65098 (src_port: 65097, link: 41, socket: 248).
-Wed Apr  4 01:58:07 2018 Received reliable seq: 0
-Wed Apr  4 01:58:07 2018 Handling RPC: linkStateConnect.
-Wed Apr  4 01:58:07 2018 Received reliable seq: 0
-Wed Apr  4 01:58:07 2018 Handling RPC: linkStateAccepted.
-Wed Apr  4 01:58:07 2018 Link to 127.0.0.1:65097 (src_port: 65098, link: 41, socket: 268) accepted from connect request.
-Wed Apr  4 01:58:07 2018 Received reliable seq: 2
-Wed Apr  4 01:58:07 2018 Handling RPC: masterSessionConnectTo.
-Wed Apr  4 01:58:07 2018 Added link 127.0.0.1:65098 (src_port: 65097, link: 18467, socket: 248) to session 17557.
+Wed Apr  4 14:05:26 2018 ------- New Session --------
+Wed Apr  4 14:05:26 2018 ----------------------------
+Wed Apr  4 14:05:26 2018 Added link 127.0.0.1:27002 (src_port: 62116, link: 15048, socket: 248) to session 29001.
+Wed Apr  4 14:05:26 2018 Created new link to 127.0.0.1:27002 (src_port: 62116, link: 15048, socket: 248).
+Wed Apr  4 14:05:26 2018 Created new link to 127.0.0.1:62116 (src_port: 27002, link: 15048, socket: 108).
+Wed Apr  4 14:05:26 2018 Received reliable seq: 0
+Wed Apr  4 14:05:26 2018 Handling RPC: masterLinkRpcRegisterServer.
+Wed Apr  4 14:05:26 2018 New master register server request from 127.0.0.1:62116 (src_port: 27002, link: 15048, socket: 108) succesful.
+Wed Apr  4 14:05:26 2018 Received reliable seq: 0
+Wed Apr  4 14:05:26 2018 Received reliable seq: 1
+Wed Apr  4 14:05:26 2018 Handling RPC: masterSessionNewHost.
+Wed Apr  4 14:05:26 2018 Handling RPC: masterLinkRpcRegisterResult.
+Wed Apr  4 14:05:26 2018 Added link 127.0.0.1:27002 (src_port: 62117, link: 12825, socket: 268) to session 20433.
+Wed Apr  4 14:05:26 2018 Created new link to 127.0.0.1:27002 (src_port: 62117, link: 12825, socket: 268).
+Wed Apr  4 14:05:26 2018 Created new link to 127.0.0.1:62117 (src_port: 27002, link: 12825, socket: 108).
+Wed Apr  4 14:05:26 2018 Received reliable seq: 0
+Wed Apr  4 14:05:26 2018 Handling RPC: masterLinkRpcJoinServer.
+Wed Apr  4 14:05:26 2018 Connect links on ID 41.
+Wed Apr  4 14:05:26 2018 New master join request from 127.0.0.1:62117 (src_port: 27002, link: 12825, socket: 108) succesful.
+Wed Apr  4 14:05:26 2018 Received reliable seq: 0
+Wed Apr  4 14:05:26 2018 Handling RPC: masterSessionConnectTo.
+Wed Apr  4 14:05:26 2018 Connecting with Id 41.
+Wed Apr  4 14:05:26 2018 Added link 127.0.0.1:62116 (src_port: 62117, link: 41, socket: 268) to session 20433.
+Wed Apr  4 14:05:26 2018 Created new link to 127.0.0.1:62116 (src_port: 62117, link: 41, socket: 268).
+Wed Apr  4 14:05:26 2018 Received reliable seq: 2
+Wed Apr  4 14:05:26 2018 Received reliable seq: 1
+Wed Apr  4 14:05:26 2018 Handling RPC: masterSessionNewHost.
+Wed Apr  4 14:05:26 2018 Handling RPC: masterLinkRpcJoinResult.
+Wed Apr  4 14:12:51 2018 Stop listen was called. Old listen port was 27002. 
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 40. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 40. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 79. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 79. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 176. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 176. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 175. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 176. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 176. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::resolve, line 136, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 86, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::getCopyDerived, line 213, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 86, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 53. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 86, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createEmpty, line 63, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 86, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::getCopyDerived, line 213, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createEmpty, line 63, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createEmpty, line 63, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Endpoint::createSource, line 86, size 64. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 56. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 86. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 86. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Network::registerServer, line 84, size 552. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Link::create, line 89, size 248. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Link::create, line 89, size 248. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 116. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 164. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::MasterServer::registerSession, line 87, size 128. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::MasterSessionList::addSession, line 30, size 560. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Network::joinServer, line 119, size 552. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Link::create, line 89, size 248. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 248. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 208. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Link::create, line 89, size 248. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 48. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ISocket::create, line 24, size 40. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::BinSerializer::growTo, line 240, size 17. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::Link::create, line 89, size 248. **!!
+Wed Apr  4 14:12:51 2018 !!** Leak at -->: MiepMiep::ComponentCollection::getOrAddInternal, line 155, size 160. **!!

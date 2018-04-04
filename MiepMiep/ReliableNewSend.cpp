@@ -4,21 +4,13 @@
 
 namespace MiepMiep
 {
-
 	ReliableNewSend::ReliableNewSend(Link& link):
 		ParentLink(link)
 	{
-
 	}
 
-	void ReliableNewSend::dispatchRelNewestQueueIfTimePassed(u64 time)
-	{
-	
-	}
-
-	void ReliableNewSend::dispatchRelNewestAck(u64 time)
+	MM_TS void ReliableNewSend::intervalDispatch( u64 time )
 	{
 
 	}
-
 }

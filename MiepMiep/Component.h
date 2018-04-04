@@ -45,6 +45,12 @@ namespace MiepMiep
 	{
 	public:
 		virtual ~IComponent() = default;
+		u32 idx() const { return m_Idx; }
+
+	private:
+		u32 m_Idx;
+
+		friend class ComponentCollection;
 	};
 
 
@@ -156,6 +162,7 @@ namespace MiepMiep
 			auto& vecComp = m_Components[T::compType()];
 			if ( vecComp.size() <= idx )
 				vecComp.resize( idx + 1 );
+			comp->m_Idx = idx;
 			vecComp[idx] = static_pointer_cast<IComponent>( comp );
 		}
 		return static_pointer_cast<T>( m_Components[T::compType()][idx] );

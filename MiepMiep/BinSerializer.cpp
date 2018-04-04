@@ -288,7 +288,7 @@ namespace MiepMiep
 		u32 mlen;
 		if (!read(mlen)) return false;
 		std::string key, value;
-		for (u16 i=0; i<mlen; i++)
+		for (u16 i=0; i<mlen; ++i)
 		{
 			if ( !read(key) )   return false;
 			if ( !read(value) ) return false;
@@ -322,7 +322,7 @@ namespace MiepMiep
 	template <> bool BinSerializer::write(const std::string& b)
 	{
 		if ( b.length() > TempBuffSize-1 ) return false;
-		return write((const byte*)b.c_str(), (u16)b.length()+1);
+		return write(rc<const byte*>(b.c_str()), (u16)b.length()+1);
 	}
 	template <> bool BinSerializer::write(const MetaData& b)
 	{

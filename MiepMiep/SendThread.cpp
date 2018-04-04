@@ -4,6 +4,7 @@
 #include "LinkManager.h"
 #include "ReliableSend.h"
 #include "ReliableNewSend.h"
+#include "ReliableAckSend.h"
 #include "Util.h"
 #include "Platform.h"
 using namespace chrono;
@@ -64,17 +65,11 @@ namespace MiepMiep
 			lm->forEachLink( [=](Link& link)
 			{
 				auto rs = link.get<ReliableSend>();
-				if ( rs )
-				{
-					rs->resendIfLatencyTimePassed( time );
-					rs->dispatchAckQueueIfAggregateTimePassed( time );
-				}
 				auto rn = link.get<ReliableNewSend>();
-				if ( rn )
-				{
-					rn->dispatchRelNewestQueueIfTimePassed ( time );
-					rn->dispatchRelNewestAck( time );
-				}
+				auto ra = link.get<ReliableAckSend>();
+				if ( rs ) rs->intervalDispatch( time );
+				if ( rn ) rn->intervalDispatch( time );
+				if ( ra ) ra->intervalDispatch( time );
 			}, MM_ST_LINKS_CLUSTER_SIZE );
 		}
 	}

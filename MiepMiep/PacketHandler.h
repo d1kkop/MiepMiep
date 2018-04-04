@@ -62,6 +62,9 @@ namespace MiepMiep
 
 	struct PacketHelper
 	{
+		static byte makeChannelAndFlags( byte channel, bool relay, bool sysBit, bool isFirstFragment, bool isLastFragment );
+		static bool beginUnfragmented( BinSerializer& bs, u32 linkId, u32 seq, byte compType, byte dataId, byte channel, bool relay, bool sysBit );
+		static bool beginUnfragmented( BinSerializer& bs, byte compType, byte dataId, byte channel, bool relay, bool sysBit );
 		static bool createNormalPacket( vector<sptr<const struct NormalSendPacket>>& framgentsOut, byte compType, byte dataId, 
 										const BinSerializer** serializers, u32 numSerializers, byte channel, bool relay, bool sysBit, u32 fragmentSize );
 		static bool tryReassembleBigPacket(sptr<const RecvPacket>& finalPack, std::map<u32, sptr<const RecvPacket>>& fragments, u32 seq, u32& seqBegin, u32& seqEnd);

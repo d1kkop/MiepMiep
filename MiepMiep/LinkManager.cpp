@@ -77,7 +77,7 @@ namespace MiepMiep
 
 	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler )
 	{
-		sptr<Link> link = Link::create( m_Network, session, sap, id );
+		sptr<Link> link = Link::create( m_Network, session, sap, id, addHandler );
 		if ( !link ) return nullptr;
 		scoped_lock lk( m_LinksMapMutex );
 		if ( m_Links.count( sap ) != 0 )

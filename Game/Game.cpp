@@ -93,7 +93,7 @@ namespace MyGame
 			{ "joinMatchKey2", "joinMatchValue2" },
 			{ "joinMatchKey3", "joinMatchValue3" },
 		};
-		 
+		// 
 		// Note the above is an async process, so make sure it is actually registered, otherwise join will fail immediately!
 		std::this_thread::sleep_for( milliseconds(20) );
 		m_Network->joinServer( [this] (auto& l, auto r) { onJoinResult(l, r); }, *masterEtp,
