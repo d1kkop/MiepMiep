@@ -16,6 +16,6 @@ namespace MiepMiep
 		ReliableAckRecv(Link& link);
 		static EComponentType compType() { return EComponentType::ReliableAckRecv; }
 
-		void receive( class BinSerializer& bs );
+		MM_TS void receive( class BinSerializer& bs ) const;
 	};
 }

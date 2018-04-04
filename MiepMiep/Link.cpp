@@ -234,7 +234,7 @@ namespace MiepMiep
 			// -- Acks --
 
 		case EComponentType::ReliableAckSend:
-			getOrAdd<ReliableAckRecv>()->receive( bs );
+			getOrAdd<ReliableAckRecv>(channel)->receive( bs );
 			break;
 
 		case EComponentType::ReliableNewAckSend:

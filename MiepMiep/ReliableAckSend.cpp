@@ -11,22 +11,21 @@ namespace MiepMiep
 		ParentLink(link),
 		m_LastResendTS(0)
 	{
-
 	}
 
 	MM_TS void ReliableAckSend::addAck( u32 ack )
 	{
-		scoped_spinlock lk(m_PacketsMutex);
+		scoped_lock lk(m_PacketsMutex);
 		m_ReceivedPackets.emplace_back( ack );
 	}
 
 	MM_TS void ReliableAckSend::resend()
 	{
 		auto& bs = PerThreadDataProvider::getSerializer(true);
-		__CHECKED( PacketHelper::beginUnfragmented( bs, m_Link.id(), 0, (byte)compType(), 0, (byte)idx(), false, true ) );
+		__CHECKED( PacketHelper::beginUnfragmented( bs, m_Link.id(), 0, (byte)compType(), InvalidByte, (byte)idx(), false, true ) );
 		bool hasPendingWrites = false;
 		u32 mtu = m_Link.getOrAdd<LinkStats>()->mtuAdjusted();
-		scoped_spinlock lk( m_PacketsMutex );
+		scoped_lock lk( m_PacketsMutex );
 		for ( u32 ack : m_ReceivedPackets )
 		{
 			__CHECKED( bs.write( ack ) );

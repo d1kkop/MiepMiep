@@ -3,7 +3,6 @@
 #include "Memory.h"
 #include "Component.h"
 #include "ParentLink.h"
-#include "Threading.h"
 
 
 namespace MiepMiep
@@ -23,7 +22,7 @@ namespace MiepMiep
 		MM_TS void intervalDispatch( u64 time );
 
 	private:
-		SpinLock m_PacketsMutex;
+		mutex m_PacketsMutex;
 		u64 m_LastResendTS;
 		vector<u32> m_ReceivedPackets;
 	};

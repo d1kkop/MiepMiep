@@ -60,6 +60,7 @@ namespace MiepMiep
 		BinSerializer m_PayLoad;
 	};
 
+
 	struct PacketHelper
 	{
 		static byte makeChannelAndFlags( byte channel, bool relay, bool sysBit, bool isFirstFragment, bool isLastFragment );

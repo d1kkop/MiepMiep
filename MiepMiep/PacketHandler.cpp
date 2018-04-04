@@ -193,8 +193,9 @@ namespace MiepMiep
 		__CHECKEDB( bs.write( linkId ) );
 		__CHECKEDB( bs.write( seq ) );
 		__CHECKEDB( bs.write( compType ) );
-		__CHECKEDB( bs.write( dataId ) );
 		__CHECKEDB( bs.write( makeChannelAndFlags( channel, relay, sysBit, true, true ) ) );
+		if ( dataId != InvalidByte )
+			__CHECKEDB( bs.write( dataId ) );
 		return true;
 	}
 
@@ -203,8 +204,9 @@ namespace MiepMiep
 		bs.reset();
 		__CHECKEDB( bs.moveWrite(8) ); // reserved for linkId and seq
 		__CHECKEDB( bs.write( compType ) );
-		__CHECKEDB( bs.write( dataId ) );
 		__CHECKEDB( bs.write( makeChannelAndFlags( channel, relay, sysBit, true, true ) ) );
+		if ( dataId != InvalidByte )
+			__CHECKEDB( bs.write( dataId ) );
 		return true;
 	}
 

@@ -20,6 +20,7 @@ namespace MiepMiep
 
 		MM_TS void enqueue( const vector<sptr<const NormalSendPacket>>& rsp, class IDeliveryTrace* trace );
 		MM_TS void resend();
+		MM_TS void ackList( const vector<u32>& acks );
 
 		// Resend only if 'a' interval has passed.
 		MM_TS void intervalDispatch( u64 time );

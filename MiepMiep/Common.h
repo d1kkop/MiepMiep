@@ -85,4 +85,7 @@ namespace MiepMiep
 	template <typename T, typename F>
 	inline T scc (F&& f) { return static_cast<T>(const_cast<T>(f)); }
 
+
+	constexpr byte InvalidByte  = (byte)-1;
+	constexpr u32 InvalidIdx	= (u32)-1;
 }

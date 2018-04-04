@@ -38,14 +38,25 @@ namespace MiepMiep
 			*(u32*)finalData = Util::htonl(m_Link.id()); // linkId
 			*(u32*)(finalData + 4) = Util::htonl( kvp.first ); // seq
 			Platform::memCpy( finalData + 8, MM_MAX_SENDSIZE-8, sendPack.m_PayLoad.data(), sendPack.m_PayLoad.length() ); // payload
-
 			m_Link.send( finalData, sendPack.m_PayLoad.length()+8 );
 
 			this_thread::sleep_for( chrono::milliseconds(2) ); // TODO remove
 		}
 	}
 
-	MM_TS void ReliableSend::intervalDispatch(u64 time)
+	MM_TS void ReliableSend::ackList( const vector<u32>& acks )
+	{
+		scoped_lock lk( m_SendQueueMutex );
+		for ( auto seq : acks )
+		{
+			if ( 0 != m_SendQueue.erase( seq ) )
+			{
+				LOG( "Packet with seq %d in link %s got acked and removed.", seq, m_Link.info() );
+			}
+		}
+	}
+
+	MM_TS void ReliableSend::intervalDispatch( u64 time )
 	{
 		u32 delay = m_Link.getOrAdd<LinkStats>()->reliableResendDelay();
 		if ( time - m_LastResendTS > delay )
