@@ -107,12 +107,12 @@ namespace MiepMiep
 		return p->changeOwner( etp );
 	}
 
-	MM_TS EVarControl NetVar::getVarConrol() const
+	MM_TS EVarControl NetVar::varControl() const
 	{
 		return p->getVarControl();
 	}
 
-	MM_TS u32 NetVar::getGroupId() const
+	MM_TS u32 NetVar::groupId() const
 	{
 		return p->groupId();
 	}

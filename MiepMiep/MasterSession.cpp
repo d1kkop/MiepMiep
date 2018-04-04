@@ -2,6 +2,7 @@
 #include "MasterServer.h"
 #include "LinkStats.h"
 #include "LinkState.h"
+#include "Util.h"
 
 
 namespace MiepMiep
@@ -102,7 +103,7 @@ namespace MiepMiep
 			auto addrCpy = newLink->destination().getCopy();
 			for ( auto& l : m_Links )
 			{
-				u32 linkId = rand();
+				u32 linkId = Util::rand();
 				LOG("Connect links on ID %d.", linkId);
 				l->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, addrCpy );
 				newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, l->destination().getCopy() );
@@ -112,7 +113,7 @@ namespace MiepMiep
 		{
 			assert( m_Host ); // Can join only returns true, if session has host.
 			// For client-server architecture, only have new client join to host.
-			u32 linkId = rand();
+			u32 linkId = Util::rand();
 			m_Host->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink->destination().getCopy() );
 			newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, m_Host->destination().getCopy() );
 		}

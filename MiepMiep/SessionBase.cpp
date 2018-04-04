@@ -1,6 +1,8 @@
 #include "SessionBase.h"
 #include "Link.h"
+#include "SessionBase.h"
 #include "MasterServer.h"
+#include "Util.h"
 #include <algorithm>
 
 
@@ -10,7 +12,7 @@ namespace MiepMiep
 
 	SessionBase::SessionBase( Network& network ):
 		ParentNetwork( network ),
-		m_Id( rand() ),
+		m_Id( Util::rand() ),
 		m_Started(false)
 	{
 	}
@@ -24,6 +26,12 @@ namespace MiepMiep
 			return true;
 		}
 		return false;
+	}
+
+	MM_TS const char * SessionBase::name() const
+	{
+		// TODO
+		return "";
 	}
 
 	MM_TS bool SessionBase::hasLink( const Link& link ) const

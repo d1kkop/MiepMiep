@@ -56,13 +56,13 @@ UTESTBEGIN(VariablesTest)
 				createRes = network->createGroup<personVarGroup, i32, i32, i32>( 10, 20, 33, ses );
 				assert( createRes == ECreateGroupCallResult::Fine );
 
-				assert( p->m_Age.getGroupId() == -1 );
+				assert( p->m_Age.groupId() == -1 );
 				assert( p->m_Age.getOwner() == nullptr );
-				assert( p->m_Age.getVarConrol() == EVarControl::Full );
+				assert( p->m_Age.varControl() == EVarControl::Full );
 
-				assert( p->m_Weight.getGroupId() == -1 );
+				assert( p->m_Weight.groupId() == -1 );
 				assert( p->m_Weight.getOwner() == nullptr );
-				assert( p->m_Weight.getVarConrol() == EVarControl::Full );
+				assert( p->m_Weight.varControl() == EVarControl::Full );
 			}, 
 				*IAddress::resolve( "localhost", 12203 ),
 				true, false, true, 10, 32, "my game", "type", "lala" );

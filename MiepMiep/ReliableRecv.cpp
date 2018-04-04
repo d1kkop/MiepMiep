@@ -53,7 +53,7 @@ namespace MiepMiep
 			return;
 		}
 
-		LOG( "Received reliable seq: %d", pi.m_Sequence );
+		LOG( "Received reliable seq: %d in link %s.", pi.m_Sequence, m_Link.info() );
 
 		// Identifies datatype
 		byte packId;

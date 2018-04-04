@@ -1,6 +1,8 @@
 #include "Util.h"
 #include "Platform.h"
+#include "Threading.h"
 using namespace chrono;
+
 
 namespace MiepMiep
 {
@@ -38,6 +40,13 @@ namespace MiepMiep
 	u64 Util::abs_time()
 	{
 		return duration_cast<milliseconds>(high_resolution_clock::now().time_since_epoch()).count();
+	}
+
+	u32 Util::rand()
+	{
+		static SpinLock sl;
+		scoped_spinlock lk(sl);
+		return ::rand();
 	}
 
 }

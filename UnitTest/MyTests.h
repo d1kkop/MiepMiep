@@ -113,7 +113,7 @@ UTESTBEGIN(SocketSetTest)
 				sptr<ISocket> sock = ISocket::create();
 				sock->open();
 				sock->bind(0);
-				ss[rand()%4].addSocket( const_pointer_cast<const ISocket>( sock ), static_pointer_cast<IPacketHandler>( handler ) );
+				ss[Util::rand()%4].addSocket( const_pointer_cast<const ISocket>( sock ), static_pointer_cast<IPacketHandler>( handler ) );
 				i32 err;
 				EListenOnSocketsResult res = ss[j].listenOnSockets(1, &err);
 				assert ( res == EListenOnSocketsResult::TimeoutNoData || res == EListenOnSocketsResult::Fine || res == EListenOnSocketsResult::NoSocketsInSet );

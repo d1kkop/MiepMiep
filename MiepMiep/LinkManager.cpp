@@ -72,7 +72,7 @@ namespace MiepMiep
 
 	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap, bool addHandler )
 	{
-		return add(session, sap, rand(), addHandler);
+		return add(session, sap, Util::rand(), addHandler);
 	}
 
 	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler )

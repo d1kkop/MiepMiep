@@ -25,11 +25,13 @@ namespace MiepMiep
 		static void cluster( S s, u32 clusterSize, const Pred& pred );
 
 		static u64 abs_time();
+		static u32 rand();
 	};
 
 
+
 	template <typename S, typename Pred>
-	void MiepMiep::Util::cluster(S s, u32 clusterSize, const Pred& pred)
+	void Util::cluster(S s, u32 clusterSize, const Pred& pred)
 	{
 		u32 off = 0;
 		while (true)

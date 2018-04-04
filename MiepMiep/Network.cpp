@@ -69,21 +69,21 @@ namespace MiepMiep
 		getOrAdd<ListenerManager>()->stopListen( port );
 	}
 
-	MM_TS bool Network::registerServer( const std::function<void( const ISession&, bool )>& callback,
-										const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
-										u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
-										const MetaData& hostMd, const MetaData& customMatchmakingMd )
+	MM_TS sptr<ISession> Network::registerServer( const std::function<void( const ISession&, bool )>& callback,
+												  const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
+												  u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
+												  const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
 		i32 err;
 		auto sock = ISocket::create( 0, &err );
 		if ( !sock )
 		{
 			LOGW( "Could not create socket, error %d.", err );
-			return false;
+			return nullptr;
 		}
 		auto s = reserve_sp<Session>( MM_FL, *this, hostMd );
 		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), true );	
-		if ( !link ) return false;
+		if ( !link ) return nullptr;
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link && s);
@@ -100,25 +100,25 @@ namespace MiepMiep
 			data.m_CanJoinAfterStart = canJoinAfterStart;
 			link->getOrAdd<MasterLinkData>()->registerServer( callback, data, customMatchmakingMd );
 		} );
-		return true;
+		return s;
 	}
 
-	MM_TS bool Network::joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
-									const IAddress& masterAddr, const std::string& name, const std::string& type,
-									float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
-									bool findP2p, bool findClientServer,
-									const MetaData& joinMd, const MetaData& customMatchmakingMd )
+	MM_TS sptr<ISession> Network::joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
+											  const IAddress& masterAddr, const std::string& name, const std::string& type,
+											  float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
+											  bool findP2p, bool findClientServer,
+											  const MetaData& joinMd, const MetaData& customMatchmakingMd )
 	{
 		i32 err;
 		auto sock = ISocket::create( 0, &err );
 		if ( !sock )
 		{
 			LOGW( "Could not create socket, error %d.", err );
-			return false;
+			return nullptr;
 		}
 		auto s = reserve_sp<Session>( MM_FL, *this, joinMd );
 		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), true );
-		if ( !link ) return false;
+		if ( !link ) return nullptr;
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link && s);
@@ -135,7 +135,7 @@ namespace MiepMiep
 			sf.m_FindClientServer = findClientServer;
 			link->getOrAdd<MasterLinkData>()->joinServer( callback, sf, customMatchmakingMd );
 		} );
-		return true;
+		return s;
 	}
 
 	MM_TS bool Network::kick( ILink& link )
@@ -241,12 +241,12 @@ namespace MiepMiep
 
 	MM_TS void Network::addSessionListener( ISession& session, ISessionListener* listener )
 	{
-	//	get<NetworkListeners>()->addListener<ISessionListener>( listener );
+		sc<SessionBase&>(session).addListener( listener );
 	}
 
 	MM_TS void Network::removeSessionListener( ISession& session, const ISessionListener* listener )
 	{
-	//	get<NetworkListeners>()->removeListener<ISessionListener>( listener );
+		sc<SessionBase&>(session).removeListener( listener );
 	}
 
 	MM_TS void Network::clearAllStatics()

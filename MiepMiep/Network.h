@@ -38,16 +38,16 @@ namespace MiepMiep
 		MM_TS EListenCallResult startListen( u16 port ) override;
 		MM_TS void stopListen( u16 port ) override;
 
-		MM_TS bool registerServer( const std::function<void( const ISession&, bool )>& callback,
-								   const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
-								   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
-								   const MetaData& hostMd, const MetaData& customMatchmakingMd ) override;
+		MM_TS sptr<ISession> registerServer( const std::function<void( const ISession&, bool )>& callback,
+											 const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
+											 u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
+											 const MetaData& hostMd, const MetaData& customMatchmakingMd ) override;
 
-		MM_TS bool joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
-							   const IAddress& masterAddr, const std::string& name, const std::string& type,
-							   float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
-							   bool findP2p, bool findClientServer,
-							   const MetaData& joinMd, const MetaData& customMatchmakingMd ) override;
+		MM_TS sptr<ISession> joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
+										 const IAddress& masterAddr, const std::string& name, const std::string& type,
+										 float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
+										 bool findP2p, bool findClientServer,
+										 const MetaData& joinMd, const MetaData& customMatchmakingMd ) override;
 
 		MM_TS bool kick( ILink& link ) override;
 		MM_TS bool disconnect( ILink& link ) override;

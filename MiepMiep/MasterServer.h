@@ -21,7 +21,6 @@ namespace MiepMiep
 	bool readOrWrite( BinSerializer& bs, SearchFilter& sf, bool _write );
 
 
-
 	// ----- SearchFilter data --------------------------------------------------------------------------------------------------------------
 
 	struct SearchFilter
@@ -35,7 +34,6 @@ namespace MiepMiep
 		bool m_FindClientServer;
 		MetaData m_CustomMatchmakingMd;
 	};
-
 
 
 	// ----- MasterSessionList --------------------------------------------------------------------------------------------------------------

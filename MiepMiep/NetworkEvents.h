@@ -9,7 +9,6 @@
 namespace MiepMiep
 {
 	struct IEvent;
-	class Session;
 	class Link;
 
 	// -------- EventListener --------------------------------------------------------------------------------------------
@@ -55,14 +54,6 @@ namespace MiepMiep
 		MM_TS void pushEvent( sptr<IEvent>& event );
 		MM_TS void processQueuedEvents();
 		
-
-		template <typename T>
-		void processEvents( const std::function<void (T*)>& cb )
-		{
-	//	forListeners( cb );
-		}
-		
-
 	private:
 		mutex m_EventsMutex;
 		vector<sptr<IEvent>> m_Events;

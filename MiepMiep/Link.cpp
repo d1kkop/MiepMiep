@@ -78,7 +78,7 @@ namespace MiepMiep
 
 	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler )
 	{
-		return create( network, session, sap, rand(), addHandler );
+		return create( network, session, sap, Util::rand(), addHandler );
 	}
 
 	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler )
@@ -214,9 +214,9 @@ namespace MiepMiep
 		__CHECKED( bs.read(pi.m_ChannelAndFlags) );
 
 		byte channel = pi.m_ChannelAndFlags & MM_CHANNEL_MASK;
-		EComponentType et = (EComponentType) compType;
+		EComponentType ct = (EComponentType) compType;
 
-		switch ( et )
+		switch ( ct )
 		{
 		case EComponentType::ReliableSend:
 			getOrAdd<ReliableAckSend>(channel)->addAck( pi.m_Sequence );
@@ -242,7 +242,7 @@ namespace MiepMiep
 			break;
 
 		default:
-			LOGW( "Unknown stream type %d detected. Packet ignored.", (u32)et );
+			LOGW( "Unknown stream type %d detected. Packet ignored.", (u32)ct );
 			break;
 		}
 	}

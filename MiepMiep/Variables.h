@@ -49,12 +49,12 @@ namespace MiepMiep
 						or wants the value to be different.
 			[Remote]	The variable is completely owned remotely. That is, if you write to the variable, it will automatically be 
 						overwritten by updates from the network. Furthermore, local changes will not be committed to the network. */
-		MM_TS EVarControl getVarConrol() const;
+		MM_TS EVarControl varControl() const;
 
 
 		/*	The NetVar is part of a group that has an id. This id is network wide unique.
 			Use this networkGroupId to target specific group's remotely. */
-		MM_TS u32 getGroupId() const;
+		MM_TS u32 groupId() const;
 
 
 		/*	If a variable is written to, this can be called in addition to let the network stream know it has changed

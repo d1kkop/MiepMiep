@@ -134,6 +134,9 @@ namespace MiepMiep
 	class MM_DECLSPEC ISession
 	{
 	public:
+		// Do not delete returned ptr. A ptr to thread static storage is returned.
+		MM_TS virtual const char* name() const=0;
+
 		/*	Link to matchmaking server. */
 		MM_TS virtual const ILink& matchMaker()  const=0;
 
@@ -165,17 +168,17 @@ namespace MiepMiep
 		MM_TS virtual void stopListen( u16 port )=0;
 
 		/*	Returns only false when all ports on local machine are in use. */
-		MM_TS virtual bool registerServer( const std::function<void( const ISession&, bool )>& callback,
-										   const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
-										   u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
-										   const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
+		MM_TS virtual sptr<ISession> registerServer( const std::function<void( const ISession&, bool )>& callback,
+													 const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
+													 u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
+													 const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		/*	Returns only false when all ports on local machine are in use. */
-		MM_TS virtual bool joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
-									   const IAddress& masterAddr, const std::string& name, const std::string& type,
-									   float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
-									   bool findP2p, bool findClientServer,
-									   const MetaData& joinMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
+		MM_TS virtual sptr<ISession> joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
+												 const IAddress& masterAddr, const std::string& name, const std::string& type,
+												 float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
+												 bool findP2p, bool findClientServer,
+												 const MetaData& joinMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		MM_TS virtual bool kick( ILink& link )=0;
 		MM_TS virtual bool disconnect( ILink& link )=0;
