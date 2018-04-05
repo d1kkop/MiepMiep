@@ -37,7 +37,7 @@ namespace MiepMiep
 
 	Network::Network( bool allowAsyncCallbacks )
 	{
-		getOrAdd<JobSystem>( 0, 4 );   // N worker threads
+		getOrAdd<JobSystem>( 0, 4 ); // N worker threads
 		getOrAdd<SendThread>();		 // starts a 'resend' flow and creates jobs per N links whom dispatch their data
 		getOrAdd<SocketSetManager>(); // each N sockets is a new reception thread, default N = 64
 		getOrAdd<NetworkEvents>( 0, allowAsyncCallbacks );
@@ -45,9 +45,9 @@ namespace MiepMiep
 
 	Network::~Network()
 	{
-		get<JobSystem>()->stop();
 		get<SendThread>()->stop();
 		get<SocketSetManager>()->stop();
+		get<JobSystem>()->stop();
 		if ( Platform::shutdown() )
 		{
 			Network::clearAllStatics();

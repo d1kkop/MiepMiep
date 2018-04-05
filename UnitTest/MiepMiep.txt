@@ -1,10 +1,59 @@
-Wed Mar 28 17:43:39 2018 ------- New Session --------
-Wed Mar 28 17:43:39 2018 ----------------------------
-Wed Mar 28 17:43:39 2018 Created new link to 127.0.0.1:12203 (src_port: 63691, link: 30047, socket: 22492ll).
-Wed Mar 28 17:43:41 2018 Link 127.0.0.1:12203 (src_port: 63691, link: 30047, socket: 22492ll) destroyed.
-Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63692, link: 30054, socket: 20444ll).
-Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63693, link: 4831, socket: 32764ll).
-Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63694, link: 2297, socket: 18396ll).
-Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63695, link: 13899, socket: 30716ll).
-Wed Mar 28 17:43:41 2018 Created new link to 127.0.0.1:27001 (src_port: 63696, link: 19939, socket: 4028ll).
-Wed Mar 28 17:43:43 2018 Stop listen was called. Old listen port was 27001. 
+Thu Apr  5 16:33:24 2018 ------- New Session --------
+Thu Apr  5 16:33:24 2018 ----------------------------
+Thu Apr  5 16:33:24 2018 Added link 127.0.0.1:27001 (src_port: 57519, link: 3408, socket: 12316) to session 12459.
+Thu Apr  5 16:33:24 2018 Created new link to 127.0.0.1:27001 (src_port: 57519, link: 3408, socket: 12316).
+Thu Apr  5 16:33:24 2018 Added link 127.0.0.1:27001 (src_port: 57520, link: 5807, socket: 44) to session 14737.
+Thu Apr  5 16:33:24 2018 Created new link to 127.0.0.1:27001 (src_port: 57520, link: 5807, socket: 44).
+Thu Apr  5 16:33:24 2018 Added link 127.0.0.1:27001 (src_port: 57521, link: 3103, socket: 56) to session 8288.
+Thu Apr  5 16:33:24 2018 Created new link to 127.0.0.1:27001 (src_port: 57521, link: 3103, socket: 56).
+Thu Apr  5 16:33:24 2018 Added link 127.0.0.1:27001 (src_port: 57522, link: 30049, socket: 92) to session 10909.
+Thu Apr  5 16:33:24 2018 Created new link to 127.0.0.1:27001 (src_port: 57522, link: 30049, socket: 92).
+Thu Apr  5 16:33:24 2018 Added link 127.0.0.1:27001 (src_port: 57523, link: 17913, socket: 30716) to session 17.
+Thu Apr  5 16:33:24 2018 Created new link to 127.0.0.1:27001 (src_port: 57523, link: 17913, socket: 30716).
+Thu Apr  5 16:33:26 2018 Stop listen was called. Old listen port was 27001. 
+Thu Apr  5 16:33:26 2018 Link 127.0.0.1:27001 (src_port: 57519, link: 3408, socket: 12316) destroyed.
+Thu Apr  5 16:33:26 2018 Link 127.0.0.1:27001 (src_port: 57520, link: 5807, socket: 44) destroyed.
+Thu Apr  5 16:33:26 2018 Link 127.0.0.1:27001 (src_port: 57521, link: 3103, socket: 56) destroyed.
+Thu Apr  5 16:33:26 2018 Link 127.0.0.1:27001 (src_port: 57522, link: 30049, socket: 92) destroyed.
+Thu Apr  5 16:33:26 2018 Link 127.0.0.1:27001 (src_port: 57523, link: 17913, socket: 30716) destroyed.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57525, link: 18467, socket: 3964) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57533, link: 18467, socket: 28572) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57526, link: 18467, socket: 22428) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57529, link: 18467, socket: 8092) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57527, link: 18467, socket: 10108) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57531, link: 18467, socket: 14204) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57532, link: 18467, socket: 1884) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57528, link: 18467, socket: 36796) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57530, link: 18467, socket: 26524) to session 41.
+Thu Apr  5 16:33:26 2018 Added link 127.0.0.1:12203 (src_port: 57534, link: 18467, socket: 16252) to session 41.
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57525, link: 18467, socket: 3964).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57533, link: 18467, socket: 28572).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57526, link: 18467, socket: 22428).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57529, link: 18467, socket: 8092).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57527, link: 18467, socket: 10108).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57531, link: 18467, socket: 14204).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57532, link: 18467, socket: 1884).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57528, link: 18467, socket: 36796).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57530, link: 18467, socket: 26524).
+Thu Apr  5 16:33:26 2018 Created new link to 127.0.0.1:12203 (src_port: 57534, link: 18467, socket: 16252).
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:26 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:27 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:27 2018 Socket recv error: 10054.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57525, link: 18467, socket: 3964) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57533, link: 18467, socket: 28572) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57526, link: 18467, socket: 22428) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57529, link: 18467, socket: 8092) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57527, link: 18467, socket: 10108) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57531, link: 18467, socket: 14204) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57532, link: 18467, socket: 1884) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57528, link: 18467, socket: 36796) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57530, link: 18467, socket: 26524) destroyed.
+Thu Apr  5 16:33:29 2018 Link 127.0.0.1:12203 (src_port: 57534, link: 18467, socket: 16252) destroyed.
+Thu Apr  5 16:33:29 2018 << NO MEMORY leaks detected >>.

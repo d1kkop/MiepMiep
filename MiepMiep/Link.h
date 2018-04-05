@@ -82,7 +82,7 @@ namespace MiepMiep
 		// All these fields could have their own component, but that is a lot of boilerplate for a single field.
 		u32 m_Id;
 		bool m_SocketWasAddedToHandler;
-		sptr<SessionBase> m_Session;
+		wptr<SessionBase> m_Session;
 		SocketAddrPair m_SockAddrPair;
 		sptr<const class IAddress> m_Source;
 		SpinLock m_MatchmakingDataMutex;

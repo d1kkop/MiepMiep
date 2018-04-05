@@ -9,14 +9,20 @@ Release checks:
 
 TODO refactor:
 
-- Link no longer has socket added to socketSetManager because it is no longer a packet handler.
-    PacketHandler is a Session
-
-- Store session state data properly like p2p
-- LinkState management for p2p and client/server
-- Listeners should have manager
-- PacketHandler remove from listener, should be provided on construction
+- MasterSessionData should be variable group data.
+- Buffer new connections in client-server achitecture -> build RPC buffering.
+- Implement variable group synchronization.
+- Validate disconnection sequence.
+- Implemented unreliable synchronization.
+- Implement MTU discovery
+- Implement congestion control
+- Remove 2ms delay on dispatch to see how congestion control works
+- Add high level entity interpolation
 - Use Args&& for callRpc however, do proper handling for BinSerializer otherwise many linking errors.
+- Fixup SDL socket implementation
+- Add android port (first port)
+- Add remainder ports
+- Add tutorial on website
 
 
 ------ THE GRAND DESIGN ------

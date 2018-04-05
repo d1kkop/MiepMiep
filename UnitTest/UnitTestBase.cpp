@@ -21,6 +21,7 @@ int main(int argc, char** arv)
 		delete ut;
 	}
 
+	Network::clearAllStatics();
 	Network::printMemoryLeaks();
 	system("pause");
 }

@@ -41,7 +41,7 @@ namespace MiepMiep
 
 		if ( err != 0 )
 		{
-			LOGW( "Socket recv error: %d.", err );
+			LOG( "Socket recv error: %d.", err );
 			releaseN(buff);
 			return;
 		}

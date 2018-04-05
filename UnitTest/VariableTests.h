@@ -37,15 +37,15 @@ MM_VARGROUP(personVarGroup, i32, i32, u32)
 
 UTESTBEGIN(VariablesTest)
 {
+//	return true;
 	sptr<INetwork> network = INetwork::create();
-	return true;
 
 	vector<thread> ts;
 	for ( i32 i=0; i < 10; i++ )
 	{
 		ts.emplace_back( [=]() 
 		{
-			network->registerServer( [=](auto& ses, auto r) 
+			network->registerServer( [&](auto& ses, auto r) 
 			{ 
 				registerResult(ses, r); 
 

@@ -135,6 +135,7 @@ UNITTESTEND(SocketSetTest)
 
 UTESTBEGIN(SpinLockTest)
 {
+//	return true;
 	SpinLock sl;
 	u32 num=0;
 	const u32 kThreads=100;
@@ -159,6 +160,89 @@ UTESTBEGIN(SpinLockTest)
 }
 UNITTESTEND(SpinLockTest)
 
+UTESTBEGIN( SpinLockVsNormalLock )
+{
+//	return true;
+	SpinLock sl;
+	mutex mt;
+
+	constexpr u32 kThreads[] = { 100, 50, 25, 8, 4 };
+
+	for (unsigned long kThread : kThreads)
+	{
+	// -------------------------------------------------------
+		cout << "Spinlock Add with " << kThread << " threads" << endl;
+		u32 num=0;
+		const u32 mp=1000;
+		thread tds[100];
+		u64 t1 = Util::abs_time();
+		for ( u32 i=0; i < kThread; i++)
+		{
+			thread& td = tds[i];
+			td = thread( [&] ()
+			{
+				for ( u32 j=0; j<mp; j++ )
+				{
+					scoped_spinlock lk( sl );
+					num += 1;
+				}
+			} );
+		}
+		for ( u32 i=0; i < kThread; i++ )
+			tds[i].join();
+		u64 t2 = Util::abs_time();
+		assert( num == kThread*mp );
+		cout << "Took " << (t2-t1) << " ms" << endl;
+
+		// -------------------------------------------------------
+		cout << "Mutex Add with " << kThread << " threads" << endl;
+		num=0;
+		t1 = Util::abs_time();
+		for ( u32 i=0; i < kThread; i++ )
+		{
+			thread& td = tds[i];
+			td = thread( [&] ()
+			{
+				for ( u32 j=0; j<mp; j++ )
+				{
+					scoped_lock lk( mt );
+					num += 1;
+				}
+			} );
+		}
+		for ( u32 i=0; i < kThread; i++ )
+			tds[i].join();
+		t2 = Util::abs_time();
+		assert( num == kThread*mp );
+		cout << "Took " << (t2-t1) << " ms" << endl;
+
+		// -------------------------------------------------------
+		cout << "Atomic Add with " << kThread << " threads" << endl;
+		num=0;
+		atomic<u32> aNum=0;
+		t1 = Util::abs_time();
+		for ( u32 i=0; i < kThread; i++ )
+		{
+			thread& td = tds[i];
+			td = thread( [&] ()
+			{
+				for ( u32 j=0; j<mp; j++ )
+				{
+					aNum += 1;
+				}
+			} );
+		}
+		for ( u32 i=0; i < kThread; i++ )
+			tds[i].join();
+		t2 = Util::abs_time();
+		assert( aNum == kThread*mp );
+		cout << "Took " << (t2-t1) << " ms" << endl;
+	}
+	
+	return true;
+}
+UNITTESTEND( SpinLockVsNormalLock )
+
 
 RecvPacket PackProvider()
 {
@@ -169,6 +253,7 @@ RecvPacket PackProvider()
 
 UTESTBEGIN(PacketTest)
 {
+	//return true;
 	constexpr u32 kThreads = 50;
 	thread tds[kThreads];
 
@@ -199,6 +284,7 @@ UNITTESTEND(PacketTest)
 
 UTESTBEGIN(TimeTest)
 {
+//	return true;
 	constexpr u32 kThreads = 50;
 	thread tds[kThreads];
 
@@ -230,6 +316,7 @@ UNITTESTEND(TimeTest)
 
 UTESTBEGIN(BinMetaDataTest)
 {
+//	return true;
 	BinSerializer bs;
 	MetaData md;
 
@@ -252,6 +339,7 @@ UNITTESTEND(BinMetaDataTest)
 
 UTESTBEGIN(StringSerializeTest)
 {
+//	return true;
 	BinSerializer bs;
 	string str;
 	for (u32 i = 0; i < MiepMiep::TempBuffSize-1 ; i++)
@@ -282,6 +370,7 @@ UNITTESTEND(StringSerializeTest)
 
 // mimic pw & md
 MetaData g_md;
+string g_pw;
 MM_RPC(MyRpcBigTest, string, MetaData)
 {
 	const string& pw	= std::get<0>(tp);
@@ -291,8 +380,9 @@ MM_RPC(MyRpcBigTest, string, MetaData)
 
 UTESTBEGIN(RPCBigTest)
 {
+	return true;
 	BinSerializer bs;
-
+	g_md.clear();
 	for (u32 i = 0; i < 10000 ; i++)
 	{
 		g_md[ std::to_string(i) ] = " lalalal this is metadata johoeeeee with value: " + std::to_string(i);
@@ -308,12 +398,34 @@ UTESTBEGIN(RPCBigTest)
 	bs2.moveRead( (u32)pw.length()+1 );
 	bs2.read(mdRead);
 	assert( mdRead == g_md );
+	bs2.setRead(0);
+	string pw2;
+	bs2.read(pw2);
+	assert(pw2 == pw);
+	mdRead.clear();
+	bs2.read(mdRead);
+	assert(mdRead == g_md);
+	g_pw = pw;
 
 	sptr<INetwork> nw = INetwork::create();
-	////sptr<Session> s   = reserve_sp<Se
-	//sptr<Link> link   = sc<Network&>(*nw).getOrAdd<LinkManager>()->add( nullptr, *IAddress::resolve("localhost", 12203), true );
-	//bs2.setRead(0);
-	//rpc_dsr_MyRpcBigTest( *nw, (ILink&) (Link&)*link, bs2 );
+
+	auto lRes = nw->startListen( 21002 );
+	assert(lRes == EListenCallResult::Fine );
+
+	nw->registerServer( [] ( auto& ses, bool succes )
+	{
+		
+	}, *IAddress::resolve("localhost", 21002), true, false, true, 0, 32, "unitTestGame", "type", "" );
+
+	nw->joinServer( [&] ( const ISession& ses, EJoinServerResult jres )
+	{
+		if ( jres == EJoinServerResult::Fine )
+		{
+			auto res = nw->callRpc<MyRpcBigTest, string, MetaData>( g_pw, g_md, &ses, nullptr, No_Local, No_Buffer, No_Relay );
+			assert( res == ESendCallResult::Fine );
+		}
+		else assert(false);
+	}, *IAddress::resolve("localhost", 21002), "unitTestGame", "type", 0, 100, 0, 100, true, true );
 
 	return true;
 }
@@ -322,6 +434,7 @@ UNITTESTEND(RPCBigTest)
 
 UTESTBEGIN(AutoChatServerAndClient)
 {
+//	return true;
 	sptr<INetwork> nw = INetwork::create();
 	
 	nw->startListen( 27001 );
@@ -339,6 +452,7 @@ UTESTBEGIN(AutoChatServerAndClient)
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001), 
 					"first game", "type", 5, 15, 0, 128, true, true );
 
+	// TODO fixup this unit test
 	return true;
 }
 UNITTESTEND(AutoChatServerAndClient)
@@ -346,6 +460,7 @@ UNITTESTEND(AutoChatServerAndClient)
 
 UTESTBEGIN( SapLookupInMap )
 {
+//	return true;
 	sptr<ISocket> s1 = ISocket::create();
 	sptr<ISocket> s2 = ISocket::create();
 	sptr<ISocket> s3 = s1;

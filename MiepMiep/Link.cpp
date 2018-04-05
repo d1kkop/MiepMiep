@@ -57,7 +57,7 @@ namespace MiepMiep
 
 	MM_TSC bool Link::setSession( SessionBase& session )
 	{
-		assert( !m_Session );
+		assert( m_Session.expired() );
 		if ( session.addLink( to_ptr() ) )
 		{
 			m_Session = session.to_ptr();
@@ -129,8 +129,8 @@ namespace MiepMiep
 
 	MM_TSC ISession& Link::session() const
 	{
-		assert(m_Session);
-		return *m_Session;
+		assert(!m_Session.expired());
+		return *m_Session.lock();
 	}
 
 	MM_TS bool Link::isConnected() const
@@ -141,7 +141,7 @@ namespace MiepMiep
 
 	MM_TSC SessionBase* Link::getSession() const
 	{
-		return m_Session.get();
+		return m_Session.lock().get();
 	}
 
 	MM_TSC const char* Link::ipAndPort() const

@@ -33,7 +33,7 @@ namespace MiepMiep
 		}
 		if ( m_Memory.empty() )
 		{
-			Platform::log(ELogType::Message, "", 0, "No memory leaks detected.");
+			Platform::log(ELogType::Message, "", 0, "<< NO MEMORY leaks detected >>.");
 		}
 	#endif
 	}
