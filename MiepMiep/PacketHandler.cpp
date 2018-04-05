@@ -195,7 +195,9 @@ namespace MiepMiep
 		__CHECKEDB( bs.write( compType ) );
 		__CHECKEDB( bs.write( makeChannelAndFlags( channel, relay, sysBit, true, true ) ) );
 		if ( dataId != InvalidByte )
+		{
 			__CHECKEDB( bs.write( dataId ) );
+		}
 		return true;
 	}
 
@@ -206,18 +208,26 @@ namespace MiepMiep
 		__CHECKEDB( bs.write( compType ) );
 		__CHECKEDB( bs.write( makeChannelAndFlags( channel, relay, sysBit, true, true ) ) );
 		if ( dataId != InvalidByte )
+		{
 			__CHECKEDB( bs.write( dataId ) );
+		}
 		return true;
 	}
 
 	bool PacketHelper::createNormalPacket(vector<sptr<const struct NormalSendPacket>>& framgentsOut,  
 										  byte compType, byte dataId,
 										  const BinSerializer** serializers, u32 numSerializers,
-										  byte channel, bool relay, bool sysBit, u32 fragmentSize)
+										  byte channel, bool relay, bool sysBit, i32 maxFragmentSize)
 	{
 		// actual fragmentSize is somewhat lower due to fragment hdr overhead, subtract this, so that fragmentSize is never exceeded
-		fragmentSize -= MM_FRAGMENT_HDR_SIZE;
-		assert ( fragmentSize > MM_FRAGMENT_HDR_SIZE*2 );
+		maxFragmentSize -= MM_MIN_HDR_SIZE;
+		// ensure we have at least space to store data
+		if ( maxFragmentSize <= MM_MIN_HDR_SIZE*2 )
+		{
+			throw;
+			assert(false);
+			return false;
+		}
 		byte channelAndFlags = makeChannelAndFlags(channel, relay, sysBit, true, false );
 		// --
 		u32 totalLength = 0;
@@ -233,7 +243,7 @@ namespace MiepMiep
 		{
 			auto sp = make_shared<NormalSendPacket>();
 			BinSerializer& fragment = sp->m_PayLoad;
-			u32 writeLen = Util::min(totalLength, fragmentSize);
+			u32 writeLen = Util::min(totalLength, (u32)maxFragmentSize);
 			totalLength -= writeLen;
 			if ( 0 == totalLength )
 			{

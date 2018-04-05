@@ -169,15 +169,16 @@ namespace MiepMiep
 
 		/*	Returns only false when all ports on local machine are in use. */
 		MM_TS virtual sptr<ISession> registerServer( const std::function<void( const ISession&, bool )>& callback,
-													 const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
-													 u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
+													 const IAddress& masterAddr, const std::string& name, const std::string& type,
+													 bool isP2p=true, bool canJoinAfterStart=true, float rating=10,
+													 u32 maxClients=64, const std::string& password="", 
 													 const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		/*	Returns only false when all ports on local machine are in use. */
-		MM_TS virtual sptr<ISession> joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
+		MM_TS virtual sptr<ISession> joinServer( const std::function<void( const ISession&, bool )>& callback,
 												 const IAddress& masterAddr, const std::string& name, const std::string& type,
-												 float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
-												 bool findP2p, bool findClientServer,
+												 float minRating=0, float maxRating=1000, u32 minPlayers=0, u32 maxPlayers=64,
+												 bool findP2p=true, bool findClientServer=true,
 												 const MetaData& joinMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		MM_TS virtual bool kick( ILink& link )=0;

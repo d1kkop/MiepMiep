@@ -3,13 +3,23 @@
 #include <cassert>
 
 
+
 void* operator new (size_t n)
 {
+	assert( n <= 1024*1024 );
+#if MM_USE_CALLOC
 	return calloc(1, n);
+#else
+	return malloc(n);
+#endif
 }
 void* operator new [] (size_t n)
 { 
+#if MM_USE_CALLOC
 	return calloc(1, n);
+#else
+	return malloc(n);
+#endif
 }
 
 
@@ -86,7 +96,9 @@ namespace MiepMiep
 	}
 
 	// Linking
-	mutex Memory::m_MemoryMutex;
-	map<void*, MemoryFootprint> Memory::m_Memory;
+	#if MM_TRACE_MEMORY_LEAKS
+		mutex Memory::m_MemoryMutex;
+		map<void*, MemoryFootprint> Memory::m_Memory;
+	#endif
 
 }

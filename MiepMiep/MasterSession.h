@@ -39,7 +39,7 @@ namespace MiepMiep
 		MM_TS bool addLink( const sptr<Link>& link ) override;
 
 	private:
-		sptr<Link> m_Host;
+		wptr<Link> m_Host;
 		bool m_NewLinksCanJoin; // Becomes false if someone leaves in p2p session.
 
 		// Hard link to session list, no Id's.

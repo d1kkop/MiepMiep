@@ -89,7 +89,8 @@ namespace MiepMiep
 	MM_TS sptr<const IAddress> MasterSession::host() const
 	{
 		scoped_lock lk(m_DataMutex);
-		return m_Host ? m_Host->destination().to_ptr() : nullptr;
+		auto shost = m_Host.lock();
+		return shost ? shost->destination().to_ptr() : nullptr;
 	}
 
 	MM_TS bool MasterSession::addLink( const sptr<Link>& newLink )
@@ -103,29 +104,40 @@ namespace MiepMiep
 			auto addrCpy = newLink->destination().getCopy();
 			for ( auto& l : m_Links )
 			{
+				auto sl = l.lock();
+				if ( !sl ) continue;
 				u32 linkId = Util::rand();
 				LOG("Connect links on ID %d.", linkId);
-				l->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, addrCpy );
-				newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, l->destination().getCopy() );
+				sl->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, addrCpy );
+				newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, sl->destination().getCopy() );
 			}
 		}
 		else
 		{
-			assert( m_Host ); // Can join only returns true, if session has host.
-			// For client-server architecture, only have new client join to host.
-			u32 linkId = Util::rand();
-			m_Host->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink->destination().getCopy() );
-			newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, m_Host->destination().getCopy() );
+			auto shost = m_Host.lock();
+			if ( shost )
+			{
+				// For client-server architecture, only have new client join to host.
+				u32 linkId = Util::rand();
+				shost->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink->destination().getCopy() );
+				newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, shost->destination().getCopy() );
+			}
 		}
 	#if _DEBUG
 		for ( auto& l : m_Links )
 		{
-			assert( *l != *newLink );
+			if ( auto sl = l.lock() )
+			{
+				assert( *sl != *newLink );
+			}
 		}
 	#endif
 		m_Links.emplace_back( newLink );
-		assert( m_Host ); // Can join only returns true, if session has host.
-		newLink->callRpc<masterSessionNewHost, sptr<IAddress>>( m_Host->destination().getCopy() );
+		auto shost = m_Host.lock();
+		if ( shost )
+		{
+			newLink->callRpc<masterSessionNewHost, sptr<IAddress>>( shost->destination().getCopy() );
+		}
 		return true;
 	}
 
@@ -135,7 +147,7 @@ namespace MiepMiep
 
 		// TODO use map instead? 
 	#if _DEBUG
-		auto lIt = std::find_if( begin( m_Links ), end( m_Links ), [&] ( auto& l ) { return *l==link; } );
+		auto lIt = std::find_if( begin( m_Links ), end( m_Links ), [&] ( auto& l ) { return *l.lock()==link; } );
 		if ( lIt == m_Links.end() )
 		{
 			assert( false );
@@ -151,30 +163,33 @@ namespace MiepMiep
 		}
 
 		// If leaving link is host, determine new host.
-		if ( link == *m_Host )
+		auto shost = m_Host.lock();
+		if ( link == *shost )
 		{
 			u32 highestScore = 0;
-			m_Host.reset();
+			shost.reset();
 			for ( auto& l : m_Links )
 			{
-				if ( *l == link ) continue; // skip leaving host
-				u32 score = l->getOrAdd<LinkStats>()->hostScore();
+				auto sl = l.lock();
+				if ( *sl == link ) continue; // skip leaving host
+				u32 score = sl->getOrAdd<LinkStats>()->hostScore();
 				if ( score > highestScore )
 				{
 					highestScore = score;
-					m_Host = l;
+					m_Host = sl;
 				}
 			}
-			assert( (m_Links.empty() && !m_Host) || (!m_Links.empty() && m_Host) );
-			if ( m_Host )
+			assert( (m_Links.empty() && !m_Host.lock()) || (!m_Links.empty() && m_Host.lock()) );
+			shost = m_Host.lock();
+			if ( shost )
 			{
 				link.network().callRpc<masterSessionNewHost, sptr<IAddress>>(
-					m_Host->destination().getCopy(), &link.session(), &link,
+					shost->destination().getCopy(), &link.session(), &link,
 					No_Local, No_Buffer, No_Relay, MM_RPC_CHANNEL, No_Trace );
 			}
 		}
 
-		std::remove_if( begin( m_Links ), end( m_Links ), [&] ( auto l ) { return *l==link; } );
+		std::remove_if( begin( m_Links ), end( m_Links ), [&] ( auto l ) { return *l.lock()==link; } );
 	}
 
 	MM_TS void MasterSession::updateHost( const sptr<Link>& link )
@@ -211,7 +226,7 @@ namespace MiepMiep
 	{
 		// Becomes false if session was started in p2p and someone left or
 		// if was started and no late join is allowed.
-		return m_Host && m_NewLinksCanJoin && (!m_Started || m_MasterData.m_CanJoinAfterStart);
+		return m_Host.lock() && m_NewLinksCanJoin && (!m_Started || m_MasterData.m_CanJoinAfterStart);
 	}
 
 

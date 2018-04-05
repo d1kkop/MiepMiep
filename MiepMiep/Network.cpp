@@ -56,7 +56,9 @@ namespace MiepMiep
 
 	MM_TS void Network::processEvents()
 	{
-		get<NetworkEvents>()->processQueuedEvents();
+		auto ne = get<NetworkEvents>();
+		if ( ne ) ne->processQueuedEvents();
+		else LOGW( "Attempted to process events while NetworkEvents was destroyed." );
 	}
 
 	MM_TS EListenCallResult Network::startListen( u16 port )
@@ -70,8 +72,9 @@ namespace MiepMiep
 	}
 
 	MM_TS sptr<ISession> Network::registerServer( const std::function<void( const ISession&, bool )>& callback,
-												  const IAddress& masterAddr, bool isP2p, bool isPrivate, bool canJoinAfterStart, float rating,
-												  u32 maxClients, const std::string& name, const std::string& type, const std::string& password,
+												  const IAddress& masterAddr, const std::string& name, const std::string& type,
+												  bool isP2p, bool canJoinAfterStart, float rating,
+												  u32 maxClients, const std::string& password,
 												  const MetaData& hostMd, const MetaData& customMatchmakingMd )
 	{
 		i32 err;
@@ -94,7 +97,7 @@ namespace MiepMiep
 			data.m_IsP2p = isP2p;
 			data.m_Rating = rating;
 			data.m_Password = password;
-			data.m_IsPrivate  = isPrivate;
+			data.m_IsPrivate  = !password.empty();
 			data.m_MaxClients = maxClients;
 			data.m_UsedMatchmaker = true;
 			data.m_CanJoinAfterStart = canJoinAfterStart;
@@ -103,7 +106,7 @@ namespace MiepMiep
 		return s;
 	}
 
-	MM_TS sptr<ISession> Network::joinServer( const std::function<void( const ISession&, EJoinServerResult )>& callback,
+	MM_TS sptr<ISession> Network::joinServer( const std::function<void( const ISession&, bool )>& callback,
 											  const IAddress& masterAddr, const std::string& name, const std::string& type,
 											  float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
 											  bool findP2p, bool findClientServer,

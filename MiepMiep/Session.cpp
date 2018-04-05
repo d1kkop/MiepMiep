@@ -52,7 +52,10 @@ namespace MiepMiep
 		LOG( "Added link %s to session %d.", link->info(), m_Id );
 		for ( auto& l : m_Links )
 		{
-			assert( !(*l == *link) );
+			if ( auto sl=l.lock() )
+			{
+				assert( !(*sl == *link) );
+			}
 		}
 	#endif
 		m_Links.emplace_back( link );
@@ -73,7 +76,7 @@ namespace MiepMiep
 	MM_TS void Session::removeLink( const sptr<const Link>& link )
 	{
 		scoped_lock lk( m_LinksMutex );
-		std::remove( m_Links.begin(), m_Links.end(), link );
+		std::remove_if( m_Links.begin(), m_Links.end(), [&] ( auto& l ) { return *l.lock() == *link; } );
 	}
 
 	MM_TS bool Session::disconnect()

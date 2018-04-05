@@ -56,7 +56,7 @@ namespace MiepMiep
 			sptr<Group> group = m_PendingGroups.front();
 			m_PendingGroups.pop_back();
 			group->setId( id );
-			__CHECKED( m_Groups.count( id ) != 0 );
+			assert( m_Groups.count(id) != 0 );
 			m_Groups[id] = group;
 			msgGroupCreate( &group->session(), group->typeName(), group->id(), group->initData() );
 		}

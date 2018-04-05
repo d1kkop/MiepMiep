@@ -82,7 +82,7 @@ namespace MiepMiep
 		// All these fields could have their own component, but that is a lot of boilerplate for a single field.
 		u32 m_Id;
 		bool m_SocketWasAddedToHandler;
-		wptr<SessionBase> m_Session;
+		sptr<SessionBase> m_Session;
 		SocketAddrPair m_SockAddrPair;
 		sptr<const class IAddress> m_Source;
 		SpinLock m_MatchmakingDataMutex;
@@ -103,7 +103,16 @@ namespace MiepMiep
 	{
 		sptr<T> evt = make_shared<T>(to_ptr(), args...);
 		sptr<IEvent> evtDown = static_pointer_cast<IEvent>(evt);
-		m_Network.get<NetworkEvents>()->pushEvent( evtDown );
+		auto ne = m_Network.get<NetworkEvents>();
+		if ( ne )
+		{
+			ne->pushEvent( evtDown );
+		}
+		else
+		{
+			assert(false);
+			LOGW( "Received event while NetworkEvents was system was destroyed." );
+		}
 	}
 
 	template <typename T, typename ...Args>

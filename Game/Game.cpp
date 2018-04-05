@@ -76,8 +76,8 @@ namespace MyGame
 		};
 
 		sptr<ISession> regSes = m_Network->registerServer( [this](auto& l, auto r) { onRegisterResult(l, r); }, *masterEtp,
-								    true, false, true, 10.f, 32, "first game", "type", "", 
-									serverHostMd, serverMatchMd );
+														   "first game", "type", true, false, 10.f, 32, "",
+														   serverHostMd, serverMatchMd );
 		if ( regSes )
 		{
 			m_Network->addSessionListener( *regSes, this );
@@ -137,7 +137,7 @@ namespace MyGame
 		}
 	}
 
-	void Game::onJoinResult( const ISession& session, EJoinServerResult res )
+	void Game::onJoinResult( const ISession& session, bool res )
 	{
 		switch ( res )
 		{

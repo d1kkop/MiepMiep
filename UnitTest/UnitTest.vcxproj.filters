@@ -21,5 +21,8 @@
     <ClInclude Include="VariableTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StreamTests.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

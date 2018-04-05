@@ -16,14 +16,14 @@ namespace MyGame
 		void stop();
 
 		void onRegisterResult( const ISession& session, bool result );
-		void onJoinResult( const ISession& session, EJoinServerResult result );
+		void onJoinResult( const ISession& session, bool result );
 
-		virtual void onConnect( const ISession& session, const IAddress& remote );
-		virtual void onDisconnect( const ISession& session, const IAddress& remote, EDisconnectReason reason );
-		virtual void onOwnerChanged( const ISession& session, NetVar& variable, const IAddress* newOwner );
-		virtual void onNewHost( const ISession& session, const IAddress* host );
-		virtual void onLostHost( const ISession& session );
-		virtual void onLostMasterLink( const ISession& session, const ILink& link );
+		void onConnect( const ISession& session, const IAddress& remote ) override;
+		void onDisconnect( const ISession& session, const IAddress& remote, EDisconnectReason reason ) override;
+		void onOwnerChanged( const ISession& session, NetVar& variable, const IAddress* newOwner ) override;
+		void onNewHost( const ISession& session, const IAddress* host ) override;
+		void onLostHost( const ISession& session ) override;
+		void onLostMasterLink( const ISession& session, const ILink& link ) override;
 
 		sptr<INetwork> m_Network;
 	};

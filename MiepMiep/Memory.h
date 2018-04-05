@@ -66,8 +66,10 @@ namespace MiepMiep
 		MM_TS static void untrace(ITraceable* p);
 
 	private:
+	#if MM_TRACE_MEMORY_LEAKS
 		static mutex m_MemoryMutex;
 		static map<void*, MemoryFootprint> m_Memory;
+	#endif
 
 		friend class ITraceable;
 	};

@@ -67,7 +67,7 @@ namespace MiepMiep
 		static bool beginUnfragmented( BinSerializer& bs, u32 linkId, u32 seq, byte compType, byte dataId, byte channel, bool relay, bool sysBit );
 		static bool beginUnfragmented( BinSerializer& bs, byte compType, byte dataId, byte channel, bool relay, bool sysBit );
 		static bool createNormalPacket( vector<sptr<const struct NormalSendPacket>>& framgentsOut, byte compType, byte dataId, 
-										const BinSerializer** serializers, u32 numSerializers, byte channel, bool relay, bool sysBit, u32 fragmentSize );
+										const BinSerializer** serializers, u32 numSerializers, byte channel, bool relay, bool sysBit, i32 fragmentSize );
 		static bool tryReassembleBigPacket(sptr<const RecvPacket>& finalPack, std::map<u32, sptr<const RecvPacket>>& fragments, u32 seq, u32& seqBegin, u32& seqEnd);
 		static sptr<const RecvPacket> reAssembleBigPacket(std::map<u32, sptr<const RecvPacket>>& fragments, u32 seqBegin, u32 seqEnd);
 		static bool isSeqNewer( u32 incoming, u32 having );

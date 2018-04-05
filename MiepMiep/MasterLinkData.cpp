@@ -28,7 +28,7 @@ namespace MiepMiep
 
 	struct EventJoinResult : IEvent
 	{
-		EventJoinResult( const sptr<Link>& link, const sptr<MasterLinkData>& mj, EJoinServerResult joinRes  ):
+		EventJoinResult( const sptr<Link>& link, const sptr<MasterLinkData>& mj, bool joinRes  ):
 			IEvent( link, false ),
 			m_Mj( mj ),
 			m_JoinRes( joinRes )
@@ -41,7 +41,7 @@ namespace MiepMiep
 		}
 
 		sptr<const MasterLinkData> m_Mj;
-		EJoinServerResult m_JoinRes;
+		bool m_JoinRes;
 	};
 
 
@@ -85,7 +85,7 @@ namespace MiepMiep
 		bool bSucces = get<0>( tp );
 		sptr<MasterLinkData> mj = l.get<MasterLinkData>(); 
 		assert(mj);
-		l.pushEvent<EventJoinResult>( mj, bSucces ? EJoinServerResult::Fine : EJoinServerResult::NoMatchesFound );
+		l.pushEvent<EventJoinResult>( mj, bSucces );
 	}
 
 	// Executes on master server!
@@ -142,7 +142,7 @@ namespace MiepMiep
 		m_Link.callRpc<masterLinkRpcRegisterServer, MasterSessionData, MetaData>( data, customMatchmakingMd, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
-	MM_TS void MasterLinkData::joinServer( const function<void( const ISession&, EJoinServerResult )>& cb, const SearchFilter& sf,
+	MM_TS void MasterLinkData::joinServer( const function<void( const ISession&, bool )>& cb, const SearchFilter& sf,
 										   const MetaData& customMatchmakingMd )
 	{
 		// Cb lock

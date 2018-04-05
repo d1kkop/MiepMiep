@@ -128,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyTests.h" />
+    <ClInclude Include="StreamTests.h" />
     <ClInclude Include="UnitTestBase.h" />
     <ClInclude Include="VariableTests.h" />
   </ItemGroup>

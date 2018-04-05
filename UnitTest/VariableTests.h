@@ -37,7 +37,6 @@ MM_VARGROUP(personVarGroup, i32, i32, u32)
 
 UTESTBEGIN(VariablesTest)
 {
-//	return true;
 	sptr<INetwork> network = INetwork::create();
 
 	vector<thread> ts;
@@ -65,7 +64,8 @@ UTESTBEGIN(VariablesTest)
 				assert( p->m_Weight.varControl() == EVarControl::Full );
 			}, 
 				*IAddress::resolve( "localhost", 12203 ),
-				true, false, true, 10, 32, "my game", "type", "lala" );
+				"my game", "type",
+				true, false, 10, 32, "lala" );
 
 			this_thread::sleep_for( std::chrono::milliseconds(20) );
 		});

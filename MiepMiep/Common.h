@@ -22,8 +22,7 @@ using namespace std;
 #define MM_MAX_FRAGMENTSIZE 1900
 #define MM_MAX_RECVSIZE 4096
 #define MM_MAX_SENDSIZE MM_MAX_RECVSIZE
-#define MM_MIN_HDR_SIZE 9 /* linkId(4) + seq(4) + compId(1) */
-#define MM_FRAGMENT_HDR_SIZE 6 /* compId(1) + channAndFlags(1) + dataId(4) */
+#define MM_MIN_HDR_SIZE 10				/* linkId(4) + seq(4) + compId(1) + channelAndFlags(1) + <dataId(1)> ->  (dataI is optional) */
 #define MM_CHANNEL_MASK 7
 #define MM_RELAY_BIT 4
 #define MM_FRAGMENT_FIRST_BIT 8
@@ -41,9 +40,15 @@ using namespace std;
 /*	At what number create new server list */
 #define MM_NEW_SERVER_LIST_THRESHOLD 1000
 
-#define __CHECKED( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return; }
-#define __CHECKEDB( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return false; }
-#define __CHECKEDSR( expr ) if ( !(expr) ) { assert(false); LOGC("Serialization error!"); return ESendCallResult::SerializationError; }
+//#if MM_DEBUG
+#define __CHECKED( expr ) if ( !(expr) ) { throw; assert(false); LOGC("Serialization error!"); return; }
+#define __CHECKEDB( expr ) if ( !(expr) ) { throw; assert(false); LOGC("Serialization error!"); return false; }
+#define __CHECKEDSR( expr ) if ( !(expr) ) { throw; assert(false); LOGC("Serialization error!"); return ESendCallResult::SerializationError; }
+//#else
+//#define __CHECKED( expr ) expr
+//#define __CHECKEDB( expr ) expr
+//#define __CHECKEDSR( expr ) expr
+//#endif
 
 
 #define MM_TO_PTR( TYPE ) \

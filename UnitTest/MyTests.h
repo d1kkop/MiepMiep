@@ -27,14 +27,14 @@ void registerResult( const ISession& session, bool result )
 }
 
 
-void joinResult( const ISession& session, EJoinServerResult result )
+void joinResult( const ISession& session, bool result )
 {
 }
 
 UTESTBEGIN(SocketTest)
 {
 	sptr<ISocket> sock = ISocket::create();
-	i32 err;
+	i32 err=0;
 	assert( sock && "sock create" );
 	assert( sock->open( IPProto::Ipv4, SocketOptions(), &err ) && "sock open" );
 	assert( sock->bind( 27001, &err ) && "sock bind" );
@@ -415,11 +415,11 @@ UTESTBEGIN(RPCBigTest)
 	nw->registerServer( [] ( auto& ses, bool succes )
 	{
 		
-	}, *IAddress::resolve("localhost", 21002), true, false, true, 0, 32, "unitTestGame", "type", "" );
+	}, *IAddress::resolve("localhost", 21002), "unitTestGame", "type", true, false, 10, 32, "" );
 
-	nw->joinServer( [&] ( const ISession& ses, EJoinServerResult jres )
+	nw->joinServer( [&] ( const ISession& ses, bool jres )
 	{
-		if ( jres == EJoinServerResult::Fine )
+		if ( jres )
 		{
 			auto res = nw->callRpc<MyRpcBigTest, string, MetaData>( g_pw, g_md, &ses, nullptr, No_Local, No_Buffer, No_Relay );
 			assert( res == ESendCallResult::Fine );
@@ -440,7 +440,8 @@ UTESTBEGIN(AutoChatServerAndClient)
 	nw->startListen( 27001 );
 
 	nw->registerServer( [](auto& l, auto r) { registerResult(l, r); }, *IAddress::resolve("localhost", 27001),
-						true, false, true, 10, 32, "my game", "type", "lala" );
+						"my game", "type",
+						true, false, 10, 32, "lala" );
 
 	nw->joinServer( [](auto& l, auto r) { joinResult(l, r); }, *IAddress::resolve("localhost", 27001),
 					"first game", "type", 5, 15, 0, 128, true, true );

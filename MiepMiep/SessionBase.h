@@ -52,7 +52,7 @@ namespace MiepMiep
 		bool m_Started;
 		MasterSessionData m_MasterData;
 		mutable mutex m_LinksMutex;
-		vector<sptr<Link>> m_Links;
+		vector<wptr<Link>> m_Links;
 
 		friend class Link;
 	};

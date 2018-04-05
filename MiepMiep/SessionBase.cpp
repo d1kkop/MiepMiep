@@ -39,7 +39,9 @@ namespace MiepMiep
 		scoped_lock lk( m_LinksMutex );
 		for ( auto& l : m_Links )
 		{
-			if ( *l == link ) return true;
+			auto sl = l.lock();
+			if ( !sl ) continue;
+			if ( *sl == link ) return true;
 		}
 		return false;
 	}
@@ -49,8 +51,10 @@ namespace MiepMiep
 		scoped_lock lk( m_LinksMutex );
 		for ( auto& l : m_Links )
 		{
-			if ( l.get() == exclude ) continue;
-			cb( *l );
+			auto sl = l.lock();
+			if ( !sl) continue;
+			if ( sl.get() == exclude ) continue;
+			cb( *sl );
 		}
 	}
 
