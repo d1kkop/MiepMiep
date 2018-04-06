@@ -52,6 +52,15 @@ namespace MiepMiep
 		{
 			Network::clearAllStatics();
 		}
+
+		// Use this instead of m_Components.clear because that will invoke ~Link which will try to access
+		// the map again to deregister itself from a SocketSetManager while the 'clear' function of the map is not finished.
+		// Doing so results in crash in std::map.
+		/* DONT USE --> m_Components.clear() <-- DONT USE */
+		for ( auto& c : m_Components )
+		{
+			c.second.clear();
+		}
 	}
 
 	MM_TS void Network::processEvents()

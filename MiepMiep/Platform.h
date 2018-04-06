@@ -86,11 +86,11 @@ namespace MiepMiep
 
 }
 
-#if MM_DEBUG
+//#if MM_DEBUG
 #define LOG( msg, ... )  Platform::log( ELogType::Message, MM_FUNCTION, MM_LINE, msg, __VA_ARGS__ )
-#else
-#define LOG( msg, ... )
-#endif 
+//#else
+//#define LOG( msg, ... )
+//#endif 
 
 #define LOGW( msg, ... ) assert(false); Platform::log( ELogType::Warning, MM_FUNCTION, MM_LINE, msg, __VA_ARGS__ )
 #define LOGC( msg, ... ) assert(false); Platform::log( ELogType::Critical, MM_FUNCTION, MM_LINE, msg, __VA_ARGS__ )

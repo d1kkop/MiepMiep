@@ -67,7 +67,7 @@ namespace MiepMiep
 	protected:
 		template <typename T, typename ...Args> MM_TS sptr<T> getOrAddInternal(u32 idx=0, Args&&... args);
 
-	private:
+	protected:
 		mutable rmutex m_ComponentsMutex;
 		map<EComponentType, vector<sptr<IComponent>>> m_Components;
 	};
@@ -158,11 +158,12 @@ namespace MiepMiep
 		rscoped_lock lk(m_ComponentsMutex);
 		if (!has<T>(idx))
 		{
-			sptr<T> comp = reserve_sp<T, Args...>(MM_FL, args... );
+			sptr<T> comp  = reserve_sp<T, Args...>(MM_FL, args... );
 			auto& vecComp = m_Components[T::compType()];
 			if ( vecComp.size() <= idx )
 				vecComp.resize( idx + 1 );
 			comp->m_Idx = idx;
+			assert( vecComp[idx] == nullptr );
 			vecComp[idx] = static_pointer_cast<IComponent>( comp );
 		}
 		return static_pointer_cast<T>( m_Components[T::compType()][idx] );
