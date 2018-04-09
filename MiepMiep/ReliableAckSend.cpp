@@ -33,7 +33,7 @@ namespace MiepMiep
 			if ( bs.length() >= mtu )
 			{
 				m_Link.send( bs.data(), bs.length() );
-				__CHECKED( PacketHelper::beginUnfragmented( bs, m_Link.id(), 0, (byte)compType(), 0, InvalidByte, No_Relay, Do_SysBit ) );
+				__CHECKED( PacketHelper::beginUnfragmented( bs, m_Link.id(), 0, (byte)compType(), InvalidByte, (byte)idx(), No_Relay, Do_SysBit ) );
 				hasPendingWrites = false;
 				this_thread::sleep_for( chrono::milliseconds( 2 ) ); // TODO remove
 			}

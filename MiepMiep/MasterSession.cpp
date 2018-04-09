@@ -138,6 +138,10 @@ namespace MiepMiep
 		{
 			newLink->callRpc<masterSessionNewHost, sptr<IAddress>>( shost->destination().getCopy() );
 		}
+		else
+		{
+			LOGW( "Could not send new host to link %s as no host was available.", newLink->info() );
+		}
 		return true;
 	}
 
@@ -145,15 +149,14 @@ namespace MiepMiep
 	{
 		scoped_lock lk( m_DataMutex );
 
-		// TODO use map instead? 
-	#if _DEBUG
 		auto lIt = std::find_if( begin( m_Links ), end( m_Links ), [&] ( auto& l ) { return *l.lock()==link; } );
 		if ( lIt == m_Links.end() )
 		{
 			assert( false );
 			LOGW( "Link %s not found in master session.", link.info() );
+			return; // Return, nothing will change.
 		}
-	#endif
+		m_Links.erase( lIt );
 
 		// If is P2p and session already started, new links can no longer join if someone left because
 		// we do not have all addresses anymore that might be in the (game)session.
@@ -168,10 +171,11 @@ namespace MiepMiep
 		{
 			u32 highestScore = 0;
 			shost.reset();
+			// Try find host with best score.
 			for ( auto& l : m_Links )
 			{
 				auto sl = l.lock();
-				if ( *sl == link ) continue; // skip leaving host
+				assert( !(*sl == link) ); // Removed from session already.
 				u32 score = sl->getOrAdd<LinkStats>()->hostScore();
 				if ( score > highestScore )
 				{
@@ -188,8 +192,6 @@ namespace MiepMiep
 					No_Local, No_Buffer, No_Relay, MM_RPC_CHANNEL, No_Trace );
 			}
 		}
-
-		std::remove_if( begin( m_Links ), end( m_Links ), [&] ( auto l ) { return *l.lock()==link; } );
 	}
 
 	MM_TS void MasterSession::updateHost( const sptr<Link>& link )

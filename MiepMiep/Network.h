@@ -69,9 +69,12 @@ namespace MiepMiep
 		MM_TS void addSessionListener( ISession& session, ISessionListener* listener ) override;
 		MM_TS void removeSessionListener( ISession& session, const ISessionListener* listener ) override;
 
+		MM_TS void simulatePacketLoss( u32 percentage ) override;
+		MM_TS u32  packetLossPercentage() const;
+
 
 		MM_TS static void clearAllStatics();
-		MM_TS MM_DECLSPEC static void printMemoryLeaks();
+		MM_TS static void printMemoryLeaks();
 
 		// Gets, checks or adds directly in a link in the network -> linkManagerComponent.
 		MM_TS sptr<Link> getLink(const SocketAddrPair& sap) const;
@@ -91,6 +94,9 @@ namespace MiepMiep
 		MM_TS ESendCallResult callRpc2( Args... args, const Session* session, ILink* exclOrSpecific=nullptr, 
 										bool localCall=false, bool buffer=false, bool relay=false, bool systemBit=true, 
 										byte channel=0, IDeliveryTrace* trace=nullptr );
+
+	private:
+		atomic<u32> m_PacketLossPercentage;
 	};
 
 
@@ -130,7 +136,7 @@ namespace MiepMiep
 													  byte channel, IDeliveryTrace* trace)
 	{
 		auto& bs = priv_get_thread_serializer();
-		T::rpc<Args...>(args..., *this, bs, localCall);
+		T::rpc<Args...>(args..., *this, bs, localCall, channel);
 		return priv_send_rpc( *this, T::rpcName(), bs, session, exclOrSpecific, buffer, relay, systemBit, channel, trace );
 	}
 

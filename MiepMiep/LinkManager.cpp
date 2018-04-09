@@ -24,13 +24,13 @@ namespace MiepMiep
 	{
 	}
 
-	SocketAddrPair::SocketAddrPair( sptr<ISocket>& sock, sptr<IAddress>& addr ):
-		m_Socket( sock ),
-		m_Address( addr )
-	{
-	}
+	//SocketAddrPair::SocketAddrPair( sptr<ISocket>& sock, sptr<IAddress>& addr ):
+	//	m_Socket( sock ),
+	//	m_Address( addr )
+	//{
+	//}
 
-	SocketAddrPair::SocketAddrPair( sptr<const ISocket>& sock, sptr<const IAddress>& addr ):
+	SocketAddrPair::SocketAddrPair( const sptr<const ISocket>& sock, const sptr<const IAddress>& addr ):
 		m_Socket(sock),
 		m_Address(addr)
 	{
@@ -163,10 +163,20 @@ namespace MiepMiep
 	// TODO make actually parallel
 	MM_TS void LinkManager::forEachLink( const std::function<void( Link& )>& cb, u32 clusterSize )
 	{
-		scoped_lock lk(m_LinksMapMutex);
-		for ( auto& link : m_LinksAsArray )
+		// Only obtain lock for extracting link from list. Do not hold it.
+		for ( u32 i=0; i < UINT_MAX; i++ )
 		{
-			cb( *link );
+			sptr<Link> link;
+			{
+				scoped_lock lk( m_LinksMapMutex );
+				if ( i >= m_LinksAsArray.size() )
+					break;
+				link = m_LinksAsArray[i];
+			}
+			if ( link )
+			{
+				cb ( *link );
+			}
 		}
 	}
 }

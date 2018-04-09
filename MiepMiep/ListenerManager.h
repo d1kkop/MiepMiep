@@ -20,6 +20,7 @@ namespace MiepMiep
 
 		MM_TS EListenCallResult startListen( u16 port );
 		MM_TS void stopListen( u16 port );
+		MM_TS sptr<Listener> findListener( u16 port );
 
 	private:
 		mutable mutex m_ListenersMutex;

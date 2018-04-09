@@ -19,8 +19,7 @@ namespace MiepMiep
 		SocketAddrPair() = default;
 		SocketAddrPair( const ISocket& sock, const IAddress& addr );
 		SocketAddrPair( const ISocket& sock, const Endpoint& etp );
-		SocketAddrPair( sptr<ISocket>& sock, sptr<IAddress>& addr );
-		SocketAddrPair( sptr<const ISocket>& sock, sptr<const IAddress>& addr );
+		SocketAddrPair( const sptr<const ISocket>& sock, const sptr<const IAddress>& addr );
 
 		sptr<const ISocket>  m_Socket;
 		sptr<const IAddress> m_Address;

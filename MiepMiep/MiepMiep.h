@@ -126,14 +126,25 @@ namespace MiepMiep
 		MM_TS virtual const IAddress& source() const=0;
 		MM_TS virtual bool  isConnected() const=0;
 
+		template <typename T, typename ...Args>
+		MM_TS ESendCallResult callRpc( Args... args, bool localCall=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr );
+
 		MM_TS sptr<ILink> to_ptr();
 		MM_TS sptr<const ILink> to_ptr() const;
 	};
+
+	template <typename T, typename ...Args>
+	MM_TS ESendCallResult ILink::callRpc( Args... args, bool localCall, bool relay, byte channel, IDeliveryTrace* trace )
+	{
+		return network().callRpc<Args...>( args..., nullptr, this, localCall, No_Buffer, relay, channel, trace );
+	}
 
 
 	class MM_DECLSPEC ISession
 	{
 	public:
+		MM_TS virtual INetwork& network() const=0;
+
 		// Do not delete returned ptr. A ptr to thread static storage is returned.
 		MM_TS virtual const char* name() const=0;
 
@@ -146,9 +157,20 @@ namespace MiepMiep
 		MM_TS virtual sptr<const IAddress> host() const=0;
 		MM_TS bool imBoss() const { return host()==nullptr; }
 
+
+		template <typename T, typename ...Args>
+		MM_TS ESendCallResult callRpc( Args... args, ILink* exclOrSpecific=nullptr, bool localCall=false, bool buffer=false,
+									   bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr );
+
 		MM_TS sptr<ISession> to_ptr();
 		MM_TS sptr<const ISession> to_ptr() const;
 	};
+
+	template <typename T, typename ...Args>
+	MM_TS ESendCallResult ISession::callRpc( Args... args, ILink* exclOrSpecific, bool localCall, bool buffer, bool relay, byte channel, IDeliveryTrace* trace )
+	{
+		return network().callRpc<Args...>( args..., &this, exclOrSpecific, localCall, buffer, relay, channel, trace );
+	}
 
 
 	class MM_DECLSPEC INetwork
@@ -201,6 +223,9 @@ namespace MiepMiep
 													bool buffer=false, bool relay=false, byte channel=0, IDeliveryTrace* trace=nullptr )=0;
 
 		MM_TS static void setLogSettings( bool logToFile=true, bool logToIde=true );
+
+		/* Value between 0 and 100. Default is 0. */
+		MM_TS virtual void simulatePacketLoss( u32 percentage )=0;
 	};
 
 
@@ -209,7 +234,7 @@ namespace MiepMiep
 											 bool buffer, bool relay, byte channel, IDeliveryTrace* trace )
 	{
 		auto& bs=priv_get_thread_serializer();
-		T::rpc<Args...>( args..., *this, bs, localCall );
+		T::rpc<Args...>( args..., *this, bs, localCall, channel );
 		return priv_send_rpc( *this, T::rpcName(), bs, session, exclOrSpecific, buffer, relay, false, channel, trace );
 	}
 
@@ -217,7 +242,7 @@ namespace MiepMiep
 	MM_TS ECreateGroupCallResult INetwork::createGroup( Args&&... args, const ISession& session, bool localCall, byte channel, IDeliveryTrace* trace )
 	{
 		auto& bs=priv_get_thread_serializer();
-		T::rpc<Args...>( args..., *this, bs, localCall );
+		T::rpc<Args...>( args..., *this, bs, localCall, channel );
 		return priv_create_group( *this, session, T::rpcName(), bs, channel, trace );
 	}
 }

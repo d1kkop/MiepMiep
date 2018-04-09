@@ -14,7 +14,8 @@ namespace MiepMiep
 
 	MM_TS void ReliableAckRecv::receive(BinSerializer& bs) const
 	{
-		thread_local vector<u32> receivedSequences;
+		static thread_local vector<u32> receivedSequences;
+		receivedSequences.clear();
 		while ( bs.getRead() != bs.getWrite() )
 		{
 			u32 seq;
@@ -22,7 +23,7 @@ namespace MiepMiep
 			receivedSequences.emplace_back( seq );
 		}
 
-		auto rs = m_Link.get<ReliableSend>();
+		auto rs = m_Link.get<ReliableSend>( this->m_Idx );
 		if ( rs )
 		{
 			rs->ackList( receivedSequences );

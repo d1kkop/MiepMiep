@@ -27,6 +27,9 @@ namespace MiepMiep
 		u32 ackAggregateTime() const				{ return m_AckAggregateTime; }
 		u32 mtuAdjusted() const						{ return u32( mtu()*0.8f ); }
 
+		// Stat updates
+		// MM_TS updateReliableSendQueueLength( u32 size );
+
 	private:
 		atomic<u32> m_Latency;
 		atomic<u32> m_Mtu;

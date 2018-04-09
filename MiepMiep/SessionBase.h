@@ -33,10 +33,13 @@ namespace MiepMiep
 	{
 	public:
 		SessionBase(Network& network);
+		MM_TSC INetwork& network() const override;
+
 		MM_TS bool start();
 		MM_TS const char* name() const override;
 
 		MM_TS virtual void removeLink( Link& link ) = 0;
+
 		MM_TS bool hasLink( const Link& link ) const;
 		MM_TS void forLink( const Link* exclude, const std::function<void( Link& )>& cb ) const;
 		MM_TSC const MasterSessionData& msd() const; // TODO retrieving members of this is not TS 

@@ -40,4 +40,15 @@ namespace MiepMiep
 		}
 	}
 
+	MM_TS sptr<Listener> ListenerManager::findListener( u16 port )
+	{
+		scoped_lock lk( m_ListenersMutex );
+		auto lIt = m_Listeners.find( port );
+		if ( lIt != m_Listeners.end() )
+		{
+			return lIt->second;
+		}
+		return nullptr;
+	}
+
 }

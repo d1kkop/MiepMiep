@@ -64,12 +64,9 @@ namespace MiepMiep
 			// Per N links create an async job and resend if necessary
 			lm->forEachLink( [=](Link& link)
 			{
-				auto rs = link.get<ReliableSend>();
-				auto rn = link.get<ReliableNewSend>();
-				auto ra = link.get<ReliableAckSend>();
-				if ( rs ) rs->intervalDispatch( time );
-				if ( rn ) rn->intervalDispatch( time );
-				if ( ra ) ra->intervalDispatch( time );
+				intervalDispatchOnAllChannels<ReliableSend>( link, time );
+				intervalDispatchOnAllChannels<ReliableNewSend>( link, time );
+				intervalDispatchOnAllChannels<ReliableAckSend>( link, time );
 			}, MM_ST_LINKS_CLUSTER_SIZE );
 		}
 	}

@@ -33,6 +33,13 @@ namespace MiepMiep
 		i32 err;
 		ERecvResult res = sock.recv( buff, rawSize, etp, &err );
 
+		u32 packetLossPercentage = m_Network.packetLossPercentage();
+		if ( packetLossPercentage != 0 && (Util::rand()%100)+1 <= packetLossPercentage )
+		{
+			// drop deliberately
+			return;
+		}
+
 	#if _DEBUG
 		etp.m_HostPort = etp.getPortHostOrder();
 	#endif
@@ -172,8 +179,6 @@ namespace MiepMiep
 	}
 
 
-
-
 	// --- PacketHelper ------------------------------------------------------------------------------------------
 
 	byte PacketHelper::makeChannelAndFlags( byte channel, bool relay, bool sysBit, bool isFirstFragment, bool isLastFragment )
@@ -214,7 +219,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	bool PacketHelper::createNormalPacket(vector<sptr<const struct NormalSendPacket>>& framgentsOut,  
+	bool PacketHelper::createNormalPacket(vector<sptr<const NormalSendPacket>>& framgentsOut,  
 										  byte compType, byte dataId,
 										  const BinSerializer** serializers, u32 numSerializers,
 										  byte channel, bool relay, bool sysBit, i32 maxFragmentSize)

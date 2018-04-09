@@ -94,7 +94,7 @@ namespace MiepMiep
 	MM_TS ESendCallResult MiepMiep::Link::callRpc(Args... args, bool localCall, bool relay, byte channel, IDeliveryTrace* trace)
 	{
 		auto& bs = priv_get_thread_serializer();
-		T::rpc<Args...>(args..., m_Network, bs, localCall);
+		T::rpc<Args...>(args..., m_Network, bs, localCall, channel);
 		return priv_send_rpc( m_Network, T::rpcName(), bs, nullptr, this, false /* buffer */, relay, true /* sys bit */, channel, trace );
 	}
 

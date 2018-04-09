@@ -27,7 +27,7 @@ namespace MiepMiep
 		MM_TS void removeLink( const sptr<const Link>& link );
 		MM_TS bool disconnect();
 
-		// TODO change for varaible group
+		// TODO change for variable group
 		MM_TSC const MetaData& metaData() const { return m_MetaData; }
 
 		MM_TO_PTR( Session )
@@ -39,6 +39,6 @@ namespace MiepMiep
 	protected:
 		sptr<const IAddress> m_Host;
 		sptr<Link> m_MasterLink;		// Is also the packet handler for this session.
-		MetaData m_MetaData;
+		MetaData   m_MetaData;
 	};
 }

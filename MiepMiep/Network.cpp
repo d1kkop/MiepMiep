@@ -67,7 +67,7 @@ namespace MiepMiep
 	{
 		auto ne = get<NetworkEvents>();
 		if ( ne ) ne->processQueuedEvents();
-		else LOGW( "Attempted to process events while NetworkEvents was destroyed." );
+		else { LOGW( "Attempted to process events while NetworkEvents was destroyed." ); }
 	}
 
 	MM_TS EListenCallResult Network::startListen( u16 port )
@@ -246,7 +246,7 @@ namespace MiepMiep
 		}
 		else
 		{
-			LOGW( "Nothing was sent, though a reliable call was made." );
+			LOGW( "Nothing was sent, though a reliable call was made. Either 'session' or 'exlOrSpecific' must not be NULL." );
 		}
 		return (somethingWasQueued ? ESendCallResult::Fine : ESendCallResult::NotSent );
 	}
@@ -259,6 +259,16 @@ namespace MiepMiep
 	MM_TS void Network::removeSessionListener( ISession& session, const ISessionListener* listener )
 	{
 		sc<SessionBase&>(session).removeListener( listener );
+	}
+
+	MM_TS void Network::simulatePacketLoss( u32 percentage )
+	{
+		m_PacketLossPercentage = percentage;
+	}
+
+	MM_TS u32 Network::packetLossPercentage() const
+	{
+		return m_PacketLossPercentage;
 	}
 
 	MM_TS void Network::clearAllStatics()

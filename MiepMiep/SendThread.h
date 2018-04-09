@@ -3,6 +3,12 @@
 #include "Memory.h"
 #include "Component.h"
 #include "ParentNetwork.h"
+#include "Link.h"
+
+//// Streams
+//#include "ReliableSend.h"
+//#include "ReliableAckSend.h"
+//#include "ReliableNewSend.h"
 
 
 namespace MiepMiep
@@ -19,7 +25,27 @@ namespace MiepMiep
 		void resendThread();
 
 	private:
+		template <typename T> 
+		inline void intervalDispatchOnAllChannels( Link& link, u64 time );
+
+
+	private:
 		bool m_Closing;
 		thread m_SendThread;
 	};
+
+
+	template <typename T>
+	void SendThread::intervalDispatchOnAllChannels( Link& link, u64 time )
+	{
+		u32 num = link.count<T>();
+		for ( u32 i=0; i<num; i++ )
+		{
+			if ( auto s = link.get<T>( i ) )
+			{
+				s->intervalDispatch( time );
+			}
+		}
+	}
+
 }

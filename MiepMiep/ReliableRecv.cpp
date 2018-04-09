@@ -4,12 +4,16 @@
 #include "JobSystem.h"
 #include "PerThreadDataProvider.h"
 
+// QQQ
+#include "Util.h"
+#include <iostream>
+
 
 namespace MiepMiep
 {
 	// ------ Event --------------------------------------------------------------------------------
 
-	using RpcFunc = void (*)( INetwork&, const ILink&, BinSerializer& );
+	using RpcFunc = void (*)( INetwork&, const ILink&, BinSerializer&, byte );
 
 	struct EventRpc : IEvent
 	{
@@ -19,6 +23,7 @@ namespace MiepMiep
 			m_Pack(pack),
 			m_ReadPos(readPos)
 		{
+			cout << "In event: " << Util::ntohl( *(u32*) (m_Pack.m_Data+m_ReadPos) ) << endl;
 		}
 
 		void process() override
@@ -26,7 +31,7 @@ namespace MiepMiep
 			auto& bs = PerThreadDataProvider::getSerializer(false);
 			bs.resetTo( m_Pack.m_Data, m_Pack.m_Length, m_Pack.m_Length );	
 			bs.setRead( m_ReadPos );
-			m_RpcFunc( m_Link->m_Network, *m_Link, bs );
+			m_RpcFunc( m_Link->m_Network, *m_Link, bs, (m_Pack.m_Flags & MM_CHANNEL_MASK) );
 		}
 
 		RpcFunc m_RpcFunc;
@@ -88,6 +93,7 @@ namespace MiepMiep
 		}
 
 		// Processed ordered queue as much as possible
+		// ST version -> proceedRecvQueue();
 		m_Link.getInNetwork<JobSystem>()->addJob( [rr = move(ptr<ReliableRecv>())]()
 		{
 			rr->proceedRecvQueue();

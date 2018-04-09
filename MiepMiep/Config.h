@@ -6,7 +6,7 @@
 #endif
 
 //#if MM_DEBUG
-	#define MM_TRACE_MEMORY_LEAKS						(1)
+	#define MM_TRACE_MEMORY_LEAKS						(0)
 	#define MM_USE_CALLOC								(1)
 //#endif
 

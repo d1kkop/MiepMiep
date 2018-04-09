@@ -47,7 +47,7 @@ namespace MiepMiep
 		virtual ~IComponent() = default;
 		u32 idx() const { return m_Idx; }
 
-	private:
+	protected:
 		u32 m_Idx;
 
 		friend class ComponentCollection;

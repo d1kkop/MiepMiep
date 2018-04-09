@@ -17,6 +17,11 @@ namespace MiepMiep
 	{
 	}
 
+	MM_TSC INetwork& SessionBase::network() const
+	{
+		return m_Network;
+	}
+
 	MM_TS bool SessionBase::start()
 	{
 		scoped_lock lk( m_DataMutex );

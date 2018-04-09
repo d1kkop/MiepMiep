@@ -32,7 +32,7 @@ namespace MiepMiep
 
 	private:
 		mutex m_ListeningMutex;
-		sptr<ISocket> m_Socket;
+		sptr<ISocket>  m_Socket;
 		sptr<IAddress> m_Source;
 		bool m_Listening;
 	};
