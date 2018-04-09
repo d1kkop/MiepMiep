@@ -8,17 +8,19 @@
 using namespace std;
 
 
+/* General */
 #define MM_FUNCTION __FUNCTION__
 #define MM_LINE		__LINE__
 #define MM_FL		MM_FUNCTION, MM_LINE
+#define MM_NO_IMPLEMENTATION_ERR -9999
+
+/* Internal used channels */
 #define MM_RPC_CHANNEL 0
 #define MM_VG_CHANNEL  0
-#define MM_SOCK_SELECT_TIMEOUT 100
-#define MM_NEWER_SEQ_RANGE (UINT_MAX>>2)
-#define MM_NO_IMPLEMENTATION_ERR -9999
 
 
 /* Serialization properties */
+#define MM_NEWER_SEQ_RANGE (UINT_MAX>>2)
 #define MM_MAX_FRAGMENTSIZE 1900
 #define MM_MAX_RECVSIZE 4096
 #define MM_MAX_SENDSIZE MM_MAX_RECVSIZE
@@ -32,6 +34,9 @@ using namespace std;
 /* (Re)send thread */
 #define MM_ST_LINKS_CLUSTER_SIZE 64
 #define MM_ST_RESEND_CHECK_INTERVAL 4 /* ms */
+
+/* Receive thread */
+#define MM_SOCK_SELECT_TIMEOUT 60 /* ms */
 
 /* Congestion control & stats */
 #define MM_MIN_RESEND_LATENCY_MP 1.3f

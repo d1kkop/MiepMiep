@@ -73,7 +73,6 @@ namespace MiepMiep
 		MM_TS u32  packetLossPercentage() const;
 
 
-		MM_TS static void clearAllStatics();
 		MM_TS static void printMemoryLeaks();
 
 		// Gets, checks or adds directly in a link in the network -> linkManagerComponent.

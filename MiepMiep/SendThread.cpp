@@ -52,7 +52,7 @@ namespace MiepMiep
 
 		while ( true )
 		{
-			this_thread::sleep_for( milliseconds(MM_ST_RESEND_CHECK_INTERVAL) );
+			Platform::sleep( MM_ST_RESEND_CHECK_INTERVAL ); // In ms
 			if ( isClosing() )
 				return;
 

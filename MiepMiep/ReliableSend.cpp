@@ -40,7 +40,7 @@ namespace MiepMiep
 			Platform::memCpy( finalData + 8, MM_MAX_SENDSIZE-8, sendPack.m_PayLoad.data(), sendPack.m_PayLoad.length() ); // payload
 			m_Link.send( finalData, sendPack.m_PayLoad.length()+8 );
 
-			this_thread::sleep_for( chrono::milliseconds(2) ); // TODO remove
+		//	this_thread::sleep_for( chrono::milliseconds(2) ); // TODO remove
 		}
 	}
 

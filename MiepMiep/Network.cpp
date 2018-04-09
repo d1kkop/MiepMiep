@@ -48,10 +48,7 @@ namespace MiepMiep
 		get<SendThread>()->stop();
 		get<SocketSetManager>()->stop();
 		get<JobSystem>()->stop();
-		if ( Platform::shutdown() )
-		{
-			Network::clearAllStatics();
-		}
+		Platform::shutdown();
 
 		// Use this instead of m_Components.clear because that will invoke ~Link which will try to access
 		// the map again to deregister itself from a SocketSetManager while the 'clear' function of the map is not finished.
@@ -269,12 +266,6 @@ namespace MiepMiep
 	MM_TS u32 Network::packetLossPercentage() const
 	{
 		return m_PacketLossPercentage;
-	}
-
-	MM_TS void Network::clearAllStatics()
-	{
-		// TODO add more clear statics here
-		PerThreadDataProvider::cleanupStatics();
 	}
 
 	MM_TS void Network::printMemoryLeaks()

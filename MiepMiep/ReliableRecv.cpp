@@ -4,10 +4,6 @@
 #include "JobSystem.h"
 #include "PerThreadDataProvider.h"
 
-// QQQ
-#include "Util.h"
-#include <iostream>
-
 
 namespace MiepMiep
 {
@@ -23,7 +19,6 @@ namespace MiepMiep
 			m_Pack(pack),
 			m_ReadPos(readPos)
 		{
-			cout << "In event: " << Util::ntohl( *(u32*) (m_Pack.m_Data+m_ReadPos) ) << endl;
 		}
 
 		void process() override

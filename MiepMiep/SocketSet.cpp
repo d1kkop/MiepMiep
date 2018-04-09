@@ -22,7 +22,7 @@ namespace MiepMiep
 		m_IsDirty = true;
 		#if MM_SDLSOCKET
 		#else MM_WIN32SOCKET
-			if ( m_Sockets.size() >= FD_SETSIZE ) return false;
+			if ( m_Sockets.size() >= FD_SETSIZE ) return false; // Cannot add socket to this set. Create new set.
 			m_Sockets[sc<const BSDSocket&>(*sock).getSock()] = make_pair ( sock, packetHandler );
 		#endif
 		return true;
@@ -62,7 +62,7 @@ namespace MiepMiep
 			// Query sockets for data
 			timeval tv;
 			tv.tv_sec  = 0;
-			tv.tv_usec = timeoutMs*20*1000; // ~20ms
+			tv.tv_usec = timeoutMs*1000*MM_SOCK_SELECT_TIMEOUT; // ~20ms
 
 			// NOTE: select reorders the ready sockets from 0 to end-1, and fd_count is adjusted to the num of ready sockets.
 			i32 res = select( 0, &m_SocketSet, nullptr, nullptr, &tv );
@@ -77,7 +77,6 @@ namespace MiepMiep
 				return EListenOnSocketsResult::TimeoutNoData;
 
 			// at least a single one has data, check which ones and call cb
-			scoped_lock lk(m_SetMutex);
 			for ( u_int i=0; i<m_SocketSet.fd_count; i++ )
 			{
 				SOCKET s = m_SocketSet.fd_array[i];
@@ -87,12 +86,25 @@ namespace MiepMiep
 				
 			//	LOG( "Recv on ... %ull.", s ); 
 
-				// map to managed socket
-				auto sockIt = m_Sockets.find(s);
-				if ( sockIt != m_Sockets.end() )
+				// Only use lock for obtaining socket, then release as there is no need to keep lock.
+				pair<sptr<const ISocket>, sptr<IPacketHandler>> sockHandlerPair;
+				bool validPair = false;
 				{
-					pair<sptr<const ISocket>, sptr<IPacketHandler>>& sockHandler = sockIt->second;
-					sockHandler.second->recvFromSocket( *sockHandler.first ); // handle data
+					scoped_lock lk( m_SetMutex );
+					auto sockIt = m_Sockets.find( s );
+					if ( sockIt != m_Sockets.end() )
+					{
+						sockHandlerPair = sockIt->second;
+						validPair = true;
+					}
+				}
+				
+				// Start receiving the packet.
+				if ( validPair )
+				{
+					auto& receptionSock = sockHandlerPair.first;
+					auto& packetHandler = sockHandlerPair.second;
+					packetHandler->recvFromSocket( *receptionSock ); // handle data
 				}
 			}
 

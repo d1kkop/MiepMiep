@@ -35,7 +35,7 @@ namespace MiepMiep
 				m_Link.send( bs.data(), bs.length() );
 				__CHECKED( PacketHelper::beginUnfragmented( bs, m_Link.id(), 0, (byte)compType(), InvalidByte, (byte)idx(), No_Relay, Do_SysBit ) );
 				hasPendingWrites = false;
-				this_thread::sleep_for( chrono::milliseconds( 2 ) ); // TODO remove
+			//	this_thread::sleep_for( chrono::milliseconds( 2 ) ); // TODO remove
 			}
 		}
 		if ( hasPendingWrites )

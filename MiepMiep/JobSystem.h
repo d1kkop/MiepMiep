@@ -58,6 +58,7 @@ namespace MiepMiep
 	private:
 		volatile bool m_Closing;
 		mutex m_JobsMutex;
+		u32 m_NumThreadsSleeping;
 		queue<Job> m_GlobalQueue;
 		condition_variable m_QueueCv;
 		vector<uptr<WorkerThread>> m_WorkerThreads;

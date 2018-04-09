@@ -69,7 +69,8 @@ namespace MiepMiep
 
 	JobSystem::JobSystem(Network& network, u32 numWorkerThreads):
 		ParentNetwork(network),
-		m_Closing(false)
+		m_Closing(false),
+		m_NumThreadsSleeping(0)
 	{
 		assert( numWorkerThreads != 0 );
 		for (u32 i = 0; i < numWorkerThreads ; i++)
@@ -93,14 +94,18 @@ namespace MiepMiep
 		#endif
 		m_JobsMutex.lock();
 		m_GlobalQueue.push ( { cb } );
-		//m_QueueCv.notify_one();
+		if ( m_NumThreadsSleeping > 0 )
+		{
+			m_QueueCv.notify_one();
+			m_NumThreadsSleeping--;
+		}
 		m_JobsMutex.unlock();
 		#if MM_TRACE_JOBSYSTEM
 			stringstream ss2;
 			this_thread::get_id()._To_text( ss2 );
 			LOG( "Thread %s unlocks.", ss2.str().c_str() );
 		#endif
-		m_QueueCv.notify_one();
+		//m_QueueCv.notify_one();
 	}
 
 	MM_TS Job JobSystem::extractJob()
@@ -121,6 +126,7 @@ namespace MiepMiep
 			this_thread::get_id()._To_text( ss );
 			LOG( "Thread %s suspends -> loses lock.", ss.str().c_str() );
 		#endif
+		m_NumThreadsSleeping++;
 		m_QueueCv.wait( ul );
 	}
 

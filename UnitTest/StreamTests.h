@@ -45,6 +45,7 @@ MM_RPC( ReliableRpc, u32 )
 			auto& s = cs.sequences[ channel ];
 			u32 wanted = s.values[s.received];
 			assert( wanted == val );
+			if ( wanted != val ) cout << "INVALID RELIABLE ORDER VALUE" << endl;
 			s.received++;
 			break;
 		}
@@ -54,11 +55,11 @@ MM_RPC( ReliableRpc, u32 )
 
 UTESTBEGIN(ReliableTest)
 {
-	constexpr u32 numPacks = 10;
+	constexpr u32 numPacks = 1000;
 
 	sptr<INetwork> nw = INetwork::create( false );
-	wptr<INetwork> n = nw;
-	nw->simulatePacketLoss( 40 );
+	wptr<INetwork> n  = nw;
+//	nw->simulatePacketLoss( 40 );
 
 	 Network& net = toNetwork(*nw);
 	 sptr<LinkManager> lm = net.getOrAdd<LinkManager>();
@@ -132,7 +133,7 @@ UTESTBEGIN(ReliableTest)
 		 }
 
 		 nw->processEvents();
-		 std::this_thread::sleep_for( chrono::milliseconds( 2 ) );
+		// std::this_thread::sleep_for( chrono::milliseconds( 2 ) );
 	 }
 
 	return true;
