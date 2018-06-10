@@ -3,7 +3,7 @@
 #include "LinkStats.h"
 #include "LinkState.h"
 #include "Util.h"
-
+#include "Endpoint.h"
 
 namespace MiepMiep
 {
@@ -57,7 +57,7 @@ namespace MiepMiep
 		u32 linkId = get<0>( tp );
 		LOG( "Connecting with Id %d.", linkId );
 		const sptr<IAddress>& toAddr = get<1>( tp );
-		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->add( s, SocketAddrPair( l.socket(), *toAddr ), linkId, false /*addHandler*/ );
+		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->getOrAdd ( &s, SocketAddrPair( l.socket(), *toAddr ), linkId, false /*addHandler*/, true /* addToSession */, true, nullptr );
 		if ( newLink )
 		{
 			assert( s.hasLink( *newLink ) );
@@ -69,9 +69,14 @@ namespace MiepMiep
 	MM_RPC( masterSessionNewHost, sptr<IAddress> )
 	{
 		RPC_BEGIN();
-		const sptr<IAddress>& host = get<0>( tp );
-		l.normalSession().updateHost( host );
-		l.pushEvent<EventNewHost>( host );
+		sptr<IAddress> hostAddr = get<0>( tp );
+		if ( sc<Endpoint&>(*hostAddr).isZero() )
+		{
+			// we are host
+			hostAddr.reset(); 
+		}
+		l.normalSession().updateHost( hostAddr );
+		l.pushEvent<EventNewHost>( hostAddr );
 	}
 
 
@@ -80,7 +85,7 @@ namespace MiepMiep
 	MasterSession::MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList ):
 		SessionBase( host->m_Network ),
 		m_SessionList( sessionList.ptr<MasterSessionList>() ),
-		m_NewLinksCanJoin( true )
+		m_SomeoneLeftTheSession( false )
 	{
 		m_Host = host;
 		m_MasterData = data;
@@ -88,67 +93,34 @@ namespace MiepMiep
 
 	MM_TS sptr<const IAddress> MasterSession::host() const
 	{
-		scoped_lock lk(m_DataMutex);
+		rscoped_lock lk(m_DataMutex);
 		auto shost = m_Host.lock();
 		return shost ? shost->destination().to_ptr() : nullptr;
 	}
 
 	MM_TS bool MasterSession::addLink( const sptr<Link>& newLink )
 	{
-		scoped_lock lk( m_DataMutex );
-		if ( !canJoinNoLock() )
+		rscoped_lock lk( m_DataMutex );
+		if ( !canJoin() )
 			return false;
-		if ( m_MasterData.m_IsP2p )
+		SessionBase::addLink( newLink );
+		auto shost = m_Host.lock();
+		assert( shost ); // Must always have a host.
+		if ( *newLink == *shost )
 		{
-			// Have all existing links connect to new link and new link connect to all existing links.
-			auto addrCpy = newLink->destination().getCopy();
-			for ( auto& l : m_Links )
-			{
-				auto sl = l.lock();
-				if ( !sl ) continue;
-				u32 linkId = Util::rand();
-				LOG("Connect links on ID %d.", linkId);
-				sl->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, addrCpy );
-				newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, sl->destination().getCopy() );
-			}
+			// If destination becomes host, send empty address
+			newLink->callRpc<masterSessionNewHost, sptr<IAddress>>( IAddress::createEmpty() );
 		}
 		else
-		{
-			auto shost = m_Host.lock();
-			if ( shost )
-			{
-				// For client-server architecture, only have new client join to host.
-				u32 linkId = Util::rand();
-				shost->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink->destination().getCopy() );
-				newLink->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, shost->destination().getCopy() );
-			}
-		}
-	#if _DEBUG
-		for ( auto& l : m_Links )
-		{
-			if ( auto sl = l.lock() )
-			{
-				assert( *sl != *newLink );
-			}
-		}
-	#endif
-		m_Links.emplace_back( newLink );
-		auto shost = m_Host.lock();
-		if ( shost )
 		{
 			newLink->callRpc<masterSessionNewHost, sptr<IAddress>>( shost->destination().getCopy() );
-		}
-		else
-		{
-			LOGW( "Could not send new host to link %s as no host was available.", newLink->info() );
 		}
 		return true;
 	}
 
 	MM_TS void MasterSession::removeLink( Link& link )
 	{
-		scoped_lock lk( m_DataMutex );
-
+		rscoped_lock lk( m_DataMutex );
 		auto lIt = std::find_if( begin( m_Links ), end( m_Links ), [&] ( auto& l ) { return *l.lock()==link; } );
 		if ( lIt == m_Links.end() )
 		{
@@ -156,14 +128,9 @@ namespace MiepMiep
 			LOGW( "Link %s not found in master session.", link.info() );
 			return; // Return, nothing will change.
 		}
-		m_Links.erase( lIt );
 
-		// If is P2p and session already started, new links can no longer join if someone left because
-		// we do not have all addresses anymore that might be in the (game)session.
-		if ( m_MasterData.m_IsP2p && m_Started )
-		{
-			m_NewLinksCanJoin = false;
-		}
+		m_Links.erase( lIt );
+		m_SomeoneLeftTheSession = true;
 
 		// If leaving link is host, determine new host.
 		auto shost = m_Host.lock();
@@ -175,6 +142,7 @@ namespace MiepMiep
 			for ( auto& l : m_Links )
 			{
 				auto sl = l.lock();
+				if ( !sl ) continue; // discard invalid links
 				assert( !(*sl == link) ); // Removed from session already.
 				u32 score = sl->getOrAdd<LinkStats>()->hostScore();
 				if ( score > highestScore )
@@ -187,35 +155,57 @@ namespace MiepMiep
 			shost = m_Host.lock();
 			if ( shost )
 			{
+				// Send to all except the one that becomes the host, the new host.
 				link.network().callRpc<masterSessionNewHost, sptr<IAddress>>(
-					shost->destination().getCopy(), &link.session(), &link,
+					shost->destination().getCopy(), &link.session(), shost.get(), /* excl host */
 					No_Local, No_Buffer, No_Relay, MM_RPC_CHANNEL, No_Trace );
+				// To host self, send empty address
+				shost->callRpc<masterSessionNewHost, sptr<IAddress>>(
+					IAddress::createEmpty(), 
+					No_Local, No_Relay, MM_RPC_CHANNEL, No_Trace );
+			}
+			else
+			{
+				// Could not determine new host, this means that session is empty. Remove session.
+				removeSelf();
 			}
 		}
 	}
 
 	MM_TS void MasterSession::updateHost( const sptr<Link>& link )
 	{
-		scoped_lock lk( m_DataMutex);
+		rscoped_lock lk( m_DataMutex );
 		m_Host = link;
 	}
 
 	MM_TS void MasterSession::removeSelf()
 	{
-		scoped_lock lk( m_DataMutex );
-		if ( m_SessionList )
+		rscoped_lock lk( m_DataMutex );
+		// First clean links
+		for ( auto it = m_Links.begin(); it != m_Links.end(); )
 		{
-			m_SessionList->removeSession( m_SessionListIt );
+			auto sl = (*it).lock();
+			if ( !sl )
+			{
+				it = m_Links.erase( it );
+			}
+			else it++;
+		}
+		// Now assert that links are all gone.
+		assert( m_Links.empty() );
+		if ( auto sl = m_SessionList.lock() )
+		{
+			sl->removeSession( m_SessionListIt );
 			m_SessionList.reset();
 		}
 	}
 
 	MM_TS bool MasterSession::operator==( const SearchFilter& sf ) const
 	{
-		scoped_lock lk( m_DataMutex );
+		rscoped_lock lk( m_DataMutex );
 		auto& d = m_MasterData;
 		return
-			canJoinNoLock() &&
+			canJoin() &&
 			d.m_Name == sf.m_Name &&
 			d.m_Type == sf.m_Type &&
 			(!d.m_IsPrivate || sf.m_FindPrivate) &&
@@ -224,18 +214,44 @@ namespace MiepMiep
 			(d.m_Rating >= sf.m_MinRating && d.m_Rating <= sf.m_MaxRating);
 	}
 
-	bool MasterSession::canJoinNoLock() const
+	MM_TS bool MasterSession::canJoin() const
 	{
-		// Becomes false if session was started in p2p and someone left or
-		// if was started and no late join is allowed.
-		return m_Host.lock() && m_NewLinksCanJoin && (!m_Started || m_MasterData.m_CanJoinAfterStart);
+		rscoped_lock lk( m_DataMutex );
+		return (!m_MasterData.m_IsP2p || !m_SomeoneLeftTheSession) && (!m_Started || m_MasterData.m_CanJoinAfterStart);
 	}
 
 
-	MM_TS const ILink& MasterSession::matchMaker() const
+	MM_TS sptr<ILink> MasterSession::matchMaker() const
 	{
-		static sptr<Link> emptyLink;
-		assert( false );
-		return *emptyLink;
+		return nullptr;
 	}
+
+	MM_TS void MasterSession::sendConnectRequests( Link& newLink )
+	{
+		rscoped_lock lk(m_DataMutex);
+		if ( m_MasterData.m_IsP2p )
+		{
+			// Have all existing links connect to new link and new link connect to all existing links.
+			auto addrCpy = newLink.destination().getCopy();
+			for ( auto& l : m_Links )
+			{
+				auto sl = l.lock();
+				if ( !sl ) continue;
+				u32 linkId = Util::rand();
+				LOG( "Connect links on ID %d.", linkId );
+				sl->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, addrCpy );
+				newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, sl->destination().getCopy() );
+			}
+		}
+		else
+		{
+			auto shost = m_Host.lock();
+			assert( shost );
+			// For client-server architecture, only have new client join to host.
+			u32 linkId = Util::rand();
+			//shost->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink.destination().getCopy() );
+			newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, shost->destination().getCopy() );
+		}
+	}
+
 }

@@ -14,6 +14,14 @@ namespace MiepMiep
 	{
 	}
 
+	MM_TS void ReliableSend::enqueue( const sptr<const NormalSendPacket>& rsp, class IDeliveryTrace* trace )
+	{
+		scoped_lock lk( m_SendQueueMutex );
+		assert( rsp->m_PayLoad.length() <= MM_MAX_FRAGMENTSIZE );
+		assert( m_SendQueue.count( m_SendSequence ) == 0 );
+		m_SendQueue[m_SendSequence++] = rsp;
+	}
+
 	MM_TS void ReliableSend::enqueue(const vector<sptr<const NormalSendPacket>>& rsp, class IDeliveryTrace* trace)
 	{
 		scoped_lock lk(m_SendQueueMutex);

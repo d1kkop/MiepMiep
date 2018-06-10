@@ -18,7 +18,7 @@ namespace MiepMiep
 
 		// ISession
 		MM_TS sptr<const IAddress> host() const override;
-		MM_TS const ILink& matchMaker() const override;
+		MM_TS sptr<ILink> matchMaker() const override;
 
 		// SessionBase
 		MM_TS void removeLink( Link& link ) override;
@@ -33,12 +33,8 @@ namespace MiepMiep
 		MM_TO_PTR( Session )
 
 	protected:
-		// SessionBase
-		MM_TS bool addLink( const sptr<Link>& link ) override;
-
-	protected:
-		sptr<const IAddress> m_Host;
-		sptr<Link> m_MasterLink;		// Is also the packet handler for this session.
+		sptr<const IAddress> m_Host;	// Note, for session this is an address whereas for the MasterSession this is a link!
+		wptr<Link> m_MasterLink;		// Is also the packet handler for this session.
 		MetaData   m_MetaData;
 	};
 }

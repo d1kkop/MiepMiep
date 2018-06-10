@@ -262,9 +262,9 @@ namespace MiepMiep
 	template <> bool BinSerializer::read(IAddress& b)						{ return b.read(*this); }
 	template <> bool BinSerializer::read(sptr<IAddress>& b)
 	{
-		byte avabl;
-		if ( !read(avabl) ) return false;
-		if ( avabl )
+		byte present;
+		if ( !read(present) ) return false;
+		if ( present )
 		{
 			b = IAddress::createEmpty();
 			return b->read(*this);

@@ -23,27 +23,30 @@ namespace MiepMiep
 	public:
 		MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList );
 
-		// SessionBase
+		// ISession
 		MM_TS sptr<const IAddress> host() const override;
+
+		// SessionBase
+		MM_TS bool addLink( const sptr<Link>& link ) override;
 		MM_TS void removeLink( Link& link ) override;
 
 		MM_TS void updateHost( const sptr<Link>& link );
 		MM_TS void removeSelf();
 		MM_TS bool operator== ( const SearchFilter& sf ) const;
-		bool canJoinNoLock() const;
+
+		// Becomes false if session was started in p2p and someone left or if was started and no late join is allowed.
+		MM_TS bool canJoin() const;
+		MM_TS void MasterSession::sendConnectRequests( Link& newLink );
 
 		/*	Link to matchmaking server. */
-		MM_TS const ILink& matchMaker()  const override;
-
-	protected:
-		MM_TS bool addLink( const sptr<Link>& link ) override;
+		MM_TS sptr<ILink> matchMaker()  const override;
 
 	private:
-		wptr<Link> m_Host;
-		bool m_NewLinksCanJoin; // Becomes false if someone leaves in p2p session.
+		wptr<Link> m_Host;				// Note: for session this is an address whereas for the MasterSession this is a link!
+		bool m_SomeoneLeftTheSession;	// Becomes false if someone leaves in p2p session.
 
 		// Hard link to session list, no Id's.
-		sptr<MasterSessionList> m_SessionList;
+		wptr<MasterSessionList> m_SessionList;
 		MsListCIt m_SessionListIt;
 
 		friend class MasterSessionList;

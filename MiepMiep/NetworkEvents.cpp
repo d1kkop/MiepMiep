@@ -21,18 +21,19 @@ namespace MiepMiep
 		}
 		else
 		{
-			scoped_lock lk(m_EventsMutex);
+			rscoped_lock lk(m_EventsMutex);
 			m_Events.emplace_back( event );
 		}
 	}
 
 	MM_TS void NetworkEvents::processQueuedEvents()
 	{
-		scoped_lock lk(m_EventsMutex);
-		for ( auto& e : m_Events )
+		rscoped_lock lk(m_EventsMutex);
+		// Doing it this way, new events can be pushed while iterating over.
+		while ( !m_Events.empty() )
 		{
-			e->process();
+			m_Events.front()->process();
+			m_Events.pop_front();
 		}
-		m_Events.clear();
 	}
 }

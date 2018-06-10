@@ -13,17 +13,18 @@
 #include "Listener.h"
 #include "Socket.h"
 #include "MasterServer.h"
+#include "Util.h"
 
 
 namespace MiepMiep
 {
 	// -------- INetwork -----------------------------------------------------------------------------------------------------
 
-	MM_TS sptr<INetwork> INetwork::create( bool allowAsyncCalbacks )
+	MM_TS sptr<INetwork> INetwork::create( bool allowAsyncCalbacks, u32 numWorkerThreads )
 	{
 		if ( 0 == Platform::initialize() )
 		{
-			return reserve_sp<Network>( MM_FL, allowAsyncCalbacks );
+			return reserve_sp<Network>( MM_FL, allowAsyncCalbacks, numWorkerThreads );
 		}
 		return nullptr;
 	}
@@ -35,9 +36,10 @@ namespace MiepMiep
 
 	// -------- Network -----------------------------------------------------------------------------------------------------
 
-	Network::Network( bool allowAsyncCallbacks )
+	Network::Network( bool allowAsyncCallbacks, u32 numWorkerThreads )
 	{
-		getOrAdd<JobSystem>( 0, 4 ); // N worker threads
+		if ( numWorkerThreads == 0 ) throw;
+		getOrAdd<JobSystem>( 0, numWorkerThreads ); // N worker threads
 		getOrAdd<SendThread>();		 // starts a 'resend' flow and creates jobs per N links whom dispatch their data
 		getOrAdd<SocketSetManager>(); // each N sockets is a new reception thread, default N = 64
 		getOrAdd<NetworkEvents>( 0, allowAsyncCallbacks );
@@ -77,7 +79,7 @@ namespace MiepMiep
 		getOrAdd<ListenerManager>()->stopListen( port );
 	}
 
-	MM_TS sptr<ISession> Network::registerServer( const std::function<void( const ISession&, bool )>& callback,
+	MM_TS sptr<ISession> Network::registerServer( const std::function<void( ISession&, bool )>& callback,
 												  const IAddress& masterAddr, const std::string& name, const std::string& type,
 												  bool isP2p, bool canJoinAfterStart, float rating,
 												  u32 maxClients, const std::string& password,
@@ -91,8 +93,9 @@ namespace MiepMiep
 			return nullptr;
 		}
 		auto s = reserve_sp<Session>( MM_FL, *this, hostMd );
-		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), true );	
+		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), Util::rand(), true, false );
 		if ( !link ) return nullptr;
+		link->setSession( *s );
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link && s);
@@ -100,7 +103,7 @@ namespace MiepMiep
 			MasterSessionData data;
 			data.m_Type = type;
 			data.m_Name = name;
-			data.m_IsP2p = isP2p;
+			data.m_IsP2p  = isP2p;
 			data.m_Rating = rating;
 			data.m_Password = password;
 			data.m_IsPrivate  = !password.empty();
@@ -112,7 +115,7 @@ namespace MiepMiep
 		return s;
 	}
 
-	MM_TS sptr<ISession> Network::joinServer( const std::function<void( const ISession&, bool )>& callback,
+	MM_TS sptr<ISession> Network::joinServer( const std::function<void( ISession&, bool )>& callback,
 											  const IAddress& masterAddr, const std::string& name, const std::string& type,
 											  float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
 											  bool findP2p, bool findClientServer,
@@ -126,8 +129,9 @@ namespace MiepMiep
 			return nullptr;
 		}
 		auto s = reserve_sp<Session>( MM_FL, *this, joinMd );
-		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), true );
+		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), Util::rand(), true, false );
 		if ( !link ) return nullptr;
+		link->setSession( *s );
 		get<JobSystem>()->addJob( [=]
 		{
 			assert(link && s);
@@ -149,12 +153,12 @@ namespace MiepMiep
 
 	MM_TS bool Network::kick( ILink& link )
 	{
-		return sc<Link&>( link ).disconnect( true, true );
+		return sc<Link&>( link ).disconnect( Is_Kick, No_Receive, Remove_Link );
 	}
 
 	MM_TS bool Network::disconnect( ILink& link )
 	{
-		return sc<Link&>(link).disconnect( false, true );
+		return sc<Link&>(link).disconnect( No_Kick, No_Receive, Remove_Link );
 	}
 
 	MM_TS bool Network::disconnect( ISession& session )
@@ -169,7 +173,7 @@ namespace MiepMiep
 		{
 			lm->forEachLink( [&] ( Link& link )
 			{
-				link.disconnect( false, true );
+				link.disconnect( No_Kick, No_Receive, Remove_Link );
 			}, 128 );
 		}
 		return true; // TODO , remove true or check num that disconnected
@@ -179,7 +183,7 @@ namespace MiepMiep
 	{
 		auto& vars = PerThreadDataProvider::getConstructedVariables();
 		getOrAdd<GroupCollectionNetwork>( channel )->addNewPendingGroup( session, vars, groupType, initData, trace ); // makes copy
-		vars.clear(); // <<-- Note per thread vars, so thread safe.
+		vars.clear(); // <<-- Per thread vars, so thread safe.
 	}
 
 	MM_TS ECreateGroupCallResult priv_create_group( INetwork& nw, const ISession& session, const char* groupType, BinSerializer& bs, byte channel, IDeliveryTrace* trace )
@@ -226,10 +230,17 @@ namespace MiepMiep
 	MM_TS ESendCallResult Network::sendReliable( const vector<sptr<const NormalSendPacket>>& data, const ISession* session, Link* exlOrSpecific,
 												 bool buffer, byte channel, IDeliveryTrace* trace )
 	{
-		const Session* ses = sc<const Session*>(session);
+		Session* ses = const_cast<Session*>( sc<const Session*>(session) );
 		bool somethingWasQueued = false;
 		if ( ses )
 		{
+			// Make buffering and sending an atomic operation to avoid discrepanties between adding new links and messages
+			// and sending existing messages to new links.
+			rscoped_lock lk( ses->dataMutex() );
+			if ( buffer )
+			{
+				ses->bufferMsg( data, channel );
+			}
 			ses->forLink( exlOrSpecific, [&] ( Link& link )
 			{
 				link.getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
@@ -238,12 +249,13 @@ namespace MiepMiep
 		}
 		else if ( exlOrSpecific )
 		{
+			assert( !buffer ); // Buffer is not valid as the buffered packet is stored at the session which is not available.
 			exlOrSpecific->getOrAdd<ReliableSend>( channel )->enqueue( data, trace );
 			somethingWasQueued = true;
 		}
-		else
+		if ( !somethingWasQueued )
 		{
-			LOGW( "Nothing was sent, though a reliable call was made. Either 'session' or 'exlOrSpecific' must not be NULL." );
+			LOG( "Nothing was sent, though a reliable call was made. Either 'session' or 'exlOrSpecific' must not be NULL." );
 		}
 		return (somethingWasQueued ? ESendCallResult::Fine : ESendCallResult::NotSent );
 	}

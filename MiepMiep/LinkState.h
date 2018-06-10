@@ -26,7 +26,7 @@ namespace MiepMiep
 		MM_TS bool connect(const MetaData& md);
 		MM_TS bool accept();
 		MM_TS bool canReceiveConnect();
-		MM_TS bool disconnect(bool isKick, bool sendMsg);
+		MM_TS bool disconnect(bool isKick, bool isReceive, bool removeLink);
 		MM_TS ELinkState state() const;
 
 		mutable SpinLock m_StateMutex;

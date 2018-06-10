@@ -18,6 +18,8 @@ namespace MiepMiep
 		ReliableSend(Link& link);
 		static EComponentType compType() { return EComponentType::ReliableSend; }
 
+		// TODO impl trace
+		MM_TS void enqueue( const sptr<const NormalSendPacket>& rsp, class IDeliveryTrace* trace );
 		MM_TS void enqueue( const vector<sptr<const NormalSendPacket>>& rsp, class IDeliveryTrace* trace );
 		MM_TS void resend();
 		MM_TS void ackList( const vector<u32>& acks );

@@ -151,10 +151,18 @@ namespace MiepMiep
 	NetVariable::~NetVariable()
 	{
 		auto& varVec = PerThreadDataProvider::getConstructedVariables();
-		std::remove_if( varVec.begin(), varVec.end(), [&](NetVariable* nvar)
+		for ( auto vIt = varVec.begin(); vIt!=varVec.end(); vIt++ )
 		{
-			return nvar == this;
-		});
+			if ( this == *vIt )
+			{
+				varVec.erase( vIt );
+				break;
+			}
+		}
+		//std::remove_if( varVec.begin(), varVec.end(), [&](NetVariable* nvar)
+		//{
+		//	return nvar == this;
+		//});
 		unGroup();
 	}
 

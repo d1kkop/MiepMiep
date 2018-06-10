@@ -19,18 +19,20 @@ namespace MiepMiep
 
 	struct EventNewConnection : IEvent
 	{
-		EventNewConnection( const sptr<Link>& link, const sptr<const IAddress>& newAddr ):
+		EventNewConnection( const sptr<Link>& link, const MetaData& md, const sptr<const IAddress>& newAddr ):
 			IEvent(link, false),
+			m_MetaData( md ),
 			m_NewAddr(newAddr) { }
 
 		void process() override
 		{
 			m_Link->getSession()->forListeners( [&] ( ISessionListener* l )
 			{
-				l->onConnect( m_Link->session(), *m_NewAddr );
+				l->onConnect( m_Link->session(), m_MetaData, *m_NewAddr );
 			});
 		}
 
+		MetaData m_MetaData;
 		sptr<const IAddress> m_NewAddr;
 	};
 
@@ -60,47 +62,51 @@ namespace MiepMiep
 
 	// Executes on client.
 	// [ endpoint : newEtp ]
-	MM_RPC( linkStateNewConnection, sptr<IAddress> )
+	MM_RPC( linkStateNewConnection, MetaData, sptr<IAddress> )
 	{
 		RPC_BEGIN();
-		l.pushEvent<EventNewConnection>( get<0>(tp) );
+		l.pushEvent<EventNewConnection>( get<0>(tp), get<1>(tp) );
 		LOG( "New incoming connection to %s.", l.info() );
 	}
 
 	// Executes on client.
-	// [ endpoint : discEtp,  bool : wasKicked ]
-	MM_RPC( linkStateDisconnect, sptr<IAddress>, bool )
+	// [ isKick, remoteEtp (if not direct) ]
+	MM_RPC( linkStateDisconnect, bool, sptr<IAddress> )
 	{
 		RPC_BEGIN();
-		const sptr<IAddress>& remote = get<0>(tp);
-		bool isKick = get<1>(tp);
+		bool isKick = get<0>( tp );
+		sptr<IAddress> remote = get<1>( tp );
+		if ( sc<Endpoint&>(*remote).isZero() )
+		{
+			// is direct
+			remote.reset();
+		}
+		EDisconnectReason reason = isKick?EDisconnectReason::Kicked:EDisconnectReason::Closed;
 		if ( remote )
-		{ // someone else through client-serv disconnected, not this direct link!
-			EDisconnectReason reason = isKick?EDisconnectReason::Kicked:EDisconnectReason::Closed;
+		{ 
+			// someone else through client-serv disconnected, not this direct link!
 			l.pushEvent<EventDisconnect>( reason, remote );
-			LOG( "Link to %s disconnected, reason %d.", l.info(), (u32)reason );
+			LOG( "Remote %s disconnected, reason %d.", remote->toIpAndPort(), (u32)reason );
 		}
 		else
-		{ // direct link disconnected
-			bool didDisconnect = l.disconnect( isKick, false );
-
-			// Relay this event if not p2p and is host and is not set up using with a matchmaking server.
-			if ( !s.msd().m_IsP2p && !s.msd().m_UsedMatchmaker && s.imBoss() &&
-				 didDisconnect ) /* Only send disconnect if did actually disconnect. */
+		{
+			// 'disconnect' also pushes EventDisconnect implicitely and removes link afterwards.
+			if ( l.disconnect( isKick, Is_Receive, Remove_Link ) )
 			{
-				l.pushEvent<EventNewConnection>( l.destination().to_ptr() );
-				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), &l.normalSession(), &l /* <-- excl link */,
-																	 No_Local, No_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace );
+				// Relay this event if not p2p and is host.
+				if ( !s.msd().m_IsP2p && s.imBoss() )
+				{
+					nw.callRpc2<linkStateDisconnect, bool, sptr<IAddress>>( isKick, l.destination().getCopy(), &l.normalSession(), &l /* <-- excl link */,
+																			No_Local, No_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace );
+				}
 			}
-
-			s.removeLink( l );
 		}
 	}
 
 	/* Connection results */
 
 	// Executed on client.
-	MM_RPC( linkStateAccepted )
+	MM_RPC( linkStateAccepted, MetaData, sptr<IAddressList> )
 	{
 		RPC_BEGIN();
 		auto lState = l.get<LinkState>();
@@ -108,7 +114,13 @@ namespace MiepMiep
 		{
 			if ( lState->accept() )
 			{
-				l.pushEvent<EventNewConnection>( l.destination().to_ptr() );
+				const auto& md = get<0>( tp );
+				const auto& addrList = get<1>( tp );
+				l.pushEvent<EventNewConnection>( md, l.destination().to_ptr() );
+				//for ( auto& adr : addrList ) // For client-serv architecture, the serv sends all remote address immediately.
+				//{
+				//	l.pushEvent<EventNewConnection>( md, l.destination().to_ptr() );
+				//}
 				LOG( "Link to %s accepted from connect request.", l.info() );
 			}
 		}
@@ -125,25 +137,36 @@ namespace MiepMiep
 	{
 		RPC_BEGIN();
 
-		//// Is already part of this session.
-		//if ( s.hasLink( l ) )
-		//{
-		//	LOGW( "Link %s tried to connect that is already part of the session.", l.info() );
-		//	return;
-		//}
-
-		// No longer check pw and max clients as that is done on master server. For local area networks, password and max clients have no use.
-		if ( l.getOrAdd<LinkState>()->canReceiveConnect() )
+		// For now, make signing 'accept' on a connection and sending the accept list, exclusive with a lock.
+		// TODO: this should not be necessary.
+		rscoped_lock lck( l.normalSession().dataMutex() );
+		if ( l.getOrAdd<LinkState>()->canReceiveConnect() && l.getOrAdd<LinkState>()->accept() )
 		{
-			l.callRpc<linkStateAccepted>(); // To recipient directly
+			auto& md = get<0>( tp );
+			l.pushEvent<EventNewConnection>( md, l.destination().to_ptr() );
 
-			// Relay this event if not p2p and is host and is not set up using a matchmaking server.
-			if ( !s.msd().m_IsP2p && !s.msd().m_UsedMatchmaker && s.imBoss() &&
-				 l.getOrAdd<LinkState>()->accept() ) /* Only relay event if did actually change state to connected. */
+			if ( !s.msd().m_IsP2p && s.imBoss() ) 
 			{
-				l.pushEvent<EventNewConnection>( l.destination().to_ptr() );
-				nw.callRpc2<linkStateNewConnection, sptr<IAddress>>( l.destination().getCopy(), &l.normalSession(), &l /* <-- excl link */,
-																	 No_Local, Do_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace );
+				// NOTE: Because there is no exclusive lock on accepting and sending the addrList, it is possible that
+				// we send an address for which we will also receive a newConnection event. This is intended behaviour and handled gracefully.
+				sptr<IAddressList> addrList = AddressList::create();
+				l.normalSession().forLink( &l, [&] ( Link& lb )
+				{
+					if ( auto ls = lb.get<LinkState>() )
+					{
+						if ( ls->state() == ELinkState::Connected )
+						{
+							addrList->addAddress( lb.destination() );
+						}
+					}
+				} );
+
+				// Addrlist to recipient directly.
+				l.callRpc<linkStateAccepted, MetaData, sptr<IAddressList>>(l.normalSession().metaData(), addrList ); 
+
+				// Relay this event if not p2p and is host
+				nw.callRpc2<linkStateNewConnection, MetaData, sptr<IAddress>>( md, l.destination().getCopy(), &l.normalSession(), &l /* <-- excl link */,
+																			   No_Local, No_Buffer, No_Relay, No_SysBit, MM_RPC_CHANNEL, No_Trace );
 			}
 		}
 		else
@@ -216,7 +239,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	MM_TS bool LinkState::disconnect(bool isKick, bool sendMsg)
+	MM_TS bool LinkState::disconnect(bool isKick, bool isReceive, bool removeLink)
 	{
 		bool disconnected = false;
 
@@ -230,18 +253,31 @@ namespace MiepMiep
 			m_State = ELinkState::Disconnected;
 		}
 
+		// Did state actually change
 		if ( disconnected )
 		{
 			auto reason = isKick ? EDisconnectReason::Kicked : EDisconnectReason::Closed;
-			m_Link.pushEvent<EventDisconnect>( reason, m_Link.destination().to_ptr() );
-			if ( sendMsg )
+			if ( !isReceive )
 			{
-				m_Link.callRpc<linkStateDisconnect, sptr<IAddress>, bool>( sptr<IAddress>(), isKick, No_Local, No_Relay, MM_RPC_CHANNEL, nullptr );
+				m_Link.callRpc<linkStateDisconnect, bool, sptr<IAddress>>( isKick, IAddress::createEmpty(), No_Local, No_Relay, MM_RPC_CHANNEL, nullptr );
 			}
-			return true;
+			else
+			{
+				m_Link.pushEvent<EventDisconnect>( reason, m_Link.destination().to_ptr() );
+			}
+			
+		}
+
+		if ( removeLink )
+		{
+			assert( m_Link.getSession() );
+			if ( auto* s = m_Link.getSession() )
+			{
+				s->removeLink( m_Link );
+			}
 		}
 		
-		return false; // was not connected before
+		return disconnected;
 	}
 
 	MM_TS ELinkState LinkState::state() const

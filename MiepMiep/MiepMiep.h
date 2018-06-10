@@ -3,6 +3,7 @@
 #include "Variables.h"
 #include "Rpc.h"
 #include <string>
+#include <vector>
 
 
 namespace MiepMiep
@@ -47,6 +48,7 @@ namespace MiepMiep
 	enum class EListenCallResult
 	{
 		Fine,
+		AlreadyExistsOnPort,
 		// See log.
 		SocketError
 	};
@@ -84,12 +86,12 @@ namespace MiepMiep
 	class MM_DECLSPEC ISessionListener
 	{
 	public:
-		virtual void onConnect( const ISession& session, const IAddress& remote ) { }
-		virtual void onDisconnect( const ISession& session, const IAddress& remote, EDisconnectReason reason ) { }
-		virtual void onOwnerChanged( const ISession& session, NetVar& variable, const IAddress* newOwner ) { }
-		virtual void onNewHost( const ISession& session, const IAddress* host ) { }
-		virtual void onLostHost( const ISession& session ) { }
-		virtual void onLostMasterLink( const ISession& session, const ILink& link ) { }
+		virtual void onConnect( ISession& session, const MetaData& metaData, const IAddress& remote ) { }
+		virtual void onDisconnect( ISession& session, const IAddress& remote, EDisconnectReason reason ) { }
+		virtual void onOwnerChanged( ISession& session, NetVar& variable, const IAddress* newOwner ) { }
+		virtual void onNewHost( ISession& session, const IAddress* host ) { }
+		virtual void onLostHost( ISession& session ) { }
+		virtual void onLostMasterLink( ISession& session, const ILink& link ) { }
 	};
 
 
@@ -115,6 +117,24 @@ namespace MiepMiep
 		MM_TSC sptr<IAddress> to_ptr();
 		MM_TSC sptr<const IAddress> to_ptr() const;
 	};
+
+
+	class MM_DECLSPEC IAddressList
+	{
+	public:
+		virtual MM_TS void addAddress( const IAddress& addr, const MetaData& md=MetaData() ) = 0;
+		virtual MM_TS void removeAddress( const IAddress* addr ) = 0;
+		virtual MM_TS bool readOrWrite( BinSerializer& bs, bool _write ) = 0;
+		virtual MM_TS MetaData metaData(u32 idx) const = 0;
+		virtual MM_TS sptr<const IAddress> address(u32 idx) const = 0;
+		virtual MM_TS u32 count() const = 0;
+	};
+
+	template <>
+	inline bool readOrWrite( BinSerializer& bs, sptr<IAddressList>& addrList, bool _write )
+	{
+		return addrList->readOrWrite( bs, _write );
+	}
 
 
 	class MM_DECLSPEC ILink
@@ -149,7 +169,7 @@ namespace MiepMiep
 		MM_TS virtual const char* name() const=0;
 
 		/*	Link to matchmaking server. */
-		MM_TS virtual const ILink& matchMaker()  const=0;
+		MM_TS virtual sptr<ILink> matchMaker()  const=0;
 
 		/*	Current authorative address in the session. This is always the server in a client-serv architecture.
 			In p2p, this is only one peer that can make session-wide authorative decisions.
@@ -169,7 +189,7 @@ namespace MiepMiep
 	template <typename T, typename ...Args>
 	MM_TS ESendCallResult ISession::callRpc( Args... args, ILink* exclOrSpecific, bool localCall, bool buffer, bool relay, byte channel, IDeliveryTrace* trace )
 	{
-		return network().callRpc<Args...>( args..., &this, exclOrSpecific, localCall, buffer, relay, channel, trace );
+		return network().callRpc<T, Args...>( args..., this, exclOrSpecific, localCall, buffer, relay, channel, trace );
 	}
 
 
@@ -182,7 +202,7 @@ namespace MiepMiep
 			When A arrives, both A and B are processed as a seperate job across possibly different threads.
 			B may therefore be processed before A, eventhough it was sent reliable orderderd!
 			The default is false. When false, 'processEvents' must be called to handle network events. */
-		MM_TS static  sptr<INetwork> create( bool allowAsyncCallbacks=false );
+		MM_TS static  sptr<INetwork> create( bool allowAsyncCallbacks=false, u32 numWorkerThreads=4 );
 
 		MM_TS virtual void processEvents()=0;
 
@@ -190,14 +210,14 @@ namespace MiepMiep
 		MM_TS virtual void stopListen( u16 port )=0;
 
 		/*	Returns only false when all ports on local machine are in use. */
-		MM_TS virtual sptr<ISession> registerServer( const std::function<void( const ISession&, bool )>& callback,
+		MM_TS virtual sptr<ISession> registerServer( const std::function<void( ISession&, bool )>& callback,
 													 const IAddress& masterAddr, const std::string& name, const std::string& type,
 													 bool isP2p=true, bool canJoinAfterStart=true, float rating=10,
 													 u32 maxClients=64, const std::string& password="", 
 													 const MetaData& hostMd=MetaData(), const MetaData& customMatchmakingMd=MetaData() )=0;
 
 		/*	Returns only false when all ports on local machine are in use. */
-		MM_TS virtual sptr<ISession> joinServer( const std::function<void( const ISession&, bool )>& callback,
+		MM_TS virtual sptr<ISession> joinServer( const std::function<void( ISession&, bool )>& callback,
 												 const IAddress& masterAddr, const std::string& name, const std::string& type,
 												 float minRating=0, float maxRating=1000, u32 minPlayers=0, u32 maxPlayers=64,
 												 bool findP2p=true, bool findClientServer=true,

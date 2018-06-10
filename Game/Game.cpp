@@ -125,37 +125,37 @@ namespace MyGame
 		}
 	}
 
-	void Game::onRegisterResult( const ISession& session, bool succes )
+	void Game::onRegisterResult( ISession& session, bool succes )
 	{
 		if ( succes )
 		{
-			cout << "Succesfully registered server at " << session.matchMaker().destination().toIpAndPort() << endl;
+			cout << "Succesfully registered server at " << session.matchMaker()->destination().toIpAndPort() << endl;
 		}
 		else
 		{
-			cout << "Failed to registered server at " << session.matchMaker().destination().toIpAndPort() << endl;
+			cout << "Failed to registered server at " << session.matchMaker()->destination().toIpAndPort() << endl;
 		}
 	}
 
-	void Game::onJoinResult( const ISession& session, bool res )
+	void Game::onJoinResult( ISession& session, bool res )
 	{
 		switch ( res )
 		{
 		case EJoinServerResult::Fine:
-			cout << "connected to: " << session.matchMaker().destination().toIpAndPort() << endl;
+			cout << "connected to: " << session.matchMaker()->destination().toIpAndPort() << endl;
 			break;
 		case EJoinServerResult::NoMatchesFound:
-			cout << "no matches found " << session.matchMaker().destination().toIpAndPort() << endl;
+			cout << "no matches found " << session.matchMaker()->destination().toIpAndPort() << endl;
 			break;
 		}
 	}
 
-	void Game::onConnect( const ISession & session, const IAddress & remote )
+	void Game::onConnect( ISession & session, const MetaData& md, const IAddress & remote )
 	{
 		cout << "New connection " << remote.toIpAndPort() << " in " << session.name() << endl;
 	}
 
-	void Game::onDisconnect( const ISession & session, const IAddress & remote, EDisconnectReason reason )
+	void Game::onDisconnect( ISession & session, const IAddress & remote, EDisconnectReason reason )
 	{
 		string discReason = "disconnected.";
 		if (reason == EDisconnectReason::Kicked) discReason = "kicked.";
@@ -163,22 +163,22 @@ namespace MyGame
 		cout << remote.toIpAndPort() << " in session " << session.name() << " " << discReason << endl;
 	}
 
-	void Game::onOwnerChanged( const ISession & session, NetVar & variable, const IAddress * newOwner )
+	void Game::onOwnerChanged( ISession & session, NetVar & variable, const IAddress * newOwner )
 	{
 		cout << "Variable from group with id " << variable.groupId() << " has new owner " << endl;
 	}
 
-	void Game::onNewHost( const ISession & session, const IAddress * host )
+	void Game::onNewHost( ISession & session, const IAddress * host )
 	{
 		cout << "New host: " << (host?host->toIpAndPort():"us") << " in session " << session.name() << endl;
 	}
 
-	void Game::onLostHost( const ISession & session )
+	void Game::onLostHost( ISession & session )
 	{
 		cout << "Lost host in session " << session.name() << endl;
 	}
 
-	void Game::onLostMasterLink( const ISession & session, const ILink & link )
+	void Game::onLostMasterLink( ISession & session, const ILink & link )
 	{
 		cout << "Lost link to matchmaker server in session " << session.name() << endl;
 	}

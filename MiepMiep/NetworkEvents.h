@@ -4,6 +4,7 @@
 #include "Memory.h"
 #include "ParentNetwork.h"
 #include <algorithm>
+#include <list>
 
 
 namespace MiepMiep
@@ -55,8 +56,8 @@ namespace MiepMiep
 		MM_TS void processQueuedEvents();
 		
 	private:
-		mutex m_EventsMutex;
-		vector<sptr<IEvent>> m_Events;
+		rmutex m_EventsMutex; // Recursive, otherwise not possible to push new events while iterating through events.
+		list<sptr<IEvent>> m_Events;
 		bool m_AllowAsyncCallbacks;
 	};
 

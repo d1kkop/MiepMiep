@@ -55,7 +55,7 @@ MM_RPC( ReliableRpc, u32 )
 
 UTESTBEGIN(ReliableTest)
 {
-	constexpr u32 numPacks = 1000;
+	constexpr u32 numPacks = 100000;
 
 	sptr<INetwork> nw = INetwork::create( false );
 	wptr<INetwork> n  = nw;
@@ -91,12 +91,12 @@ UTESTBEGIN(ReliableTest)
 			 }
 		 }
 
-		 g_cqs[i].m_recvLink = lm->add( *clientSes[i], saps[i], 200+i, true );
+		 g_cqs[i].m_recvLink = lm->add( *clientSes[i], saps[i], 200+i, true, true );
 		 u16 boundPort = 0;
 		 boundPort = Endpoint::createSource( *clientSocks[i] )->port();
 		 g_cqs[i].m_sendLink = lm->add( sc<SessionBase&>( *hostSes ),
 										SocketAddrPair( listener->socket().to_sptr(), IAddress::resolve( "localhost", boundPort ) ),
-										200+i, false );
+										200+i, false, true );
 	 }
 
 	

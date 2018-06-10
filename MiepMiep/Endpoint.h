@@ -3,12 +3,37 @@
 #include "Platform.h"
 #include "Memory.h"
 #include "MiepMiep.h"
+#include <vector>
 using namespace std;
 
 
 namespace MiepMiep
 {
 	class ISocket;
+
+	struct AddrMetaDataPair : public ITraceable
+	{
+		sptr<const IAddress> m_Addr;
+		MetaData m_Md;
+	};
+
+	class AddressList : public IAddressList, public ITraceable
+	{
+	public:
+		static sptr<AddressList> create();
+
+		MM_TS void addAddress( const IAddress& addr, const MetaData& md ) override;
+		MM_TS void removeAddress( const IAddress* addr ) override;
+		MM_TS bool readOrWrite( BinSerializer& bs, bool _write ) override;
+		MM_TS MetaData metaData(u32 idx) const override;
+		MM_TS sptr<const IAddress> address(u32 idx) const override;
+		MM_TS u32 count() const override;
+
+	private:
+		mutable mutex m_AddressMutex;
+		vector<sptr<AddrMetaDataPair>> m_Addresses;
+	};
+
 
 	class Endpoint: public IAddress, public ITraceable
 	{
@@ -35,6 +60,7 @@ namespace MiepMiep
 
 		MM_TSC u16 getPortHostOrder() const;
 		MM_TSC u16 getPortNetworkOrder() const;
+		MM_TSC bool isZero() const;
 
 		// Either ipv4 or ipv6
 		MM_TSC byte* getLowLevelAddr();

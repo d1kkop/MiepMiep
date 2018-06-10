@@ -336,6 +336,9 @@
     <None Include="..\TODO">
       <Filter>Core</Filter>
     </None>
+    <None Include="..\PerfMeasurements">
+      <Filter>Core</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MiepMiep.rc" />

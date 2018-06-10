@@ -48,7 +48,7 @@ namespace MiepMiep
 	MM_TS void Group::setNewOwnership(byte varIdx, const IAddress* owner)
 	{
 		scoped_lock lk(m_VariablesMutex);
-		m_Variables[varIdx]->setNewOwner( owner );
+		m_Variables[varIdx]->setNewOwner(owner);
 	}
 
 	MM_TS bool Group::wasUngrouped() const

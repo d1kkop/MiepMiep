@@ -5,11 +5,6 @@
 #include "ParentNetwork.h"
 #include "Link.h"
 
-//// Streams
-//#include "ReliableSend.h"
-//#include "ReliableAckSend.h"
-//#include "ReliableNewSend.h"
-
 
 namespace MiepMiep
 {

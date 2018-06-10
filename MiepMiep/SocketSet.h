@@ -46,8 +46,8 @@ namespace MiepMiep
 	#if MM_SDLSOCKET
 	#elif MM_WIN32SOCKET
 		// Max of 64 for BSD see FD_SETSIZE
-		map<SOCKET, pair<sptr<const ISocket>, sptr<IPacketHandler>>> m_Sockets;
-		fd_set m_SocketSet;
+		map<SOCKET, pair<sptr<const ISocket>, sptr<IPacketHandler>>> m_HighLevelSockets;
+		fd_set m_LowLevelSocketArray;
 	#endif
 	};
 }

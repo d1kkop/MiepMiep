@@ -25,6 +25,5 @@ namespace MiepMiep
 	private:
 		mutable mutex m_ListenersMutex;
 		map<u16, sptr<Listener>> m_Listeners;
-		map<sptr<const ISocket>, sptr<Listener>> m_ListenerSockets;
 	};
 }

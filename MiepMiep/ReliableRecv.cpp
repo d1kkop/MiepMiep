@@ -53,7 +53,7 @@ namespace MiepMiep
 			return;
 		}
 
-		LOG( "Received reliable seq: %d in link %s.", pi.m_Sequence, m_Link.info() );
+//		LOG( "Received reliable seq: %d in link %s.", pi.m_Sequence, m_Link.info() );
 
 		// Identifies datatype
 		byte packId;
@@ -88,7 +88,6 @@ namespace MiepMiep
 		}
 
 		// Processed ordered queue as much as possible
-		// ST version -> proceedRecvQueue();
 		m_Link.getInNetwork<JobSystem>()->addJob( [rr = move(ptr<ReliableRecv>())]()
 		{
 			rr->proceedRecvQueue();
@@ -99,7 +98,9 @@ namespace MiepMiep
 	{
 		auto& queue = m_OrderedPackets;
 		
+	#if MM_MT
 		scoped_lock lk(m_RecvMutex);
+	#endif
 		auto packIt = queue.find(m_RecvSequence);
 		while ( packIt != queue.end() )
 		{
@@ -150,7 +151,7 @@ namespace MiepMiep
 			return;
 		}
 		
-		LOG( "Handling RPC: %s.", rpcName.c_str() );
+//		LOG( "Handling RPC: %s.", rpcName.c_str() );
 		auto rpcFunc = rc<RpcFunc>( rpcAddress );
 		m_Link.pushEvent<EventRpc>( rpcFunc, pack, bs.getRead(), (pack.m_Flags & MM_SYSTEM_BIT) );
 	}

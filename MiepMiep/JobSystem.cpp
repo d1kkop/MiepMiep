@@ -72,12 +72,14 @@ namespace MiepMiep
 		m_Closing(false),
 		m_NumThreadsSleeping(0)
 	{
+	#if MM_MT
 		assert( numWorkerThreads != 0 );
 		for (u32 i = 0; i < numWorkerThreads ; i++)
 		{
 			m_WorkerThreads.push_back( make_unique<WorkerThread>(*this) );
 			m_WorkerThreads.back()->start();
 		}
+	#endif
 	}
 
 	JobSystem::~JobSystem()
@@ -87,6 +89,11 @@ namespace MiepMiep
 
 	MM_TS void JobSystem::addJob(const std::function<void()>& cb)
 	{
+		#if !MM_MT
+			cb();
+			return;
+		#endif
+
 		#if MM_TRACE_JOBSYSTEM
 			stringstream ss;
 			this_thread::get_id()._To_text( ss );
@@ -132,6 +139,7 @@ namespace MiepMiep
 
 	MM_TS void JobSystem::stop()
 	{
+	#if MM_MT
 		m_JobsMutex.lock();
 		m_Closing = true;
 		m_QueueCv.notify_all();
@@ -139,6 +147,7 @@ namespace MiepMiep
 		m_WorkerThreads.clear();
 		scoped_lock lk(m_JobsMutex);
 		while ( !m_GlobalQueue.empty() ) m_GlobalQueue.pop();
+	#endif
 	}
 
 }

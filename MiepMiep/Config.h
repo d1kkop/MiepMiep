@@ -5,11 +5,12 @@
 #define MM_DEBUG										(1)
 #endif
 
-//#if MM_DEBUG
-	#define MM_TRACE_MEMORY_LEAKS						(0)
-	#define MM_USE_CALLOC								(1)
-//#endif
+#if MM_DEBUG
+	#define MM_TRACE_MEMORY_LEAKS						(1)
+#endif
 
+#define MM_MT											(1)
+#define MM_USE_CALLOC									(1)
 #define MM_TRACE_JOBSYSTEM								(0)
 #define MM_PRINT_ALLOCATIONS							(0)
 #define MM_SECURE_CRT									(0)

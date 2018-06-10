@@ -65,8 +65,11 @@ namespace MiepMiep
 		const MasterSessionData& data = get<0>(tp);
 		const MetaData& registerMd = get<1>(tp);
 		l.updateCustomMatchmakingMd( registerMd );
-		if ( nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data ) )
+		sptr<MasterSession> mSession = nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data );
+		if ( mSession )
 		{
+			l.setSession( *mSession );
+			mSession->addLink( l.to_ptr() );
 			l.callRpc<masterLinkRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
 			LOG("New master register server request from %s succesful.", l.info());
 		}
@@ -95,9 +98,12 @@ namespace MiepMiep
 		const SearchFilter& sf = get<0>(tp);
 		const MetaData& joinMatchmakingMd = get<1>(tp);
 		l.updateCustomMatchmakingMd( joinMatchmakingMd ); // TODO change for var group perhaps
-		auto mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
-		if ( mSession && l.setSession( *mSession ) )
+		sptr<MasterSession> mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
+		if ( mSession )
 		{
+			l.setSession( *mSession );
+			mSession->addLink( l.to_ptr() );
+			mSession->sendConnectRequests( l );
 			l.callRpc<masterLinkRpcJoinResult, bool>( true, false, false, MM_RPC_CHANNEL, nullptr );
 			LOG("New master join request from %s succesful.", l.info());
 		}
@@ -131,7 +137,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS void MasterLinkData::registerServer( const function<void( const ISession&, bool )>& cb, const MasterSessionData& data,
+	MM_TS void MasterLinkData::registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data,
 											   const MetaData& customMatchmakingMd )
 	{
 		// Cb lock
@@ -142,7 +148,7 @@ namespace MiepMiep
 		m_Link.callRpc<masterLinkRpcRegisterServer, MasterSessionData, MetaData>( data, customMatchmakingMd, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
-	MM_TS void MasterLinkData::joinServer( const function<void( const ISession&, bool )>& cb, const SearchFilter& sf,
+	MM_TS void MasterLinkData::joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf,
 										   const MetaData& customMatchmakingMd )
 	{
 		// Cb lock

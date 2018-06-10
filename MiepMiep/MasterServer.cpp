@@ -25,13 +25,18 @@ namespace MiepMiep
 
 	// ------ SessionList -----------------------------------------------------------------------------------
 
-	MM_TS void MasterSessionList::addSession( const sptr<Link>& host, const MasterSessionData& data )
+	MasterSessionList::~MasterSessionList()
+	{
+		LOG( "Destroying master session list." );
+	}
+
+	MM_TS sptr<MasterSession> MasterSessionList::addSession( const sptr<Link>& host, const MasterSessionData& data )
 	{
 		sptr<MasterSession> session = reserve_sp<MasterSession>( MM_FL, host, data, *this );
-		host->setSession( *session );
 		scoped_lock lk(m_SessionsMutex);
 		m_MasterSessions.emplace_back( session );
 		session->m_SessionListIt = prev( m_MasterSessions.end() );
+		return session;
 	}
 
 	MM_TS void MasterSessionList::removeSession( MsListCIt whereIt )
@@ -67,7 +72,12 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS bool MasterServer::registerSession( const sptr<Link>& link, const MasterSessionData& data )
+	MasterServer::~MasterServer()
+	{
+		LOG("Destroying master server.");
+	}
+
+	MM_TS sptr<MasterSession> MasterServer::registerSession( const sptr<Link>& link, const MasterSessionData& data )
 	{
 		sptr<MasterSessionList> sessionList;
 
@@ -91,9 +101,7 @@ namespace MiepMiep
 
 		// No longer need lock for session list. Add session.
 		assert( sessionList );
-		sessionList->addSession( link, data );
-
-		return true;
+		return sessionList->addSession( link, data );
 	}
 
 	MM_TS void MasterServer::removeSession( MasterSession& session )

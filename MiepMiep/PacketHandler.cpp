@@ -99,7 +99,7 @@ namespace MiepMiep
 	MM_TS sptr<Link> IPacketHandler::getOrCreateLink( u32 linkId, const SocketAddrPair& sap )
 	{
 		auto lm = m_Network.getOrAdd<LinkManager>();
-		sptr<Link> link = lm->getOrAdd( getSession(), sap, linkId, false, true ); // <-- Returns null if link exists but Id's do not match.
+		sptr<Link> link = lm->getOrAdd( getSession(), sap, linkId, false, true, true, nullptr ); // <-- Returns null if link exists but Id's do not match.
 		if ( !link )
 		{
 			LOGW( "Failed to getOrAdd link to %s.", sap.m_Address->toIpAndPort() );

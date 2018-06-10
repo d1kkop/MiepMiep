@@ -2,6 +2,7 @@
 #include "Socket.h"
 #include "Util.h"
 #include <cassert>
+#include <algorithm>
 using namespace std;
 
 
@@ -48,6 +49,82 @@ namespace MiepMiep
 		return sc<const Endpoint&>(*this).ptr<const Endpoint>();
 	}
 
+
+	// --- AddressList ---------------------------------------------------------------------------------------
+
+	sptr<AddressList> AddressList::create()
+	{
+		sptr<AddressList> addrList = reserve_sp<AddressList>( MM_FL );
+		return addrList;
+	}
+
+	MM_TS void AddressList::addAddress( const IAddress& addr, const MetaData& metaData )
+	{
+		sptr<AddrMetaDataPair> adp = reserve_sp<AddrMetaDataPair>( MM_FL );
+		adp->m_Addr = addr.to_ptr();
+		adp->m_Md = metaData;
+		scoped_lock lk( m_AddressMutex );
+		m_Addresses.emplace_back( adp );
+	}
+
+	MM_TS void AddressList::removeAddress( const IAddress* addr )
+	{
+		if ( !addr ) return;
+		scoped_lock lk( m_AddressMutex );
+		m_Addresses.erase( std::find_if( m_Addresses.begin(), m_Addresses.end(), [&] ( auto& adp ) { return *adp->m_Addr==*addr; } ) );
+	}
+
+	MM_TS bool AddressList::readOrWrite( BinSerializer& bs, bool _write )
+	{
+		scoped_lock lk( m_AddressMutex );
+		if ( _write )
+		{
+			for ( auto& addr : m_Addresses )
+			{
+				__CHECKEDB( bs.write( addr->m_Addr ) );
+				__CHECKEDB( bs.write( addr->m_Md ) );
+			}
+		}
+		else
+		{
+			while ( bs.getRead() != bs.getWrite() )
+			{
+				sptr<AddrMetaDataPair> adp = reserve_sp<AddrMetaDataPair>( MM_FL );
+				sptr<IAddress> addr;
+				__CHECKEDB( bs.read( addr ) );
+				__CHECKEDB( bs.read( adp->m_Md ) );
+				adp->m_Addr = addr;
+				m_Addresses.emplace_back( adp );
+			}
+		}
+		return true;
+	}
+
+	MM_TS MetaData AddressList::metaData( u32 idx ) const
+	{
+		scoped_lock lk( m_AddressMutex );
+		if ( idx < m_Addresses.size() )
+		{
+			return m_Addresses[idx]->m_Md;
+		}
+		return MetaData();
+	}
+
+	MM_TS sptr<const IAddress> AddressList::address( u32 idx ) const
+	{
+		scoped_lock lk( m_AddressMutex );
+		if ( idx < m_Addresses.size() )
+		{
+			return m_Addresses[idx]->m_Addr;
+		}
+		return nullptr;
+	}
+
+	MM_TS u32 AddressList::count() const
+	{
+		scoped_lock lk( m_AddressMutex );
+		return (u32)m_Addresses.size();
+	}
 
 	// --- Endpoint ---------------------------------------------------------------------------------------
 
@@ -237,11 +314,18 @@ namespace MiepMiep
 
 	MM_TSC bool Endpoint::operator<(const Endpoint& other) const
 	{
+		auto as = getLowLevelAddrSize();
+		auto bs = other.getLowLevelAddrSize();
+		if ( as < bs ) return true;
+		if ( as > bs ) return false;
 		return ::memcmp(getLowLevelAddr(), other.getLowLevelAddr(), getLowLevelAddrSize()) < 0;
 	}
 
 	MM_TSC bool Endpoint::operator==(const Endpoint& other) const
 	{
+		auto as = getLowLevelAddrSize();
+		auto bs = other.getLowLevelAddrSize();
+		if ( as != bs ) return false;
 		return ::memcmp(getLowLevelAddr(), other.getLowLevelAddr(), getLowLevelAddrSize()) == 0;
 	}
 
@@ -270,6 +354,12 @@ namespace MiepMiep
 		#endif
 		assert(0);
 		return nullptr;
+	}
+
+	MM_TSC bool Endpoint::isZero() const
+	{
+		Endpoint temp;
+		return *this == temp;
 	}
 
 	MM_TSC const byte* Endpoint::getLowLevelAddr() const

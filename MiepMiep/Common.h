@@ -30,6 +30,7 @@ using namespace std;
 #define MM_FRAGMENT_FIRST_BIT 8
 #define MM_FRAGMENT_LAST_BIT 16
 #define MM_SYSTEM_BIT 32
+#define MM_NUM_CHANNELS 8
 
 /* (Re)send thread */
 #define MM_ST_LINKS_CLUSTER_SIZE 64
@@ -98,4 +99,12 @@ namespace MiepMiep
 
 	constexpr byte InvalidByte  = (byte)-1;
 	constexpr u32 InvalidIdx	= (u32)-1;
+
+	constexpr bool Is_Kick = true;
+	constexpr bool No_Kick = false;
+	constexpr bool Is_Receive = true;
+	constexpr bool No_Receive = false;
+	constexpr bool Remove_Link = true;
+	constexpr bool No_Remove_link = false;
+
 }

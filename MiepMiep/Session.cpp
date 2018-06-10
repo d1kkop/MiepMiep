@@ -1,6 +1,7 @@
 #include "Session.h"
 #include "Link.h"
 #include "MasterServer.h"
+#include "ReliableSend.h"
 #include <algorithm>
 
 
@@ -29,37 +30,21 @@ namespace MiepMiep
 
 	MM_TSC void Session::setMasterLink( const sptr<Link>& link )
 	{
-		assert(!m_MasterLink && link);
+		// Supposed to be set only at construction, no need for lock.
+		assert(link);
 		m_MasterLink = link;
 	}
 
 	MM_TS sptr<const IAddress> Session::host() const
 	{
-		scoped_lock lk(m_DataMutex);
+		rscoped_lock lk( m_DataMutex );
 		return m_Host;
 	}
 
-	MM_TS const ILink& Session::matchMaker() const
+	MM_TS sptr<ILink> Session::matchMaker() const
 	{
-		scoped_lock lk(m_DataMutex);
-		return *m_MasterLink;
-	}
-
-	MM_TS bool Session::addLink( const sptr<Link>& link )
-	{
-		scoped_lock lk(m_LinksMutex);
-	#if _DEBUG
-		LOG( "Added link %s to session %d.", link->info(), m_Id );
-		for ( auto& l : m_Links )
-		{
-			if ( auto sl=l.lock() )
-			{
-				assert( !(*sl == *link) );
-			}
-		}
-	#endif
-		m_Links.emplace_back( link );
-		return true;
+		rscoped_lock lk( m_DataMutex );
+		return m_MasterLink.lock();
 	}
 
 	MM_TS void Session::removeLink( Link& link )
@@ -69,21 +54,35 @@ namespace MiepMiep
 
 	MM_TS void Session::updateHost( const sptr<const IAddress>& hostAddr )
 	{
-		scoped_lock lk( m_DataMutex );
+		rscoped_lock lk( m_DataMutex );
 		m_Host = hostAddr;
 	}
 
 	MM_TS void Session::removeLink( const sptr<const Link>& link )
 	{
-		scoped_lock lk( m_LinksMutex );
-		std::remove_if( m_Links.begin(), m_Links.end(), [&] ( auto& l ) { return *l.lock() == *link; } );
+		rscoped_lock lk( m_DataMutex );
+		for ( auto it = begin(m_Links); it !=end(m_Links); )
+		{
+			auto sl = it->lock();
+			if ( !sl || *sl == *link )
+			{
+				it = m_Links.erase(it);
+			}
+			else it ++;
+		}
+		//std::remove_if( m_Links.begin(), m_Links.end(), [&] ( auto& l ) 
+		//{ 
+		//	auto sl = l.lock();
+		//	bool bRemoved = !sl || (*sl == *link);
+		//	return bRemoved;
+		//} );
 	}
 
 	MM_TS bool Session::disconnect()
 	{
 		forLink( nullptr, [] ( Link& link )
 		{
-			link.disconnect( false, true );
+			link.disconnect( No_Kick, No_Receive, Remove_Link );
 		});
 		return true; // TODO make more sense on return
 	}

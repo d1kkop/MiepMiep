@@ -55,14 +55,10 @@ namespace MiepMiep
 		LOG( "Link %s destroyed.", info() );
 	}
 
-	MM_TSC bool Link::setSession( SessionBase& session )
+	MM_TSC void Link::setSession( SessionBase& session )
 	{
-		if ( session.addLink( to_ptr() ) )
-		{
-			m_Session = session.to_ptr();
-			return true;
-		}
-		return false;
+		assert( !m_Session );
+		m_Session = session.to_ptr();
 	}
 
 	MM_TSC bool Link::operator<( const Link& o ) const
@@ -75,17 +71,17 @@ namespace MiepMiep
 		return getSocketAddrPair() == o.getSocketAddrPair();
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler )
+	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler, bool addToSession )
 	{
-		return create( network, session, sap, Util::rand(), addHandler );
+		return create( network, session, sap, Util::rand(), addHandler, addToSession );
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler )
+	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession )
 	{
-		return create( network, &session, sap, id, addHandler );
+		return create( network, &session, sap, id, addHandler, addToSession );
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler )
+	MM_TS sptr<Link> Link::create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession )
 	{
 		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
 
@@ -105,13 +101,9 @@ namespace MiepMiep
 
 		link->m_Id = id;
 		link->m_SockAddrPair = sap;
-		if ( session )
+		if ( session && addToSession )
 		{
-			if ( session->addLink( link ) )
-			{
-				link->m_Session = session->to_ptr();
-			}
-			else
+			if ( !session->addLink( link ) )
 			{
 				return nullptr;
 			}
@@ -176,14 +168,14 @@ namespace MiepMiep
 		m_CustomMatchmakingMd = md;
 	}
 
-	MM_TS bool Link::disconnect(bool isKick, bool sendMsg)
+	MM_TS bool Link::disconnect(bool isKick, bool isReceive, bool removeLink)
 	{
 		auto ls = get<LinkState>();
 		if ( ls )
 		{
-			return ls->disconnect( isKick, sendMsg );
+			return ls->disconnect( isKick, isReceive, removeLink );
 		}
-		else
+		else if ( isReceive )
 		{
 			LOGW( "Link %s received disconnect while it had no linkState.", info() );
 		}

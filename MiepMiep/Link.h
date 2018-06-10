@@ -24,15 +24,15 @@ namespace MiepMiep
 	public:
 		Link(Network& network);
 		~Link() override;
-		MM_TSC bool setSession( SessionBase& session );
+		MM_TSC void setSession( SessionBase& session );
 
 		MM_TSC bool operator<  ( const Link& o ) const;
 		MM_TSC bool operator== ( const Link& o ) const;
 		MM_TSC bool operator!= ( const Link& o ) const { return !(*this == o); }
 
-		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler );
-		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler );
-		MM_TS static sptr<Link> create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler );
+		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler, bool addToSession );
+		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession );
+		MM_TS static sptr<Link> create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession );
 
 		// ILink
 		MM_TSC INetwork& network() const override;
@@ -53,7 +53,7 @@ namespace MiepMiep
 		MM_TSC MasterSession& masterSession() const;
 		
 		MM_TS void updateCustomMatchmakingMd( const MetaData& md );
-		MM_TS bool disconnect(bool isKick, bool sendMsg);
+		MM_TS bool disconnect(bool isKick, bool isReceive, bool removeLink);
 		
 		MM_TS void createGroup( const string& groupType, const BinSerializer& initData );
 		MM_TS void destroyGroup( u32 id );

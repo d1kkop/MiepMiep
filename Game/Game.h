@@ -15,15 +15,15 @@ namespace MyGame
 		void run();
 		void stop();
 
-		void onRegisterResult( const ISession& session, bool result );
-		void onJoinResult( const ISession& session, bool result );
+		void onRegisterResult( ISession& session, bool result );
+		void onJoinResult( ISession& session, bool result );
 
-		void onConnect( const ISession& session, const IAddress& remote ) override;
-		void onDisconnect( const ISession& session, const IAddress& remote, EDisconnectReason reason ) override;
-		void onOwnerChanged( const ISession& session, NetVar& variable, const IAddress* newOwner ) override;
-		void onNewHost( const ISession& session, const IAddress* host ) override;
-		void onLostHost( const ISession& session ) override;
-		void onLostMasterLink( const ISession& session, const ILink& link ) override;
+		void onConnect( ISession& session, const MetaData& md, const IAddress& remote ) override;
+		void onDisconnect( ISession& session, const IAddress& remote, EDisconnectReason reason ) override;
+		void onOwnerChanged( ISession& session, NetVar& variable, const IAddress* newOwner ) override;
+		void onNewHost( ISession& session, const IAddress* host ) override;
+		void onLostHost( ISession& session ) override;
+		void onLostMasterLink( ISession& session, const ILink& link ) override;
 
 		sptr<INetwork> m_Network;
 	};

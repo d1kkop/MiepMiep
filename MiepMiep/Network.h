@@ -29,7 +29,7 @@ namespace MiepMiep
 	class Network: public ComponentCollection, public INetwork, public ITraceable
 	{
 	public:
-		Network(bool allowAsyncCallbacks);
+		Network(bool allowAsyncCallbacks, u32 numWorkerThreads=4);
 		~Network() override;
 
 		void processEvents() override;
@@ -38,13 +38,13 @@ namespace MiepMiep
 		MM_TS EListenCallResult startListen( u16 port ) override;
 		MM_TS void stopListen( u16 port ) override;
 
-		MM_TS sptr<ISession> registerServer( const std::function<void( const ISession&, bool )>& callback,
+		MM_TS sptr<ISession> registerServer( const std::function<void( ISession&, bool )>& callback,
 											 const IAddress& masterAddr, const std::string& name, const std::string& type,
 											 bool isP2p, bool canJoinAfterStart, float rating,
 											 u32 maxClients, const std::string& password,
 											 const MetaData& hostMd, const MetaData& customMatchmakingMd ) override;
 
-		MM_TS sptr<ISession> joinServer( const std::function<void( const ISession&, bool )>& callback,
+		MM_TS sptr<ISession> joinServer( const std::function<void( ISession&, bool )>& callback,
 										 const IAddress& masterAddr, const std::string& name, const std::string& type,
 										 float minRating, float maxRating, u32 minPlayers, u32 maxPlayers,
 										 bool findP2p, bool findClientServer,

@@ -18,16 +18,16 @@ namespace MiepMiep
 		~MasterLinkData() override;
 		static EComponentType compType() { return EComponentType::MasterLinkData; }
 
-		MM_TS void registerServer( const function<void( const ISession&, bool )>& cb, const MasterSessionData& data, const MetaData& customMatchmakingMd );
-		MM_TS void joinServer( const function<void( const ISession&, bool )>& cb, const SearchFilter& sf, const MetaData& customMatchmakingMd );
+		MM_TS void registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data, const MetaData& customMatchmakingMd );
+		MM_TS void joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf, const MetaData& customMatchmakingMd );
 
 		// Not thread safe, but set before request is transmitted. Only on reply the cb is requested.
-		const function<void( const ISession& session, bool )>& getRegisterCb() const { return m_RegisterCb; }
-		const function<void( const ISession& session, bool )>& getJoinCb() const { return m_JoinCb; }
+		const function<void( ISession& session, bool )>& getRegisterCb() const { return m_RegisterCb; }
+		const function<void( ISession& session, bool )>& getJoinCb() const { return m_JoinCb; }
 
 	private:
 		mutex m_DataMutex;
-		function<void (const ISession& link, bool)> m_RegisterCb;
-		function<void (const ISession& link, bool)> m_JoinCb;
+		function<void (ISession& link, bool)> m_RegisterCb;
+		function<void (ISession& link, bool)> m_JoinCb;
 	};
 }

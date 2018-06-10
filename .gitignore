@@ -9,6 +9,8 @@
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
+MiepMiep2.7z
+MiepMiep.txt
 
 # Build results
 [Dd]ebug/
@@ -259,3 +261,5 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/MiepMiep2.7z
+PerfMeasurements

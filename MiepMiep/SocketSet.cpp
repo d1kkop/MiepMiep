@@ -22,8 +22,8 @@ namespace MiepMiep
 		m_IsDirty = true;
 		#if MM_SDLSOCKET
 		#else MM_WIN32SOCKET
-			if ( m_Sockets.size() >= FD_SETSIZE ) return false; // Cannot add socket to this set. Create new set.
-			m_Sockets[sc<const BSDSocket&>(*sock).getSock()] = make_pair ( sock, packetHandler );
+			if ( m_HighLevelSockets.size() >= FD_SETSIZE ) return false; // Cannot add socket to this set. Create new set.
+			m_HighLevelSockets[sc<const BSDSocket&>(*sock).getSock()] = make_pair ( sock, packetHandler );
 		#endif
 		return true;
 	}
@@ -34,7 +34,7 @@ namespace MiepMiep
 		m_IsDirty = true;
 		#if MM_SDLSOCKET
 		#else MM_WIN32SOCKET
-			m_Sockets.erase( sc<const BSDSocket&>(*sock).getSock() );
+			m_HighLevelSockets.erase( sc<const BSDSocket&>(*sock).getSock() );
 		#endif
 	}
 
@@ -43,7 +43,7 @@ namespace MiepMiep
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
 		#else MM_WIN32SOCKET
-			return m_Sockets.count( sc<const BSDSocket&>(*sock).getSock() ) != 0;
+			return m_HighLevelSockets.count( sc<const BSDSocket&>(*sock).getSock() ) != 0;
 		#endif
 		return false;
 	}
@@ -53,7 +53,7 @@ namespace MiepMiep
 		if ( err ) *err = 0;
 		rebuildSocketArrayIfNecessary();
 
-		if ( m_SocketSet.fd_count == 0 )
+		if ( m_LowLevelSocketArray.fd_count == 0 )
 			return EListenOnSocketsResult::NoSocketsInSet;
 
 		#if MM_SDLSOCKET
@@ -65,7 +65,7 @@ namespace MiepMiep
 			tv.tv_usec = timeoutMs*1000*MM_SOCK_SELECT_TIMEOUT; // ~20ms
 
 			// NOTE: select reorders the ready sockets from 0 to end-1, and fd_count is adjusted to the num of ready sockets.
-			i32 res = select( 0, &m_SocketSet, nullptr, nullptr, &tv );
+			i32 res = select( 0, &m_LowLevelSocketArray, nullptr, nullptr, &tv );
 			if ( res < 0 )
 			{
 				if ( err ) *err = GetLastError();
@@ -74,15 +74,17 @@ namespace MiepMiep
 
 			// timed out (no data available)
 			if ( res == 0 )
+			{
 				return EListenOnSocketsResult::TimeoutNoData;
+			}
 
 			// at least a single one has data, check which ones and call cb
-			for ( u_int i=0; i<m_SocketSet.fd_count; i++ )
+			for ( i32 i=0; i<res; i++ )
 			{
-				SOCKET s = m_SocketSet.fd_array[i];
+				SOCKET s = m_LowLevelSocketArray.fd_array[i];
 
-				// No need to check if 'is_set' because ready sockets are ordered from 0 to end-1.
-				assert( FD_ISSET(s, &m_SocketSet) );
+				// Because only checking 'read' sockets, s must be SET.
+				assert( FD_ISSET(s, &m_LowLevelSocketArray) );
 				
 			//	LOG( "Recv on ... %ull.", s ); 
 
@@ -91,8 +93,8 @@ namespace MiepMiep
 				bool validPair = false;
 				{
 					scoped_lock lk( m_SetMutex );
-					auto sockIt = m_Sockets.find( s );
-					if ( sockIt != m_Sockets.end() )
+					auto sockIt = m_HighLevelSockets.find( s );
+					if ( sockIt != m_HighLevelSockets.end() )
 					{
 						sockHandlerPair = sockIt->second;
 						validPair = true;
@@ -125,20 +127,20 @@ namespace MiepMiep
 
 		if ( m_IsDirty )
 		{
-			FD_ZERO( &m_SocketSet );
-			assert( m_Sockets.size() <= FD_SETSIZE );
+			FD_ZERO( &m_LowLevelSocketArray );
+			assert( m_HighLevelSockets.size() <= FD_SETSIZE );
 
-			for ( auto& kvp : m_Sockets )
+			for ( auto& kvp : m_HighLevelSockets )
 			{
 				SOCKET s = sc<const BSDSocket&>(*kvp.second.first).getSock();
-				FD_SET(s, &m_SocketSet);
+				FD_SET(s, &m_LowLevelSocketArray);
 			}
 
 			m_IsDirty = false;
 		}
 		else
 		{
-			m_SocketSet.fd_count = (u_int) m_Sockets.size();
+			m_LowLevelSocketArray.fd_count = (u_int) m_HighLevelSockets.size();
 		}
 
 	#endif

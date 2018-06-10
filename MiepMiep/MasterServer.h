@@ -43,7 +43,8 @@ namespace MiepMiep
 	class MasterSessionList : public ITraceable
 	{
 	public:
-		MM_TS void addSession( const sptr<Link>& host, const MasterSessionData& initialData );
+		~MasterSessionList() override;
+		MM_TS sptr<MasterSession> addSession( const sptr<Link>& host, const MasterSessionData& initialData );
 		MM_TS void removeSession( MsListCIt whereIt );
 		MM_TS u64 num() const;
 		MM_TS sptr<MasterSession> findFromFilter( const SearchFilter& sf );
@@ -58,9 +59,10 @@ namespace MiepMiep
 	{
 	public:
 		MasterServer(Network& network);
+		~MasterServer() override;
 		static EComponentType compType() { return EComponentType::MasterServer; }
 
-		MM_TS bool registerSession( const sptr<Link>& link, const MasterSessionData& data );
+		MM_TS sptr<MasterSession> registerSession( const sptr<Link>& link, const MasterSessionData& data );
 		MM_TS void removeSession( MasterSession& session );
 		MM_TS sptr<MasterSession> findServerFromFilter( const SearchFilter& sf );
 

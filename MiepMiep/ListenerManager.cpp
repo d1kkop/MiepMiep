@@ -16,13 +16,15 @@ namespace MiepMiep
 
 	MM_TS EListenCallResult ListenerManager::startListen( u16 port )
 	{
-		sptr<Listener> listener = Listener::startListen( m_Network, port );
 		scoped_lock lk(m_ListenersMutex);
+		if ( m_Listeners.count( port ) != 0 )
+		{
+			return EListenCallResult::AlreadyExistsOnPort;
+		}
+		sptr<Listener> listener = Listener::startListen( m_Network, port );
 		if ( listener )
 		{
-			assert( m_Listeners.count( port ) == 0 );
 			m_Listeners[ port ] = listener;
-			m_ListenerSockets[ listener->socket().to_sptr() ] = listener;
 			return EListenCallResult::Fine;
 		}
 		return EListenCallResult::SocketError;
@@ -34,8 +36,10 @@ namespace MiepMiep
 		auto lIt = m_Listeners.find( port );
 		if ( lIt != m_Listeners.end() )
 		{
-			lIt->second->stopListen();
-			m_ListenerSockets.erase( lIt->second->socket().to_sptr() );
+			if ( lIt->second )
+			{
+				lIt->second->stopListen();
+			}
 			m_Listeners.erase(lIt);
 		}
 	}
