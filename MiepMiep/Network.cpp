@@ -96,22 +96,19 @@ namespace MiepMiep
 		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), Util::rand(), true, false );
 		if ( !link ) return nullptr;
 		link->setSession( *s );
-		get<JobSystem>()->addJob( [=]
-		{
-			assert(link && s);
-			s->setMasterLink( link );
-			MasterSessionData data;
-			data.m_Type = type;
-			data.m_Name = name;
-			data.m_IsP2p  = isP2p;
-			data.m_Rating = rating;
-			data.m_Password = password;
-			data.m_IsPrivate  = !password.empty();
-			data.m_MaxClients = maxClients;
-			data.m_UsedMatchmaker = true;
-			data.m_CanJoinAfterStart = canJoinAfterStart;
-			link->getOrAdd<MasterLinkData>()->registerServer( callback, data, customMatchmakingMd );
-		} );
+        assert(link && s);
+        s->setMasterLink(link);
+        MasterSessionData data;
+        data.m_Type = type;
+        data.m_Name = name;
+        data.m_IsP2p  = isP2p;
+        data.m_Rating = rating;
+        data.m_Password = password;
+        data.m_IsPrivate  = !password.empty();
+        data.m_MaxClients = maxClients;
+        data.m_UsedMatchmaker = true;
+        data.m_CanJoinAfterStart = canJoinAfterStart;
+        link->getOrAdd<MasterLinkData>()->registerServer(callback, data, customMatchmakingMd);
 		return s;
 	}
 

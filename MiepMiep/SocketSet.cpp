@@ -21,6 +21,7 @@ namespace MiepMiep
 		scoped_lock lk(m_SetMutex);
 		m_IsDirty = true;
 		#if MM_SDLSOCKET
+        #error no implementation
 		#else MM_WIN32SOCKET
 			if ( m_HighLevelSockets.size() >= FD_SETSIZE ) return false; // Cannot add socket to this set. Create new set.
 			m_HighLevelSockets[sc<const BSDSocket&>(*sock).getSock()] = make_pair ( sock, packetHandler );
@@ -33,6 +34,7 @@ namespace MiepMiep
 		scoped_lock lk(m_SetMutex);
 		m_IsDirty = true;
 		#if MM_SDLSOCKET
+        #error no implementation
 		#else MM_WIN32SOCKET
 			m_HighLevelSockets.erase( sc<const BSDSocket&>(*sock).getSock() );
 		#endif
@@ -42,6 +44,7 @@ namespace MiepMiep
 	{
 		scoped_lock lk(m_SetMutex);
 		#if MM_SDLSOCKET
+        #error no implementation
 		#else MM_WIN32SOCKET
 			return m_HighLevelSockets.count( sc<const BSDSocket&>(*sock).getSock() ) != 0;
 		#endif
@@ -57,6 +60,7 @@ namespace MiepMiep
 			return EListenOnSocketsResult::NoSocketsInSet;
 
 		#if MM_SDLSOCKET
+        #error no implementation
 		#elif MM_WIN32SOCKET
 
 			// Query sockets for data
@@ -119,6 +123,7 @@ namespace MiepMiep
 	{
 
 	#if MM_SDLSOCKET
+        #error no implementation
 	#elif MM_WIN32SOCKET
 
 		scoped_lock lk(m_SetMutex);

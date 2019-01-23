@@ -36,7 +36,7 @@ namespace MiepMiep
 
 		// Becomes false if session was started in p2p and someone left or if was started and no late join is allowed.
 		MM_TS bool canJoin() const;
-		MM_TS void MasterSession::sendConnectRequests( Link& newLink );
+		MM_TS void sendConnectRequests( Link& newLink );
 
 		/*	Link to matchmaking server. */
 		MM_TS sptr<ILink> matchMaker()  const override;

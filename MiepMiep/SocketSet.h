@@ -44,6 +44,7 @@ namespace MiepMiep
 		mutable mutex m_SetMutex;
 
 	#if MM_SDLSOCKET
+    #error no implementation
 	#elif MM_WIN32SOCKET
 		// Max of 64 for BSD see FD_SETSIZE
 		map<SOCKET, pair<sptr<const ISocket>, sptr<IPacketHandler>>> m_HighLevelSockets;

@@ -55,7 +55,14 @@ namespace MiepMiep
 		bool succes = get<0>(tp);
 		sptr<MasterLinkData> mj = l.get<MasterLinkData>();
 		assert(mj);
-		l.pushEvent<EventRegisterResult>( mj, succes );
+        if ( mj )
+        {
+		    l.pushEvent<EventRegisterResult>( mj, succes );
+        }
+        else 
+        {
+            LOGW("Received master link register result while there was no masterLinkData object on the link.");
+        }
 	}
 
 	// Executes on master server!
@@ -71,12 +78,12 @@ namespace MiepMiep
 			l.setSession( *mSession );
 			mSession->addLink( l.to_ptr() );
 			l.callRpc<masterLinkRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
-			LOG("New master register server request from %s succesful.", l.info());
+			LOG("New master session with name %s.", mSession->name());
 		}
 		else
 		{
 			l.callRpc<masterLinkRpcRegisterResult, bool>(false, false, false, MM_RPC_CHANNEL, nullptr);
-			LOG("New master register server request from %s failed.", l.info());
+			LOG("Failed to create new master session with name %s.", mSession->name());
 		}
 	}
 
@@ -88,7 +95,14 @@ namespace MiepMiep
 		bool bSucces = get<0>( tp );
 		sptr<MasterLinkData> mj = l.get<MasterLinkData>(); 
 		assert(mj);
-		l.pushEvent<EventJoinResult>( mj, bSucces );
+        if ( mj )
+        {
+		    l.pushEvent<EventJoinResult>( mj, bSucces );
+        }
+        else
+        {
+            LOGW("Received masterLinkRpcJoinResult while there was no masterLinkData object on the link.");
+        }
 	}
 
 	// Executes on master server!
@@ -137,25 +151,19 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS void MasterLinkData::registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data,
-											   const MetaData& customMatchmakingMd )
+	void MasterLinkData::registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data,
+										 const MetaData& customMatchmakingMd )
 	{
-		// Cb lock
-		{
-			scoped_lock lk( m_DataMutex );
-			m_RegisterCb = cb;
-		}
+        assert(!m_RegisterCb); // Should only be set once.
+		m_RegisterCb = cb;
 		m_Link.callRpc<masterLinkRpcRegisterServer, MasterSessionData, MetaData>( data, customMatchmakingMd, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 
-	MM_TS void MasterLinkData::joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf,
-										   const MetaData& customMatchmakingMd )
+	void MasterLinkData::joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf,
+									 const MetaData& customMatchmakingMd )
 	{
-		// Cb lock
-		{
-			scoped_lock lk( m_DataMutex );
-			m_JoinCb = cb;
-		}
+        assert(!m_JoinCb); // Should only be set once.
+		m_JoinCb = cb;
 		m_Link.callRpc<masterLinkRpcJoinServer, SearchFilter, MetaData>( sf, customMatchmakingMd, false, false, MM_RPC_CHANNEL, nullptr );
 	}
 

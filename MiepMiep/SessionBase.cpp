@@ -61,7 +61,7 @@ namespace MiepMiep
 	MM_TS bool SessionBase::addLink( const sptr<Link>& link )
 	{
 		assert( !hasLink( *link ) );
-		LOG( "Added link %s to session %d.", link->info(), m_Id );
+		LOG( "Added link %s in sessionId %d.", link->info(), m_Id );
 		// Make buffering packets and adding the new link a single atomic process to ensure
 		// no discrepanties arise between sending buffered packets to new and existing links and adding new buffered packets.
 		rscoped_lock lk2( m_DataMutex );

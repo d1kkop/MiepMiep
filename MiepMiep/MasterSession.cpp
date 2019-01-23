@@ -65,7 +65,7 @@ namespace MiepMiep
 		}
 	}
 
-	// Executed on client (on connection to master).
+	// Executed on client (on new host in master session)
 	MM_RPC( masterSessionNewHost, sptr<IAddress> )
 	{
 		RPC_BEGIN();

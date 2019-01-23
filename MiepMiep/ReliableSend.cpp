@@ -59,7 +59,7 @@ namespace MiepMiep
 		{
 			if ( 0 != m_SendQueue.erase( seq ) )
 			{
-				LOG( "Packet with seq %d in link %s got acked and removed.", seq, m_Link.info() );
+			//	LOG( "Packet with seq %d in link %s got acked and removed.", seq, m_Link.info() );
 			}
 		}
 		//cout << "Link queue size: " << m_SendQueue.size() << endl;

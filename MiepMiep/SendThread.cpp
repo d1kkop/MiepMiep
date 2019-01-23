@@ -57,7 +57,7 @@ namespace MiepMiep
 				return;
 
 			u64 time = Util::abs_time();
-			auto lm = m_Network.get<LinkManager>();
+			auto lm  = m_Network.get<LinkManager>();
 			if ( !lm )
 				continue;
 

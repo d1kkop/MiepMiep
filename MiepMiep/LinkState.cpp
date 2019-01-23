@@ -117,6 +117,7 @@ namespace MiepMiep
 				const auto& md = get<0>( tp );
 				const auto& addrList = get<1>( tp );
 				l.pushEvent<EventNewConnection>( md, l.destination().to_ptr() );
+                // TODO
 				//for ( auto& adr : addrList ) // For client-serv architecture, the serv sends all remote address immediately.
 				//{
 				//	l.pushEvent<EventNewConnection>( md, l.destination().to_ptr() );

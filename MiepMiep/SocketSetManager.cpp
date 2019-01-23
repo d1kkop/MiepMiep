@@ -17,13 +17,13 @@ namespace MiepMiep
 		stop();
 	}
 
-	bool ReceptionThread::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
+	MM_TS bool ReceptionThread::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
 	{
 		scoped_lock lk(m_SocketSetMutex);
 		return m_SockSet->addSocket( sock, handler );
 	}
 
-	void ReceptionThread::removeSocket(const sptr<const ISocket>& sock)
+	MM_TS void ReceptionThread::removeSocket(const sptr<const ISocket>& sock)
 	{
 		scoped_lock lk(m_SocketSetMutex);
 		m_SockSet->removeSocket( sock );

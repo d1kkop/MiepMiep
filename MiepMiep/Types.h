@@ -61,7 +61,7 @@ namespace MiepMiep
 	using MetaData	= std::map<std::string, std::string>;
 
 
-	// For clarity instead of a range of  true/false params which make little sense when reading back.
+	// Use these bools as params for clarity.
 
 	constexpr bool No_Local  = false;
 	constexpr bool No_Relay  = false;

@@ -29,9 +29,6 @@
     <Filter Include="Link\Components">
       <UniqueIdentifier>{45e18428-71ff-4488-ae1e-b4111c367e66}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Link\Components\Streams">
-      <UniqueIdentifier>{a296cafe-d74d-4b28-9af4-2fe8d18b546a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Link\Components\Link">
       <UniqueIdentifier>{37cfb5f5-66cd-4338-96e5-d87a01baef76}</UniqueIdentifier>
     </Filter>
@@ -54,6 +51,12 @@
     <Filter Include="MSession">
       <UniqueIdentifier>{7e7b0619-83a3-45b9-9cea-8e21d7ec2a8a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Link\Components\Send">
+      <UniqueIdentifier>{a296cafe-d74d-4b28-9af4-2fe8d18b546a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Link\Components\Recv">
+      <UniqueIdentifier>{f45cb4b6-ff45-4c0a-9e02-18047e8e9d37}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Util.cpp">
@@ -69,22 +72,13 @@
       <Filter>Network\Components</Filter>
     </ClCompile>
     <ClCompile Include="ReliableSend.cpp">
-      <Filter>Link\Components\Streams</Filter>
+      <Filter>Link\Components\Send</Filter>
     </ClCompile>
     <ClCompile Include="UnreliableSend.cpp">
-      <Filter>Link\Components\Streams</Filter>
+      <Filter>Link\Components\Send</Filter>
     </ClCompile>
     <ClCompile Include="ReliableNewSend.cpp">
-      <Filter>Link\Components\Streams</Filter>
-    </ClCompile>
-    <ClCompile Include="ReliableNewRecv.cpp">
-      <Filter>Link\Components\Streams</Filter>
-    </ClCompile>
-    <ClCompile Include="UnreliableRecv.cpp">
-      <Filter>Link\Components\Streams</Filter>
-    </ClCompile>
-    <ClCompile Include="ReliableRecv.cpp">
-      <Filter>Link\Components\Streams</Filter>
+      <Filter>Link\Components\Send</Filter>
     </ClCompile>
     <ClCompile Include="RemoteServerInfo.cpp">
       <Filter>Link\Components\Link</Filter>
@@ -179,6 +173,15 @@
     <ClCompile Include="MasterSession.cpp">
       <Filter>MSession</Filter>
     </ClCompile>
+    <ClCompile Include="ReliableNewRecv.cpp">
+      <Filter>Link\Components\Recv</Filter>
+    </ClCompile>
+    <ClCompile Include="ReliableRecv.cpp">
+      <Filter>Link\Components\Recv</Filter>
+    </ClCompile>
+    <ClCompile Include="UnreliableRecv.cpp">
+      <Filter>Link\Components\Recv</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MiepMiep.h">
@@ -200,22 +203,13 @@
       <Filter>Network\Components</Filter>
     </ClInclude>
     <ClInclude Include="ReliableSend.h">
-      <Filter>Link\Components\Streams</Filter>
+      <Filter>Link\Components\Send</Filter>
     </ClInclude>
     <ClInclude Include="ReliableNewSend.h">
-      <Filter>Link\Components\Streams</Filter>
+      <Filter>Link\Components\Send</Filter>
     </ClInclude>
     <ClInclude Include="UnreliableSend.h">
-      <Filter>Link\Components\Streams</Filter>
-    </ClInclude>
-    <ClInclude Include="ReliableNewRecv.h">
-      <Filter>Link\Components\Streams</Filter>
-    </ClInclude>
-    <ClInclude Include="UnreliableRecv.h">
-      <Filter>Link\Components\Streams</Filter>
-    </ClInclude>
-    <ClInclude Include="ReliableRecv.h">
-      <Filter>Link\Components\Streams</Filter>
+      <Filter>Link\Components\Send</Filter>
     </ClInclude>
     <ClInclude Include="RemoteServerInfo.h">
       <Filter>Link\Components\Link</Filter>
@@ -330,6 +324,15 @@
     </ClInclude>
     <ClInclude Include="MasterSession.h">
       <Filter>MSession</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableNewRecv.h">
+      <Filter>Link\Components\Recv</Filter>
+    </ClInclude>
+    <ClInclude Include="ReliableRecv.h">
+      <Filter>Link\Components\Recv</Filter>
+    </ClInclude>
+    <ClInclude Include="UnreliableRecv.h">
+      <Filter>Link\Components\Recv</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
