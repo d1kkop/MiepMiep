@@ -18,8 +18,8 @@ namespace MiepMiep
 		~MasterLinkData() override;
 		static EComponentType compType() { return EComponentType::MasterLinkData; }
 
-		void registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data, const MetaData& customMatchmakingMd );
-		void joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf, const MetaData& customMatchmakingMd );
+		bool registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data, const MetaData& customMatchmakingMd );
+		bool joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf, const MetaData& customMatchmakingMd );
 
 		// Not thread safe, but set before request is transmitted. Only on reply the cb is requested.
 		const function<void( ISession& session, bool )>& getRegisterCb() const { return m_RegisterCb; }

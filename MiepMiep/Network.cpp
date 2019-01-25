@@ -92,10 +92,10 @@ namespace MiepMiep
 			LOGW( "Could not create socket, error %d.", err );
 			return nullptr;
 		}
+        LOG("Registering a new server at master %s.", masterAddr.toIpAndPort());
 		auto s = reserve_sp<Session>( MM_FL, *this, hostMd );
-		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), Util::rand(), true, false );
+		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ) );
 		if ( !link ) return nullptr;
-		link->setSession( *s );
         assert(link && s);
         s->setMasterLink(link);
         MasterSessionData data;
@@ -108,7 +108,8 @@ namespace MiepMiep
         data.m_MaxClients = maxClients;
         data.m_UsedMatchmaker = true;
         data.m_CanJoinAfterStart = canJoinAfterStart;
-        link->getOrAdd<MasterLinkData>()->registerServer(callback, data, customMatchmakingMd);
+        bool bStartedRegister = link->getOrAdd<MasterLinkData>()->registerServer(callback, data, customMatchmakingMd);
+        assert(bStartedRegister);
 		return s;
 	}
 
@@ -125,26 +126,24 @@ namespace MiepMiep
 			LOGW( "Could not create socket, error %d.", err );
 			return nullptr;
 		}
+        LOG("Joining a new server at master %s.", masterAddr.toIpAndPort()); 
 		auto s = reserve_sp<Session>( MM_FL, *this, joinMd );
-		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ), Util::rand(), true, false );
+		auto link = getOrAdd<LinkManager>()->add( *s, SocketAddrPair( *sock, masterAddr ) );
 		if ( !link ) return nullptr;
-		link->setSession( *s );
-		get<JobSystem>()->addJob( [=]
-		{
-			assert(link && s);
-			s->setMasterLink( link );
-			SearchFilter sf;
-			sf.m_Name = name;
-			sf.m_Type = type;
-			sf.m_MinRating   = minRating;
-			sf.m_MaxRating   = maxRating;
-			sf.m_MinPlayers  = minPlayers;
-			sf.m_MaxPlayers  = maxPlayers;
-			sf.m_FindPrivate = false;
-			sf.m_FindP2p = findP2p;
-			sf.m_FindClientServer = findClientServer;
-			link->getOrAdd<MasterLinkData>()->joinServer( callback, sf, customMatchmakingMd );
-		} );
+        assert(link && s);
+        s->setMasterLink(link);
+        SearchFilter sf;
+        sf.m_Name = name;
+        sf.m_Type = type;
+        sf.m_MinRating   = minRating;
+        sf.m_MaxRating   = maxRating;
+        sf.m_MinPlayers  = minPlayers;
+        sf.m_MaxPlayers  = maxPlayers;
+        sf.m_FindPrivate = false;
+        sf.m_FindP2p = findP2p;
+        sf.m_FindClientServer = findClientServer;
+        bool bStartedJoin = link->getOrAdd<MasterLinkData>()->joinServer(callback, sf, customMatchmakingMd);
+        assert(bStartedJoin);
 		return s;
 	}
 
@@ -277,7 +276,12 @@ namespace MiepMiep
 		return m_PacketLossPercentage;
 	}
 
-	MM_TS void Network::printMemoryLeaks()
+    MM_TS u32 Network::nextSessionId()
+    {
+        return m_NextSessionId++;
+    }
+
+    MM_TS void Network::printMemoryLeaks()
 	{
 		Memory::printUntracedMemory();
 	}

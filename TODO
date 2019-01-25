@@ -72,7 +72,7 @@ Network : ComponentCollection
         - links[]
         
 
-    Session : ParentNetwork (Not a component), IPacketHandler
+    Session : ParentNetwork (Not a component)
         - startListen()
         - stopListen()
         ------
@@ -119,7 +119,7 @@ Network : ComponentCollection
         - customFilterMd
         - links[]
     
-    MasterServer : ParentNetwork, IComponent, IPacketHandler
+    MasterServer : ParentNetwork, IComponent
         - startListen
         - stopListen
         - registerSession

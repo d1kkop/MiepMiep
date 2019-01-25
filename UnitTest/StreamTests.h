@@ -91,12 +91,11 @@ UTESTBEGIN(ReliableTest)
 			 }
 		 }
 
-		 g_cqs[i].m_recvLink = lm->add( *clientSes[i], saps[i], 200+i, true, true );
+		 g_cqs[i].m_recvLink = lm->add( *clientSes[i], saps[i] );
 		 u16 boundPort = 0;
 		 boundPort = Endpoint::createSource( *clientSocks[i] )->port();
 		 g_cqs[i].m_sendLink = lm->add( sc<SessionBase&>( *hostSes ),
-										SocketAddrPair( listener->socket().to_sptr(), IAddress::resolve( "localhost", boundPort ) ),
-										200+i, false, true );
+										SocketAddrPair( listener->socket().to_sptr(), IAddress::resolve( "localhost", boundPort ) ) );
 	 }
 
 	

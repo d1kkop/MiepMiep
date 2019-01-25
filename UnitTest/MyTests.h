@@ -3,7 +3,6 @@
 #include "UnitTestBase.h"
 #include "Socket.h"
 #include "SocketSet.h"
-#include "PacketHandler.h"
 #include "Memory.h"
 #include "BinSerializer.h"
 #include "Threading.h"
@@ -76,14 +75,6 @@ UTESTBEGIN(SocketTest)
 UNITTESTEND(SocketTest)
 
 
-class UnitTestPacketHandler: public IPacketHandler
-{
-public:
-	UnitTestPacketHandler(Network& nw):
-		IPacketHandler(nw) { }
-
-};
-
 UTESTBEGIN(SocketSetTest)
 {
 	// ensures socket environment gets initialized
@@ -92,12 +83,11 @@ UTESTBEGIN(SocketSetTest)
 
 	SocketSet ss2;
 	i32 err;
-	EListenOnSocketsResult res = ss2.listenOnSockets(1, &err );
+	EListenOnSocketsResult res = ss2.listenOnSockets( sc<Network&>(*network), 1, &err );
 	assert( res == EListenOnSocketsResult::NoSocketsInSet );
 
 	
 	Network& nw = toNetwork( *network ) ;
-	sptr<UnitTestPacketHandler> handler = reserve_sp<UnitTestPacketHandler, Network&>( MM_FL, nw );
 
 	constexpr auto kThreads=50;
 	i32 k=10000;
@@ -113,9 +103,9 @@ UTESTBEGIN(SocketSetTest)
 				sptr<ISocket> sock = ISocket::create();
 				sock->open();
 				sock->bind(0);
-				ss[Util::rand()%4].addSocket( const_pointer_cast<const ISocket>( sock ), static_pointer_cast<IPacketHandler>( handler ) );
+				ss[Util::rand()%4].addSocket( const_pointer_cast<const ISocket>( sock ) );
 				i32 err;
-				EListenOnSocketsResult res = ss[j].listenOnSockets(1, &err);
+				EListenOnSocketsResult res = ss[j].listenOnSockets(sc<Network&>(*network), 1, &err);
 				assert ( res == EListenOnSocketsResult::TimeoutNoData || res == EListenOnSocketsResult::Fine || res == EListenOnSocketsResult::NoSocketsInSet );
 			}
 		});

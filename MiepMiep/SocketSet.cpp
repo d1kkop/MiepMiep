@@ -1,6 +1,9 @@
 #include "SocketSet.h"
 #include "Socket.h"
-#include "PacketHandler.h"
+#include "Link.h"
+#include "Util.h"
+#include "Network.h"
+#include "Endpoint.h"
 #include <algorithm>
 #include <cassert>
 using namespace std;
@@ -16,22 +19,22 @@ namespace MiepMiep
 	SocketSet::~SocketSet()
 	= default;
 
-	MM_TS bool SocketSet::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler)
+	MM_TS bool SocketSet::addSocket(const sptr<const ISocket>& sock)
 	{
-		scoped_lock lk(m_SetMutex);
-		m_IsDirty = true;
+		scoped_lock lk(m_HighLevelSocketsMutex);
 		#if MM_SDLSOCKET
         #error no implementation
 		#else MM_WIN32SOCKET
 			if ( m_HighLevelSockets.size() >= FD_SETSIZE ) return false; // Cannot add socket to this set. Create new set.
-			m_HighLevelSockets[sc<const BSDSocket&>(*sock).getSock()] = make_pair ( sock, packetHandler );
+			m_HighLevelSockets[sc<const BSDSocket&>(*sock).getSock()] = sock;
 		#endif
+		m_IsDirty = true;
 		return true;
 	}
 
 	MM_TS void SocketSet::removeSocket(const sptr<const ISocket>& sock)
 	{
-		scoped_lock lk(m_SetMutex);
+		scoped_lock lk(m_HighLevelSocketsMutex);
 		m_IsDirty = true;
 		#if MM_SDLSOCKET
         #error no implementation
@@ -42,7 +45,7 @@ namespace MiepMiep
 
 	MM_TS bool SocketSet::hasSocket(const sptr<const ISocket>& sock) const
 	{
-		scoped_lock lk(m_SetMutex);
+		scoped_lock lk(m_HighLevelSocketsMutex);
 		#if MM_SDLSOCKET
         #error no implementation
 		#else MM_WIN32SOCKET
@@ -51,7 +54,7 @@ namespace MiepMiep
 		return false;
 	}
 
-	EListenOnSocketsResult SocketSet::listenOnSockets(u32 timeoutMs, i32* err)
+	EListenOnSocketsResult SocketSet::listenOnSockets(Network& network, u32 timeoutMs, i32* err)
 	{
 		if ( err ) *err = 0;
 		rebuildSocketArrayIfNecessary();
@@ -66,7 +69,7 @@ namespace MiepMiep
 			// Query sockets for data
 			timeval tv;
 			tv.tv_sec  = 0;
-			tv.tv_usec = timeoutMs*1000*MM_SOCK_SELECT_TIMEOUT; // ~20ms
+			tv.tv_usec = timeoutMs*1000*MM_SOCK_SELECT_TIMEOUT;
 
 			// NOTE: select reorders the ready sockets from 0 to end-1, and fd_count is adjusted to the num of ready sockets.
 			i32 res = select( 0, &m_LowLevelSocketArray, nullptr, nullptr, &tv );
@@ -93,24 +96,20 @@ namespace MiepMiep
 			//	LOG( "Recv on ... %ull.", s ); 
 
 				// Only use lock for obtaining socket, then release as there is no need to keep lock.
-				pair<sptr<const ISocket>, sptr<IPacketHandler>> sockHandlerPair;
-				bool validPair = false;
+				sptr<const ISocket> hSocket;
 				{
-					scoped_lock lk( m_SetMutex );
+					scoped_lock lk( m_HighLevelSocketsMutex );
 					auto sockIt = m_HighLevelSockets.find( s );
 					if ( sockIt != m_HighLevelSockets.end() )
 					{
-						sockHandlerPair = sockIt->second;
-						validPair = true;
+                        hSocket = sockIt->second;
 					}
 				}
 				
 				// Start receiving the packet.
-				if ( validPair )
+				if ( hSocket )
 				{
-					auto& receptionSock = sockHandlerPair.first;
-					auto& packetHandler = sockHandlerPair.second;
-					packetHandler->recvFromSocket( *receptionSock ); // handle data
+                    handleReceivedPacket( network, *hSocket );
 				}
 			}
 
@@ -126,8 +125,8 @@ namespace MiepMiep
         #error no implementation
 	#elif MM_WIN32SOCKET
 
-		scoped_lock lk(m_SetMutex);
-		// Apparently, we have to rebuild the set each time again.
+		scoped_lock lk(m_HighLevelSocketsMutex);
+		// TODO -> Apparently, we have to rebuild the set each time again.
 		m_IsDirty = true;
 
 		if ( m_IsDirty )
@@ -137,19 +136,77 @@ namespace MiepMiep
 
 			for ( auto& kvp : m_HighLevelSockets )
 			{
-				SOCKET s = sc<const BSDSocket&>(*kvp.second.first).getSock();
+				SOCKET s = sc<const BSDSocket&>(*kvp.second).getSock();
 				FD_SET(s, &m_LowLevelSocketArray);
 			}
 
-			m_IsDirty = false;
-		}
-		else
-		{
 			m_LowLevelSocketArray.fd_count = (u_int) m_HighLevelSockets.size();
+			m_IsDirty = false;
 		}
 
 	#endif
 		
 	}
+
+    void SocketSet::handleReceivedPacket(Network& network, const ISocket& sock)
+    {
+        byte* buff = reserveN<byte>(MM_FL, MM_MAX_RECVSIZE);
+        u32 rawSize = MM_MAX_RECVSIZE; // buff size in
+        Endpoint etp;
+        i32 err;
+        ERecvResult res = sock.recv(buff, rawSize, etp, &err);
+
+        u32 packetLossPercentage = network.packetLossPercentage();
+        if ( packetLossPercentage != 0 && (Util::rand()%100)+1 <= packetLossPercentage )
+        {
+            // drop deliberately
+            return;
+        }
+
+    #if _DEBUG
+        etp.m_HostPort = etp.getPortHostOrder();
+    #endif
+
+        //	LOG( "Received data from.. %s.", etp.toIpAndPort() );
+
+        if ( err != 0 )
+        {
+            LOG("Socket recv error: %d.", err);
+            releaseN(buff);
+            return;
+        }
+
+        if ( res == ERecvResult::Succes )
+        {
+            if ( rawSize >= MM_MIN_HDR_SIZE )
+            {
+                auto lm = network.getOrAdd<LinkManager>();
+                sptr<Link> link = lm->getOrAdd(nullptr, SocketAddrPair(sock, *etp.getCopyDerived()), nullptr);
+                if ( link )
+                {
+                    BinSerializer bs( buff, MM_MAX_RECVSIZE, rawSize, false, false );
+                    link->receive(bs);
+                }
+
+                //m_Network.get<JobSystem>()->addJob(
+                //	[p = move( make_shared<RecvPacket>( 0, buff, rawSize, 0, false ) ),
+                //	ph = move( ptr<PacketHandler>() ),
+                //	e  = etp.getCopyDerived(),
+                //	s  = sock.to_sptr()]
+                //{
+                //	BinSerializer bs( p->m_Data, MM_MAX_RECVSIZE, p->m_Length, false, false );
+                //	ph->handleInitialAndPassToLink( bs, *s, *e );
+                //} );
+
+                //// passed to thread-job
+            }
+            else
+            {
+                LOGW("Received packet with less than %d bytes (= Hdr size), namely %d. Packet discarded.", MM_MIN_HDR_SIZE, rawSize);
+            }
+        }
+
+        releaseN(buff);
+    }
 
 }

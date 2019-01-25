@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.h"
+#include "ParentNetwork.h"
 #include "MiepMiep.h"
 #include "LinkManager.h"
 #include "PacketHandler.h"
@@ -19,20 +20,18 @@ namespace MiepMiep
 
 	// ------------ Link -----------------------------------------------
 
-	class Link: public ILink, public ComponentCollection, public IPacketHandler
+	class Link: public ParentNetwork, public ILink, public ComponentCollection, public ITraceable
 	{
 	public:
 		Link(Network& network);
-		~Link() override;
+		~Link();
 		MM_TSC void setSession( SessionBase& session );
 
 		MM_TSC bool operator<  ( const Link& o ) const;
 		MM_TSC bool operator== ( const Link& o ) const;
 		MM_TSC bool operator!= ( const Link& o ) const { return !(*this == o); }
 
-		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler, bool addToSession );
-		MM_TS static sptr<Link> create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession );
-		MM_TS static sptr<Link> create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession );
+		MM_TS static sptr<Link> create( Network& network, SessionBase* session, const SocketAddrPair& sap );
 
 		// ILink
 		MM_TSC INetwork& network() const override;
@@ -40,10 +39,9 @@ namespace MiepMiep
 		MM_TSC const IAddress& destination() const override { return *m_SockAddrPair.m_Address; }
 		MM_TSC const IAddress& source() const override { return *m_Source; }
 		MM_TS  bool  isConnected() const override;
-		MM_TSC SessionBase* getSession() const override;
+		MM_TSC SessionBase* getSession() const;
 
 		// These are thread safe beacuse they are set before the newly created link object is returned from creation.
-		MM_TSC u32 id() const { return m_Id; }
 		MM_TSC const ISocket& socket() const { return *m_SockAddrPair.m_Socket; }
 		MM_TSC const char* ipAndPort() const;
 		MM_TSC const char* info() const;
@@ -80,8 +78,6 @@ namespace MiepMiep
 
 	private:
 		// All these fields could have their own component, but that is a lot of boilerplate for a single field.
-		u32 m_Id;
-		bool m_SocketWasAddedToHandler;
 		sptr<SessionBase> m_Session;
 		SocketAddrPair m_SockAddrPair;
 		sptr<const class IAddress> m_Source;

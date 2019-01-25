@@ -14,7 +14,7 @@ namespace MiepMiep
 
 	SessionBase::SessionBase( Network& network ):
 		ParentNetwork( network ),
-		m_Id( Util::rand() ),
+		m_Id( network.nextSessionId() ),
 		m_Started(false)
 	{
 	}
@@ -24,7 +24,12 @@ namespace MiepMiep
 		return m_Network;
 	}
 
-	MM_TSC const MasterSessionData& SessionBase::msd() const
+    MM_TSC u32 SessionBase::id() const
+    {
+        return m_Id;
+    }
+
+    MM_TSC const MasterSessionData& SessionBase::msd() const
 	{
 		// MasterSessionReference set at construction, no lock requied.
 		return m_MasterData;
@@ -61,7 +66,7 @@ namespace MiepMiep
 	MM_TS bool SessionBase::addLink( const sptr<Link>& link )
 	{
 		assert( !hasLink( *link ) );
-		LOG( "Added link %s in sessionId %d.", link->info(), m_Id );
+		LOG( "Added new link %s in sessionId %d.", link->info(), m_Id );
 		// Make buffering packets and adding the new link a single atomic process to ensure
 		// no discrepanties arise between sending buffered packets to new and existing links and adding new buffered packets.
 		rscoped_lock lk2( m_DataMutex );
@@ -74,6 +79,7 @@ namespace MiepMiep
 			}
 		}
 		m_Links.emplace_back( link );
+        link->setSession( *this );
 		return true;
 	}
 

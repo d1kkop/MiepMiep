@@ -17,10 +17,10 @@ namespace MiepMiep
 		stop();
 	}
 
-	MM_TS bool ReceptionThread::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
+	MM_TS bool ReceptionThread::addSocket(const sptr<const ISocket>& sock)
 	{
 		scoped_lock lk(m_SocketSetMutex);
-		return m_SockSet->addSocket( sock, handler );
+		return m_SockSet->addSocket( sock );
 	}
 
 	MM_TS void ReceptionThread::removeSocket(const sptr<const ISocket>& sock)
@@ -56,7 +56,7 @@ namespace MiepMiep
 		while ( true )
 		{
 			i32 err;
-			EListenOnSocketsResult res = m_SockSet->listenOnSockets( MM_SOCK_SELECT_TIMEOUT, &err );
+			EListenOnSocketsResult res = m_SockSet->listenOnSockets( m_Manager.m_Network, MM_SOCK_SELECT_TIMEOUT, &err );
 
 			if ( m_Manager.isClosing() )
 				break;
@@ -88,21 +88,21 @@ namespace MiepMiep
 		m_ReceptionThreads.clear(); // will invoke reception thread destructors which join the calling thread
 	}
 
-	MM_TS void SocketSetManager::addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler)
+	MM_TS void SocketSetManager::addSocket(const sptr<const ISocket>& sock)
 	{
 		scoped_lock lk(m_ReceptionThreadsMutex);
 
 		// try all sets
 		for ( auto& r : m_ReceptionThreads )
 		{
-			if ( r->addSocket( sock, handler ) )
+			if ( r->addSocket( sock ) )
 			{
 				return;
 			}
 		}
 
 		m_ReceptionThreads.emplace_back( reserve_sp<ReceptionThread, SocketSetManager&>(MM_FL, *this) );
-		bool wasAdded = m_ReceptionThreads.back()->addSocket( sock, handler );
+		bool wasAdded = m_ReceptionThreads.back()->addSocket( sock );
 		assert( wasAdded );
 
 		m_ReceptionThreads.back()->start();

@@ -38,8 +38,8 @@ namespace MiepMiep
 		LinkManager(Network& network);
 		static EComponentType compType() { return EComponentType::LinkManager; }
 
-		MM_TS sptr<Link> add( SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession );
-		MM_TS sptr<Link> getOrAdd( SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession, bool returnNullIfIdsDontMatch, bool* wasNew );
+		MM_TS sptr<Link> add( SessionBase& session, const SocketAddrPair& sap );
+		MM_TS sptr<Link> getOrAdd( SessionBase* session, const SocketAddrPair& sap, bool* wasNew );
 		MM_TS sptr<Link> get( const SocketAddrPair& sap );
 		MM_TS bool		 has( const SocketAddrPair& sap ) const;
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb, u32 clusterSize=0 );

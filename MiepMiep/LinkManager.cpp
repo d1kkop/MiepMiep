@@ -70,9 +70,9 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession )
+	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap )
 	{
-		sptr<Link> link = Link::create( m_Network, session, sap, id, addHandler, addToSession );
+		sptr<Link> link = Link::create( m_Network, &session, sap );
 		if ( !link ) return nullptr;
 		scoped_lock lk( m_LinksMapMutex );
 		if ( m_Links.count( sap ) != 0 )
@@ -86,54 +86,25 @@ namespace MiepMiep
 		return link;
 	}
 
-	MM_TS sptr<Link> LinkManager::getOrAdd( SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession, bool returnNullIfIdsDontMatch, bool* wasNew )
+	MM_TS sptr<Link> LinkManager::getOrAdd( SessionBase* session, const SocketAddrPair& sap, bool* wasNew )
 	{
 		scoped_lock lk( m_LinksMapMutex );
-		//LOG( "List links..." );
-		//for ( auto& kvp : m_Links )
-		//{
-		//	LOG( "In map: key %s, value %s.", kvp.first.info(), kvp.second->info() );
-		//}
-
-		//for ( auto& l : m_LinksAsArray )
-		//{
-		//	if ( l->getSocketAddrPair() == sap )
-		//	{
-		//		LOG( "Wanted %s, Found %s.", sap.info(), l->info() );
-		//		return l;
-		//	}
-		//}
 
 		auto lIt  = m_Links.find( sap );
 		if ( lIt != m_Links.end() )
 		{
 			if (wasNew) *wasNew = false;
-
-		//	LOG("Wanted %s, Found %s.", sap.info(), lIt->second->info());
-			const sptr<Link>& l = lIt->second;
-			if ( !returnNullIfIdsDontMatch || id == l->id() )
-			{
-				return l;
-			}
-			// Did find, but id's did not match.
-		//	LOG( "FAILED to find %s id's did not match.", sap.info() );
-			assert(false);
-			return nullptr;
+            return lIt->second;
 		}
 
 		if ( wasNew ) *wasNew = true;
 
 	//	LOG( "FAILED to find %s", sap.info() );
-		sptr<Link> link = Link::create( m_Network, session, sap, id, addHandler, addToSession );
+		sptr<Link> link = Link::create( m_Network, session, sap );
 		if ( !link )
 		{
 			assert(false);
 			return nullptr;
-		}
-		if ( session && addToSession )
-		{
-			// session->addLink( link );
-			link->setSession( *session );
 		}
 		m_LinksAsArray.emplace_back( link );
 		m_Links[sap] = link;

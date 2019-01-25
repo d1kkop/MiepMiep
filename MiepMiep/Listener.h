@@ -1,15 +1,17 @@
 #pragma once
 
 #include "Component.h"
-#include "PacketHandler.h"
+#include "ParentNetwork.h"
+#include "Memory.h"
 
 
 namespace MiepMiep
 {
 	class ISocket;
+    class Network;
 
 
-	class Listener: public IComponent, public IPacketHandler
+	class Listener: public ParentNetwork, public IComponent, public ITraceable
 	{
 	public:
 		/* Use Start Listen instead of constructor !! */

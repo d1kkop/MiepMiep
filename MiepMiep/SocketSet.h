@@ -8,7 +8,7 @@ using namespace std;
 namespace MiepMiep
 {
 	class ISocket;
-	class IPacketHandler;
+	class Network;
 
 
 	enum class EListenOnSocketsResult
@@ -27,27 +27,27 @@ namespace MiepMiep
 		~SocketSet() override;
 
 		// Fails if max number of sockets was added. For BSD sockets the default is 64.
-		MM_TS bool addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& packetHandler);
+		MM_TS bool addSocket(const sptr<const ISocket>& sock);
 		MM_TS void removeSocket(const sptr<const ISocket>& sock);
 		MM_TS bool hasSocket(const sptr<const ISocket>& sock) const;
 
 		// NOTE: Not thread safe. Should be called from a single thread to listen on sockets.
-		// Suggestion: Use a seperate thread per SocketSet.
-		EListenOnSocketsResult listenOnSockets(u32 timeoutMs, i32* err=nullptr);
+		EListenOnSocketsResult listenOnSockets(Network& network, u32 timeoutMs, i32* err=nullptr);
 
 	private:
-		MM_TS void rebuildSocketArrayIfNecessary();
+		void rebuildSocketArrayIfNecessary();
+        void handleReceivedPacket(Network& network, const ISocket& sock);
 
 	private:
 		bool m_IsDirty;
 		bool m_Closing;
-		mutable mutex m_SetMutex;
 
 	#if MM_SDLSOCKET
     #error no implementation
 	#elif MM_WIN32SOCKET
 		// Max of 64 for BSD see FD_SETSIZE
-		map<SOCKET, pair<sptr<const ISocket>, sptr<IPacketHandler>>> m_HighLevelSockets;
+		mutable mutex m_HighLevelSocketsMutex;
+		map<SOCKET, sptr<const ISocket>> m_HighLevelSockets;
 		fd_set m_LowLevelSocketArray;
 	#endif
 	};

@@ -6,7 +6,6 @@
 #include "Endpoint.h"
 #include "Socket.h"
 #include "LinkState.h"
-#include "PacketHandler.h"
 #include "ReliableRecv.h"
 #include "UnreliableRecv.h"
 #include "ReliableNewRecv.h"
@@ -37,20 +36,16 @@ namespace MiepMiep
 	// -------- Link ----------------------------------------------------------------------------------------------------
 
 	Link::Link(Network& network):
-		IPacketHandler(network),
-		m_SocketWasAddedToHandler(false)
+		ParentNetwork(network)
 	{
 	}
 
 	Link::~Link()
 	{
-		if ( m_SocketWasAddedToHandler )
+		sptr<SocketSetManager> ss = m_Network.get<SocketSetManager>();
+		if ( ss )
 		{
-			sptr<SocketSetManager> ss = m_Network.get<SocketSetManager>();
-			if ( ss )
-			{
-				ss->removeSocket( m_SockAddrPair.m_Socket );
-			}
+			ss->removeSocket( m_SockAddrPair.m_Socket );
 		}
 		LOG( "Link %s destroyed.", info() );
 	}
@@ -71,17 +66,7 @@ namespace MiepMiep
 		return getSocketAddrPair() == o.getSocketAddrPair();
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler, bool addToSession )
-	{
-		return create( network, session, sap, Util::rand(), addHandler, addToSession );
-	}
-
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession )
-	{
-		return create( network, &session, sap, id, addHandler, addToSession );
-	}
-
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession )
+	MM_TS sptr<Link> Link::create( Network& network, SessionBase* session, const SocketAddrPair& sap )
 	{
 		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
 
@@ -93,23 +78,20 @@ namespace MiepMiep
 			return nullptr;
 		}
 
-		if ( addHandler )
-		{
-			link->m_Network.getOrAdd<SocketSetManager>()->addSocket( sap.m_Socket, link->ptr<IPacketHandler>() );
-			link->m_SocketWasAddedToHandler = true;
-		}
 
-		link->m_Id = id;
 		link->m_SockAddrPair = sap;
-		if ( session && addToSession )
+		if ( session )
 		{
 			if ( !session->addLink( link ) )
 			{
 				return nullptr;
 			}
 		}
-
-		LOG( "Created new link to %s.", link->info() );
+        else
+        {
+            // Only log if created without session otherwise double messages for creating and adding a new link.
+		    LOG( "Created new link to %s.", link->info() );
+        }
 		return link;
 	}
 
@@ -143,7 +125,7 @@ namespace MiepMiep
 	MM_TSC const char* Link::info() const
 	{
 		static thread_local char buff[128];
-		Platform::formatPrint(buff, sizeof(buff), "%s (src_port: %d, link: %d, socket: %d)", ipAndPort(), source().port(), m_Id, socket().id());
+		Platform::formatPrint(buff, sizeof(buff), "%s (src_port: %d, socket: %d)", ipAndPort(), source().port(), socket().id());
 		return buff;
 	}
 

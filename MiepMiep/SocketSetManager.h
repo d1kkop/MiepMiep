@@ -9,7 +9,6 @@ namespace MiepMiep
 {
 	class ISocket;
 	class SocketSet;
-	class IPacketHandler;
 	class SocketSetManager;
 
 	class ReceptionThread: public ITraceable
@@ -17,7 +16,7 @@ namespace MiepMiep
 	public:
 		ReceptionThread(SocketSetManager& manager);
 		~ReceptionThread() override;
-		MM_TS bool addSocket(const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler);
+		MM_TS bool addSocket(const sptr<const ISocket>& sock);
 		MM_TS void removeSocket(const sptr<const ISocket>& sock);
 		void start();
 		void stop();
@@ -40,7 +39,7 @@ namespace MiepMiep
 		bool isClosing() const volatile { return m_Closing; }
 		void stop();
 
-		MM_TS void addSocket( const sptr<const ISocket>& sock, const sptr<IPacketHandler>& handler );
+		MM_TS void addSocket( const sptr<const ISocket>& sock );
 		MM_TS void removeSocket( const sptr<const ISocket>& sock );
 
 	private:

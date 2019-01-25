@@ -36,6 +36,7 @@ namespace MiepMiep
 	public:
 		SessionBase(Network& network);
 		MM_TSC INetwork& network() const override;
+        MM_TSC u32 id() const;
 		MM_TSC rmutex& dataMutex() { return m_DataMutex; }
 		MM_TSC const MasterSessionData& msd() const; // TODO retrieving members of this is not TS 
 
@@ -52,7 +53,7 @@ namespace MiepMiep
 
 	protected:
 		mutable rmutex m_DataMutex;
-		u32  m_Id; // <-- Only used for debugging sessions
+		u32  m_Id;
 		bool m_Started;
 		MasterSessionData m_MasterData;
 		vector<wptr<Link>> m_Links;

@@ -18,18 +18,6 @@ namespace MiepMiep
 	struct SocketAddrPair;
 
 
-	class IPacketHandler: public ParentNetwork, public ITraceable
-	{
-	public:
-		IPacketHandler(Network& network);
-
-		MM_TS void recvFromSocket( const ISocket& sock );
-		MM_TS void handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr );
-		MM_TS sptr<Link> getOrCreateLink( u32 linkId, const SocketAddrPair& sap );
-		MM_TSC virtual SessionBase* getSession() const { return nullptr; }
-	};
-
-
 	struct RecvPacket
 	{
 	public:
@@ -64,7 +52,7 @@ namespace MiepMiep
 	struct PacketHelper
 	{
 		static byte makeChannelAndFlags( byte channel, bool relay, bool sysBit, bool isFirstFragment, bool isLastFragment );
-		static bool beginUnfragmented( BinSerializer& bs, u32 linkId, u32 seq, byte compType, byte dataId, byte channel, bool relay, bool sysBit );
+		static bool beginUnfragmented( BinSerializer& b, u32 seq, byte compType, byte dataId, byte channel, bool relay, bool sysBit );
 		static bool beginUnfragmented( BinSerializer& bs, byte compType, byte dataId, byte channel, bool relay, bool sysBit );
 		static bool createNormalPacket( vector<sptr<const struct NormalSendPacket>>& framgentsOut, byte compType, byte dataId, 
 										const BinSerializer** serializers, u32 numSerializers, byte channel, bool relay, bool sysBit, i32 fragmentSize );

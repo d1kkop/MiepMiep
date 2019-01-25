@@ -9,7 +9,7 @@
 namespace MiepMiep
 {
 	Listener::Listener(Network& network):
-		IPacketHandler(network),
+        ParentNetwork(network),
 		m_Listening(false)
 	{
 	}
@@ -74,9 +74,10 @@ namespace MiepMiep
 			return false;
 		}
 
-		m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>(m_Socket), ptr<IPacketHandler>() );
+		m_Network.getOrAdd<SocketSetManager>()->addSocket( const_pointer_cast<const ISocket>(m_Socket) );
 		m_Listening = true;
 		
+        LOG("Started listening on port %d.", port);
 		return true;
 	}
 

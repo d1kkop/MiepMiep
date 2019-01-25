@@ -15,99 +15,6 @@
 
 namespace MiepMiep
 {
-	IPacketHandler::IPacketHandler(Network& network):
-		ParentNetwork(network)
-	{
-	}
-
-	MM_TS void IPacketHandler::recvFromSocket(const ISocket& sock)
-	{
-		// Do the inital recv immediately (not in a seperate thread) because
-		// doing it in a seperate thread will make 'select' return immediately again as the data
-		// is not yet 'received' (pulled) due to the new (async) job being later with recv than the next
-		// call to 'select'.
-
-		byte* buff = reserveN<byte>(MM_FL, MM_MAX_RECVSIZE);
-		u32 rawSize = MM_MAX_RECVSIZE; // buff size in
-		Endpoint etp;
-		i32 err;
-		ERecvResult res = sock.recv( buff, rawSize, etp, &err );
-
-		u32 packetLossPercentage = m_Network.packetLossPercentage();
-		if ( packetLossPercentage != 0 && (Util::rand()%100)+1 <= packetLossPercentage )
-		{
-			// drop deliberately
-			return;
-		}
-
-	#if _DEBUG
-		etp.m_HostPort = etp.getPortHostOrder();
-	#endif
-
-	//	LOG( "Received data from.. %s.", etp.toIpAndPort() );
-
-		if ( err != 0 )
-		{
-			LOG( "Socket recv error: %d.", err );
-			releaseN(buff);
-			return;
-		}
-
-		if ( res == ERecvResult::Succes )
-		{
-			if ( rawSize >= MM_MIN_HDR_SIZE )
-			{
-				m_Network.get<JobSystem>()->addJob(
-					[p = move( make_shared<RecvPacket>( 0, buff, rawSize, 0, false ) ),
-					ph = move( ptr<IPacketHandler>() ),
-					e  = etp.getCopyDerived(),
-					s  = sock.to_sptr()]
-				{
-					BinSerializer bs( p->m_Data, MM_MAX_RECVSIZE, p->m_Length, false, false );
-					ph->handleInitialAndPassToLink( bs, *s, *e );
-				} );
-
-				// passed to thread-job
-				return;
-			}
-			else
-			{
-				LOGW( "Received packet with less than %d bytes (= Hdr size), namely %d. Packet discarded.", MM_MIN_HDR_SIZE, rawSize );
-			}
-		}
-
-		releaseN(buff);
-	}
-
-
-	MM_TS void IPacketHandler::handleInitialAndPassToLink( BinSerializer& bs, const ISocket& sock, const IAddress& addr )
-	{
-		u32 linkId;
-		__CHECKED( bs.read( linkId ) );
-
-		SocketAddrPair sap( sock, addr );
-
-		// Link returns nullptr even if exists but link Id's do not match.
-		sptr<Link> link = getOrCreateLink( linkId, sap );
-		
-		if ( link )
-		{
-			link->receive( bs );
-		}
-	}
-
-	MM_TS sptr<Link> IPacketHandler::getOrCreateLink( u32 linkId, const SocketAddrPair& sap )
-	{
-		auto lm = m_Network.getOrAdd<LinkManager>();
-		sptr<Link> link = lm->getOrAdd( getSession(), sap, linkId, false, true, true, nullptr ); // <-- Returns null if link exists but Id's do not match.
-		if ( !link )
-		{
-			LOGW( "Failed to getOrAdd link to %s.", sap.m_Address->toIpAndPort() );
-		}
-		return link;
-	}
-
-
 	// --- Packet ------------------------------------------------------------------------------------------
 
 	RecvPacket::RecvPacket(byte id, u32 len, byte flags):
@@ -192,10 +99,9 @@ namespace MiepMiep
 		return channelAndFlags;
 	}
 
-	bool PacketHelper::beginUnfragmented( BinSerializer& bs, u32 linkId, u32 seq, byte compType, byte dataId, byte channel, bool relay, bool sysBit )
+	bool PacketHelper::beginUnfragmented( BinSerializer& bs, u32 seq, byte compType, byte dataId, byte channel, bool relay, bool sysBit )
 	{
 		bs.reset();
-		__CHECKEDB( bs.write( linkId ) );
 		__CHECKEDB( bs.write( seq ) );
 		__CHECKEDB( bs.write( compType ) );
 		__CHECKEDB( bs.write( makeChannelAndFlags( channel, relay, sysBit, true, true ) ) );

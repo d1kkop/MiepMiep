@@ -50,14 +50,12 @@ namespace MiepMiep
 
 	// ------ RPC --------------------------------------------------------------------------------
 
-	// Executed on client (on connection to master).
-	MM_RPC( masterSessionConnectTo, u32, sptr<IAddress> )
+	// Executed on client (to create connection to other client)
+	MM_RPC( masterSessionConnectTo, sptr<IAddress> )
 	{
 		RPC_BEGIN();
-		u32 linkId = get<0>( tp );
-		LOG( "Connecting with Id %d.", linkId );
-		const sptr<IAddress>& toAddr = get<1>( tp );
-		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->getOrAdd ( &s, SocketAddrPair( l.socket(), *toAddr ), linkId, false /*addHandler*/, true /* addToSession */, true, nullptr );
+		const sptr<IAddress>& toAddr = get<0>( tp );
+		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->getOrAdd ( &s, SocketAddrPair( l.socket(), *toAddr ), nullptr );
 		if ( newLink )
 		{
 			assert( s.hasLink( *newLink ) );
@@ -237,20 +235,16 @@ namespace MiepMiep
 			{
 				auto sl = l.lock();
 				if ( !sl ) continue;
-				u32 linkId = Util::rand();
-				LOG( "Connect links on ID %d.", linkId );
-				sl->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, addrCpy );
-				newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, sl->destination().getCopy() );
+				sl->callRpc<masterSessionConnectTo, sptr<IAddress>>( addrCpy );
+				newLink.callRpc<masterSessionConnectTo, sptr<IAddress>>( sl->destination().getCopy() );
 			}
 		}
 		else
 		{
 			auto shost = m_Host.lock();
 			assert( shost );
-			// For client-server architecture, only have new client join to host.
-			u32 linkId = Util::rand();
 			//shost->callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, newLink.destination().getCopy() );
-			newLink.callRpc<masterSessionConnectTo, u32, sptr<IAddress>>( linkId, shost->destination().getCopy() );
+			newLink.callRpc<masterSessionConnectTo, sptr<IAddress>>( shost->destination().getCopy() );
 		}
 	}
 

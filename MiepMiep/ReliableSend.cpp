@@ -40,13 +40,12 @@ namespace MiepMiep
 		{
 			const NormalSendPacket& sendPack = *kvp.second;
 
-			// The linkID and sequence is specific to each link and packet, all other data in the packet is shared by all links.
-			// Before send, print linkID and seq in front of shared data.
+			// The sequence is specific to each link and packet, all other data in the packet is shared by all links.
+			// Before send, print seq in front of shared data.
 			byte finalData[MM_MAX_SENDSIZE];
-			*(u32*)finalData = Util::htonl(m_Link.id()); // linkId
-			*(u32*)(finalData + 4) = Util::htonl( kvp.first ); // seq
-			Platform::memCpy( finalData + 8, MM_MAX_SENDSIZE-8, sendPack.m_PayLoad.data(), sendPack.m_PayLoad.length() ); // payload
-			m_Link.send( finalData, sendPack.m_PayLoad.length()+8 );
+			*(u32*)(finalData) = Util::htonl( kvp.first ); // seq
+			Platform::memCpy( finalData + 4, MM_MAX_SENDSIZE-4, sendPack.m_PayLoad.data(), sendPack.m_PayLoad.length() ); // payload
+			m_Link.send( finalData, sendPack.m_PayLoad.length()+4 );
 
 		//	this_thread::sleep_for( chrono::milliseconds(2) ); // TODO remove
 		}
