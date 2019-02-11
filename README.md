@@ -7,7 +7,7 @@ Features (ultimate goal)
   - Always connect;
   - Store synchronizable variables in any class;
   - Highly parallel design (almost all functions thread-safe);
-  - Send/recv type safe RPC's, taking full adv. of C++11;
+  - Send/recv type safe RPC's, taking full adv. of C++11 (and beyond).
   - Automatic MTU dicovery and congestion control for maximum throughput;
   - Scales easily to pratically any client count;
   - Support for both client-server & p2p design;
