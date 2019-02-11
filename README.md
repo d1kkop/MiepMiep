@@ -3,7 +3,7 @@
 MiepMiep is a network library that covers both low level implementation as
 well as it offers high level features.
 
-Features:
+Features (ultimate goal)
   - Always connect;
   - Store synchronizable variables in any class;
   - Highly parallel design (almost all functions thread-safe);
