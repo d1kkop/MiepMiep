@@ -149,6 +149,7 @@ namespace MiepMiep
 					m_Host = sl;
 				}
 			}
+			// Assert that if list is not empty, must have host
 			assert( (m_Links.empty() && !m_Host.lock()) || (!m_Links.empty() && m_Host.lock()) );
 			shost = m_Host.lock();
 			if ( shost )

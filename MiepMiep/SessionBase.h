@@ -16,7 +16,6 @@ namespace MiepMiep
 
 	// ----- MasterSession client/server shared per link data  ------------------------------------------------------------------
 
-	// TODO change for variable group instead!
 	struct MasterSessionData
 	{
 		bool  m_IsP2p;
@@ -28,6 +27,7 @@ namespace MiepMiep
 		std::string m_Name;
 		std::string m_Type;
 		std::string m_Password;
+		MetaData m_MetaData;
 	};
 
 

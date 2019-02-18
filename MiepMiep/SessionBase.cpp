@@ -48,8 +48,8 @@ namespace MiepMiep
 
 	MM_TS const char * SessionBase::name() const
 	{
-		// TODO
-		return "";
+		rscoped_lock lk(m_DataMutex);
+		return m_MasterData.m_Name.c_str();
 	}
 
 	MM_TS void SessionBase::bufferMsg( const vector<sptr<const NormalSendPacket>>& data, byte channel )

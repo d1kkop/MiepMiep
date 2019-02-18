@@ -45,9 +45,6 @@
     <Filter Include="Link\Components\Acks">
       <UniqueIdentifier>{0eaf1ec1-38f2-4f3c-8337-7a7ff7aaa3b7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Link\Components\Link\Master">
-      <UniqueIdentifier>{ed232246-9597-4c9a-b887-d81017135be9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="MSession">
       <UniqueIdentifier>{7e7b0619-83a3-45b9-9cea-8e21d7ec2a8a}</UniqueIdentifier>
     </Filter>
@@ -176,11 +173,11 @@
     <ClCompile Include="UnreliableRecv.cpp">
       <Filter>Link\Components\Recv</Filter>
     </ClCompile>
-    <ClCompile Include="MasterLink.cpp">
-      <Filter>Link\Components\Link\Master</Filter>
-    </ClCompile>
     <ClCompile Include="PacketHelper.cpp">
       <Filter>Core\HighLevelTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="MasterLink.cpp">
+      <Filter>Link</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -328,11 +325,11 @@
     <ClInclude Include="UnreliableRecv.h">
       <Filter>Link\Components\Recv</Filter>
     </ClInclude>
-    <ClInclude Include="MasterLink.h">
-      <Filter>Link\Components\Link\Master</Filter>
-    </ClInclude>
     <ClInclude Include="PacketHelper.h">
       <Filter>Core\HighLevelTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterLink.h">
+      <Filter>Link</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

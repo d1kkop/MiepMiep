@@ -78,7 +78,6 @@ namespace MiepMiep
 			return nullptr;
 		}
 
-
 		link->m_SockAddrPair = sap;
 		if ( session )
 		{
