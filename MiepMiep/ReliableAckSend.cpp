@@ -2,7 +2,7 @@
 #include "Link.h"
 #include "LinkStats.h"
 #include "PerThreadDataProvider.h"
-#include "PacketHandler.h"
+#include "PacketHelper.h"
 
 
 namespace MiepMiep

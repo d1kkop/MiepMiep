@@ -24,11 +24,11 @@
     <ClCompile Include="LinkStats.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="ListenerManager.cpp" />
-    <ClCompile Include="MasterLinkData.cpp" />
+    <ClCompile Include="MasterLink.cpp" />
     <ClCompile Include="MasterServer.cpp" />
     <ClCompile Include="MasterSession.cpp" />
     <ClCompile Include="NetworkEvents.cpp" />
-    <ClCompile Include="PacketHandler.cpp" />
+    <ClCompile Include="PacketHelper.cpp" />
     <ClCompile Include="ParentLink.cpp" />
     <ClCompile Include="ParentNetwork.cpp" />
     <ClCompile Include="PerThreadDataProvider.cpp" />
@@ -68,11 +68,11 @@
     <ClInclude Include="LinkStats.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="ListenerManager.h" />
-    <ClInclude Include="MasterLinkData.h" />
+    <ClInclude Include="MasterLink.h" />
     <ClInclude Include="MasterServer.h" />
     <ClInclude Include="MasterSession.h" />
     <ClInclude Include="NetworkEvents.h" />
-    <ClInclude Include="PacketHandler.h" />
+    <ClInclude Include="PacketHelper.h" />
     <ClInclude Include="ParentLink.h" />
     <ClInclude Include="ParentNetwork.h" />
     <ClInclude Include="PerThreadDataProvider.h" />

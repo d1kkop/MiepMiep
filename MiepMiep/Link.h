@@ -4,7 +4,7 @@
 #include "ParentNetwork.h"
 #include "MiepMiep.h"
 #include "LinkManager.h"
-#include "PacketHandler.h"
+#include "PacketHelper.h"
 #include "Socket.h"
 #include "Threading.h"
 

@@ -1,4 +1,4 @@
-#include "MasterLinkData.h"
+#include "MasterLink.h"
 #include "NetworkEvents.h"
 #include "MasterServer.h"
 #include "MasterSession.h"
@@ -10,7 +10,7 @@ namespace MiepMiep
 
 	struct EventRegisterResult : IEvent
 	{
-		EventRegisterResult( const sptr<Link>& link, const sptr<MasterLinkData>& mj, bool succes ):
+		EventRegisterResult( const sptr<Link>& link, const sptr<MasterLink>& mj, bool succes ):
 			IEvent( link, false ),
 			m_Mj( mj ),
 			m_Succes( succes )
@@ -22,13 +22,13 @@ namespace MiepMiep
 			m_Mj->getRegisterCb()(m_Link->session(), m_Succes);
 		}
 
-		sptr<const MasterLinkData> m_Mj;
+		sptr<const MasterLink> m_Mj;
 		bool m_Succes;
 	};
 
 	struct EventJoinResult : IEvent
 	{
-		EventJoinResult( const sptr<Link>& link, const sptr<MasterLinkData>& mj, bool joinRes  ):
+		EventJoinResult( const sptr<Link>& link, const sptr<MasterLink>& mj, bool joinRes  ):
 			IEvent( link, false ),
 			m_Mj( mj ),
 			m_JoinRes( joinRes )
@@ -40,7 +40,7 @@ namespace MiepMiep
 			m_Mj->getJoinCb()(m_Link->session(), m_JoinRes);
 		}
 
-		sptr<const MasterLinkData> m_Mj;
+		sptr<const MasterLink> m_Mj;
 		bool m_JoinRes;
 	};
 
@@ -54,7 +54,7 @@ namespace MiepMiep
 		RPC_BEGIN();
         assert(s.matchMaker()==link->to_ptr());
 		bool succes = get<0>(tp);
-		sptr<MasterLinkData> mj = l.get<MasterLinkData>();
+		sptr<MasterLink> mj = l.get<MasterLink>();
 		assert(mj);
         if ( mj )
         {
@@ -95,7 +95,7 @@ namespace MiepMiep
 		RPC_BEGIN();
         assert(s.matchMaker()==link->to_ptr());
 		bool bSucces = get<0>( tp );
-		sptr<MasterLinkData> mj = l.get<MasterLinkData>(); 
+		sptr<MasterLink> mj = l.get<MasterLink>(); 
 		assert(mj);
         if ( mj )
         {
@@ -143,16 +143,16 @@ namespace MiepMiep
 
 	// ---------- MasterJoinData -------------------------------------------------------------------------------
 
-	MasterLinkData::MasterLinkData(Link& link):
+	MasterLink::MasterLink(Link& link):
 		ParentLink(link)
 	{
 	}
 
-	MasterLinkData::~MasterLinkData()
+	MasterLink::~MasterLink()
 	{
 	}
 
-	bool MasterLinkData::registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data,
+	bool MasterLink::registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data,
 										 const MetaData& customMatchmakingMd )
 	{
         if (m_RegisterCb)
@@ -165,7 +165,7 @@ namespace MiepMiep
         return true;
 	}
 
-	bool MasterLinkData::joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf,
+	bool MasterLink::joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf,
 									 const MetaData& customMatchmakingMd )
 	{
         if (m_JoinCb)

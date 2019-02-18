@@ -122,9 +122,6 @@
     <ClCompile Include="SocketSetManager.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
-    <ClCompile Include="PacketHandler.cpp">
-      <Filter>Core\HighLevelTypes</Filter>
-    </ClCompile>
     <ClCompile Include="Group.cpp">
       <Filter>Variables\Group</Filter>
     </ClCompile>
@@ -155,9 +152,6 @@
     <ClCompile Include="MasterServer.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
-    <ClCompile Include="MasterLinkData.cpp">
-      <Filter>Link\Components\Link\Master</Filter>
-    </ClCompile>
     <ClCompile Include="ListenerManager.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
@@ -181,6 +175,12 @@
     </ClCompile>
     <ClCompile Include="UnreliableRecv.cpp">
       <Filter>Link\Components\Recv</Filter>
+    </ClCompile>
+    <ClCompile Include="MasterLink.cpp">
+      <Filter>Link\Components\Link\Master</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHelper.cpp">
+      <Filter>Core\HighLevelTypes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -271,9 +271,6 @@
     <ClInclude Include="SocketSetManager.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
-    <ClInclude Include="PacketHandler.h">
-      <Filter>Core\HighLevelTypes</Filter>
-    </ClInclude>
     <ClInclude Include="Group.h">
       <Filter>Variables\Group</Filter>
     </ClInclude>
@@ -304,9 +301,6 @@
     <ClInclude Include="MasterServer.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
-    <ClInclude Include="MasterLinkData.h">
-      <Filter>Link\Components\Link\Master</Filter>
-    </ClInclude>
     <ClInclude Include="ListenerManager.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
@@ -333,6 +327,12 @@
     </ClInclude>
     <ClInclude Include="UnreliableRecv.h">
       <Filter>Link\Components\Recv</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterLink.h">
+      <Filter>Link\Components\Link\Master</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHelper.h">
+      <Filter>Core\HighLevelTypes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,7 +6,7 @@
 #include "ReliableSend.h"
 #include "JobSystem.h"
 #include "NetworkEvents.h"
-#include "MasterLinkData.h"
+#include "MasterLink.h"
 #include "SendThread.h"
 #include "SocketSetManager.h"
 #include "ListenerManager.h"
@@ -108,7 +108,7 @@ namespace MiepMiep
         data.m_MaxClients = maxClients;
         data.m_UsedMatchmaker = true;
         data.m_CanJoinAfterStart = canJoinAfterStart;
-        bool bStartedRegister = link->getOrAdd<MasterLinkData>()->registerServer(callback, data, customMatchmakingMd);
+        bool bStartedRegister = link->getOrAdd<MasterLink>()->registerServer(callback, data, customMatchmakingMd);
         assert(bStartedRegister);
 		return s;
 	}
@@ -142,7 +142,7 @@ namespace MiepMiep
         sf.m_FindPrivate = false;
         sf.m_FindP2p = findP2p;
         sf.m_FindClientServer = findClientServer;
-        bool bStartedJoin = link->getOrAdd<MasterLinkData>()->joinServer(callback, sf, customMatchmakingMd);
+        bool bStartedJoin = link->getOrAdd<MasterLink>()->joinServer(callback, sf, customMatchmakingMd);
         assert(bStartedJoin);
 		return s;
 	}
