@@ -98,9 +98,6 @@
     <ClCompile Include="Socket.cpp">
       <Filter>Core\Network</Filter>
     </ClCompile>
-    <ClCompile Include="SocketSet.cpp">
-      <Filter>Core\Network</Filter>
-    </ClCompile>
     <ClCompile Include="Endpoint.cpp">
       <Filter>Core\Network</Filter>
     </ClCompile>
@@ -179,6 +176,9 @@
     <ClCompile Include="MasterLink.cpp">
       <Filter>Link</Filter>
     </ClCompile>
+    <ClCompile Include="NetworkActions.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MiepMiep.h">
@@ -227,9 +227,6 @@
       <Filter>Core\Common</Filter>
     </ClInclude>
     <ClInclude Include="Socket.h">
-      <Filter>Core\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketSet.h">
       <Filter>Core\Network</Filter>
     </ClInclude>
     <ClInclude Include="Memory.h">
@@ -330,6 +327,9 @@
     </ClInclude>
     <ClInclude Include="MasterLink.h">
       <Filter>Link</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkActions.h">
+      <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

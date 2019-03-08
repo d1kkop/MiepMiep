@@ -2,7 +2,6 @@
 
 #include "UnitTestBase.h"
 #include "Socket.h"
-#include "SocketSet.h"
 #include "Memory.h"
 #include "BinSerializer.h"
 #include "Threading.h"
@@ -12,6 +11,7 @@
 #include "Network.h"
 #include "MiepMiep.h"
 #include "MasterServer.h"
+#include "SocketSetManager.h"
 #include "Common.h"
 #include <thread>
 #include <mutex>
@@ -81,18 +81,11 @@ UTESTBEGIN(SocketSetTest)
 	sptr<ISocket> sock = ISocket::create();
 	sptr<INetwork> network = INetwork::create();
 
-	SocketSet ss2;
-	i32 err;
-	EListenOnSocketsResult res = ss2.listenOnSockets( sc<Network&>(*network), 1, &err );
-	assert( res == EListenOnSocketsResult::NoSocketsInSet );
-
-	
 	Network& nw = toNetwork( *network ) ;
 
 	constexpr auto kThreads=50;
 	i32 k=10000;
 	thread threads[kThreads];
-	SocketSet ss[kThreads];
 	i32 j=0;
 	for (auto& t : threads)
 	{
@@ -103,10 +96,7 @@ UTESTBEGIN(SocketSetTest)
 				sptr<ISocket> sock = ISocket::create();
 				sock->open();
 				sock->bind(0);
-				ss[Util::rand()%4].addSocket( const_pointer_cast<const ISocket>( sock ) );
-				i32 err;
-				EListenOnSocketsResult res = ss[j].listenOnSockets(sc<Network&>(*network), 1, &err);
-				assert ( res == EListenOnSocketsResult::TimeoutNoData || res == EListenOnSocketsResult::Fine || res == EListenOnSocketsResult::NoSocketsInSet );
+				nw.getOrAdd<SocketSetManager>()->addSocket( sock );
 			}
 		});
 		j++;

@@ -4,7 +4,6 @@
 
 #include "UnitTestBase.h"
 #include "Socket.h"
-#include "SocketSet.h"
 #include <thread>
 #include <mutex>
 #include <cassert>

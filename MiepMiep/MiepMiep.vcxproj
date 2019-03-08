@@ -27,6 +27,7 @@
     <ClCompile Include="MasterLink.cpp" />
     <ClCompile Include="MasterServer.cpp" />
     <ClCompile Include="MasterSession.cpp" />
+    <ClCompile Include="NetworkActions.cpp" />
     <ClCompile Include="NetworkEvents.cpp" />
     <ClCompile Include="PacketHelper.cpp" />
     <ClCompile Include="ParentLink.cpp" />
@@ -54,7 +55,6 @@
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="SessionBase.cpp" />
     <ClCompile Include="Socket.cpp" />
-    <ClCompile Include="SocketSet.cpp" />
     <ClCompile Include="SocketSetManager.cpp" />
     <ClCompile Include="UnreliableRecv.cpp" />
     <ClCompile Include="UnreliableSend.cpp" />
@@ -71,6 +71,7 @@
     <ClInclude Include="MasterLink.h" />
     <ClInclude Include="MasterServer.h" />
     <ClInclude Include="MasterSession.h" />
+    <ClInclude Include="NetworkActions.h" />
     <ClInclude Include="NetworkEvents.h" />
     <ClInclude Include="PacketHelper.h" />
     <ClInclude Include="ParentLink.h" />
@@ -105,7 +106,6 @@
     <ClInclude Include="ReliableSend.h" />
     <ClInclude Include="RemoteServerInfo.h" />
     <ClInclude Include="Socket.h" />
-    <ClInclude Include="SocketSet.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="UnreliableRecv.h" />
     <ClInclude Include="UnreliableSend.h" />

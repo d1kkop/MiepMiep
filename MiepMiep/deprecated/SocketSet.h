@@ -27,14 +27,15 @@ namespace MiepMiep
 		~SocketSet() override;
 
 		// Fails if max number of sockets was added. For BSD sockets the default is 64.
-		MM_TS bool addSocket(const sptr<const ISocket>& sock);
-		MM_TS void removeSocket(const sptr<const ISocket>& sock);
-		MM_TS bool hasSocket(const sptr<const ISocket>& sock) const;
+		MM_TS bool addSocket( const sptr<const ISocket>& sock );
+		MM_TS void removeSocket( const sptr<const ISocket>& sock );
+		MM_TS bool hasSocket( const sptr<const ISocket>& sock ) const;
 
-		// NOTE: Not thread safe. Should be called from a single thread to listen on sockets.
+		// Called from RecvThread.
 		EListenOnSocketsResult listenOnSockets(Network& network, u32 timeoutMs, i32* err=nullptr);
 
 	private:
+		// Called from RecvThread.
 		void rebuildSocketArrayIfNecessary();
         void handleReceivedPacket(Network& network, const ISocket& sock);
 

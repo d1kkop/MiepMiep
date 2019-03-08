@@ -2,7 +2,6 @@
 
 #include "UnitTestBase.h"
 #include "Socket.h"
-#include "SocketSet.h"
 #include "Listener.h"
 #include "Endpoint.h"
 #include "ListenerManager.h"

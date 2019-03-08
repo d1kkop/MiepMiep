@@ -7,10 +7,10 @@
 
 namespace MiepMiep
 {
-	ISocket::ISocket():
-		m_Open(false),
-		m_Bound(false),
-		m_IpProto(IPProto::Ipv4)
+	ISocket::ISocket() :
+		m_Open( false ),
+		m_Bound( false ),
+		m_IpProto( IPProto::Ipv4 )
 	{
 	}
 
@@ -19,9 +19,9 @@ namespace MiepMiep
 		if ( 0 == Platform::initialize() )
 		{
 		#if MM_SDLSOCKET
-			return reserve_sp<SDLSocket>(MM_FL);
+			return reserve_sp<SDLSocket>( MM_FL );
 		#elif MM_WIN32SOCKET
-			return reserve_sp<BSDSocket>(MM_FL);
+			return reserve_sp<BSDSocket>( MM_FL );
 		#endif
 		}
 		return nullptr;
@@ -32,7 +32,7 @@ namespace MiepMiep
 		auto sock = create();
 		if ( !sock )
 		{
-			if (error) *error = MM_NO_IMPLEMENTATION_ERR;
+			if ( error ) *error = MM_NO_IMPLEMENTATION_ERR;
 			return nullptr;
 		}
 		if ( !sock->open( proto, options, error ) )
@@ -43,7 +43,7 @@ namespace MiepMiep
 		{
 			return nullptr;
 		}
-		if ( error) *error = 0;
+		if ( error ) *error = 0;
 		return sock;
 	}
 
@@ -52,14 +52,14 @@ namespace MiepMiep
 		Platform::shutdown();
 	}
 
-	bool ISocket::operator<(const ISocket& right) const
+	bool ISocket::operator<( const ISocket& right ) const
 	{
 		return this->less( right );
 	}
 
-	bool ISocket::operator==(const ISocket& right) const
+	bool ISocket::operator==( const ISocket& right ) const
 	{
-		return this->equal(right);
+		return this->equal( right );
 	}
 
 	sptr<ISocket> ISocket::to_sptr()
@@ -77,13 +77,13 @@ namespace MiepMiep
 
 	// ------------ SDLSocket ------------------------------------------------------------------------------------
 
-	SDLSocket::SDLSocket():
-		m_Socket(nullptr),
-		m_SocketSet(nullptr)
+	SDLSocket::SDLSocket() :
+		m_Socket( nullptr ),
+		m_SocketSet( nullptr )
 	{
 		m_Blocking = true;
-		m_SocketSet = SDLNet_AllocSocketSet(1);
-		if (!m_SocketSet)
+		m_SocketSet = SDLNet_AllocSocketSet( 1 );
+		if ( !m_SocketSet )
 		{
 			m_LastError = SocketError::CannotCreateSet;
 		}
@@ -91,49 +91,49 @@ namespace MiepMiep
 
 	SDLSocket::~SDLSocket()
 	{
-		assert (!m_Open);
+		assert( !m_Open );
 		close();
-		SDLNet_FreeSocketSet(m_SocketSet);
+		SDLNet_FreeSocketSet( m_SocketSet );
 	}
 
-	bool SDLSocket::open(IPProto ipProto, bool reuseAddr)
+	bool SDLSocket::open( IPProto ipProto, bool reuseAddr )
 	{
-		if (m_LastError!=SocketError::Succes) return false;
+		if ( m_LastError != SocketError::Succes ) return false;
 		m_Open = true;
 		return m_Open;
 	}
 
-	bool SDLSocket::bind(u16_t port)
+	bool SDLSocket::bind( u16_t port )
 	{
-		if (m_LastError!=SocketError::Succes) return false;
-		if (!m_Open) 
+		if ( m_LastError != SocketError::Succes ) return false;
+		if ( !m_Open )
 		{
 			m_LastError = SocketError::NotOpened;
 			return false;
 		}
-		if (m_Bound) return true;
-		assert(m_SocketSet && !m_Socket);
-		m_Socket = SDLNet_UDP_Open(port);
-		if (!m_Socket) 
+		if ( m_Bound ) return true;
+		assert( m_SocketSet && !m_Socket );
+		m_Socket = SDLNet_UDP_Open( port );
+		if ( !m_Socket )
 		{
 			// binding multiple times on same port already returns -1 (as it turns out)
 			m_LastError = SocketError::PortAlreadyInUse;
 			//m_LastError = SocketError::CannotOpen;
 			return false;
 		}
-		IPaddress* ip =  SDLNet_UDP_GetPeerAddress(m_Socket, -1);
-		if (!ip)
+		IPaddress* ip = SDLNet_UDP_GetPeerAddress( m_Socket, -1 );
+		if ( !ip )
 		{
 			m_LastError = SocketError::CannotResolveLocalAddress;
 			return false;
 		}
-		int channel = SDLNet_UDP_Bind(m_Socket, 0, ip);
-		if (channel != 0)
+		int channel = SDLNet_UDP_Bind( m_Socket, 0, ip );
+		if ( channel != 0 )
 		{
 			m_LastError = SocketError::PortAlreadyInUse;
 			return false;
 		}
-		if (-1 == SDLNet_UDP_AddSocket(m_SocketSet, m_Socket))
+		if ( -1 == SDLNet_UDP_AddSocket( m_SocketSet, m_Socket ) )
 		{
 			m_LastError = SocketError::CannotAddToSet;
 			return false;
@@ -145,15 +145,15 @@ namespace MiepMiep
 	bool SDLSocket::close()
 	{
 		m_Open = false;
-		if (m_Socket != nullptr)
+		if ( m_Socket != nullptr )
 		{
-			if (m_Bound)
+			if ( m_Bound )
 			{
-				SDLNet_UDP_Unbind(m_Socket, 0);
-				SDLNet_UDP_DelSocket(m_SocketSet, m_Socket); // ignore errors here as is closing routine
+				SDLNet_UDP_Unbind( m_Socket, 0 );
+				SDLNet_UDP_DelSocket( m_SocketSet, m_Socket ); // ignore errors here as is closing routine
 			}
 			m_Bound = false;
-			SDLNet_UDP_Close(m_Socket);
+			SDLNet_UDP_Close( m_Socket );
 			m_Socket = nullptr;
 		}
 		// clean it all
@@ -171,43 +171,43 @@ namespace MiepMiep
 		dstIp.port = endPoint.getPortNetworkOrder();
 
 		UDPpacket pack;
-		pack.len     = len;
-		pack.maxlen  = len;
+		pack.len = len;
+		pack.maxlen = len;
 		pack.address = dstIp;
-		pack.data    = (Uint8*)data;
-//		Platform::memCpy( pack.data, len, data, len );
+		pack.data = (Uint8*)data;
+		//		Platform::memCpy( pack.data, len, data, len );
 
 		if ( 1 != SDLNet_UDP_Send( m_Socket, -1, &pack ) )
 		{
 			m_LastError = SocketError::SendFailure;
-			Platform::log("SDL send udp packet error %s", SDLNet_GetError());
+			Platform::log( "SDL send udp packet error %s", SDLNet_GetError() );
 			return ESendResult::Error;
 		}
 
-//		SDLNet_FreePacket(pack);
+		//		SDLNet_FreePacket(pack);
 		return ESendResult::Succes;
 	}
 
 	ERecvResult SDLSocket::recv( i8_t* buff, i32_t& rawSize, struct EndPoint& endPoint ) const
 	{
-		if (!m_Socket || !m_SocketSet)
+		if ( !m_Socket || !m_SocketSet )
 			return ERecvResult::SocketClosed;
 
 		i32_t res = SDLNet_CheckSockets( m_SocketSet, 100 );
-		if (!m_Open || !m_Socket) // if closing, ignore error
+		if ( !m_Open || !m_Socket ) // if closing, ignore error
 			return ERecvResult::SocketClosed;
 		if ( res == -1 )
 			return ERecvResult::Error;
-		if ( res == 0 || !SDLNet_SocketReady(m_Socket) )
+		if ( res == 0 || !SDLNet_SocketReady( m_Socket ) )
 			return ERecvResult::NoData;
 
 		UDPpacket packet = { 0 };
-		packet.data = (Uint8 *) buff;
-		packet.len  = rawSize;
+		packet.data = (Uint8 *)buff;
+		packet.len = rawSize;
 		packet.maxlen = rawSize;
 		i32_t numPackets = SDLNet_UDP_Recv( m_Socket, &packet );
-		
-		if (!m_Open)
+
+		if ( !m_Open )
 		{
 			return ERecvResult::SocketClosed;
 		}
@@ -219,14 +219,14 @@ namespace MiepMiep
 
 		if ( -1 == numPackets )
 		{
-			Platform::log("SDL recv error %s.:", SDLNet_GetError());
+			Platform::log( "SDL recv error %s.:", SDLNet_GetError() );
 			m_LastError = SocketError::RecvFailure;
 			return ERecvResult::Error;
 		}
 
 		rawSize = packet.len;
 		endPoint.setIpAndPortFromNetworkOrder( packet.address.host, packet.address.port );
-//		Platform::memCpy( buff, rawSize, packet.data, packet.len );
+		//		Platform::memCpy( buff, rawSize, packet.data, packet.len );
 
 		return ERecvResult::Succes;
 	}
@@ -235,13 +235,13 @@ namespace MiepMiep
 
 	// --------------- BSDWin32 Socket ------------------------------------------------------------------------------------
 
-	BSDSocket::BSDSocket():
-		m_Socket(INVALID_SOCKET)
+	BSDSocket::BSDSocket() :
+		m_Socket( INVALID_SOCKET )
 	{
 		m_Blocking = true;
 	}
 
-	#define  BSD_SOCK_NO_OPTION_MATCH -9999
+#define  BSD_SOCK_NO_OPTION_MATCH -9999
 	bool setOption( SOCKET sock, i32 level, u32 option, bool on, i32* err )
 	{
 		assert( sock != INVALID_SOCKET );
@@ -250,33 +250,33 @@ namespace MiepMiep
 
 		//  try set
 		DWORD bOption = (on ? TRUE : FALSE);
-		if (SOCKET_ERROR == setsockopt(sock, level, option, (char*)&bOption, sizeof(DWORD)))
+		if ( SOCKET_ERROR == setsockopt( sock, level, option, (char*)&bOption, sizeof( DWORD ) ) )
 		{
 		#if MM_PLATFORM_WINDOWS
-			if (err) *err = GetLastError();
+			if ( err ) *err = GetLastError();
 		#endif
 			return false;
 		}
 		// check if set as requested
 		DWORD bOptionOut = 0;
-		int optSize = sizeof(bOptionOut);
-		if (SOCKET_ERROR == getsockopt(sock, level, option, (char*)&bOptionOut, &optSize))
+		int optSize = sizeof( bOptionOut );
+		if ( SOCKET_ERROR == getsockopt( sock, level, option, (char*)&bOptionOut, &optSize ) )
 		{
 		#if MM_PLATFORM_WINDOWS
-			if (err) *err = GetLastError();
+			if ( err ) *err = GetLastError();
 		#endif
 			return false;
 		}
 		// check now
 		if ( bOption != bOptionOut )
 		{
-			if (*err) *err = BSD_SOCK_NO_OPTION_MATCH;
+			if ( *err ) *err = BSD_SOCK_NO_OPTION_MATCH;
 			return false;
 		}
 		return true;
 	}
 
-	bool BSDSocket::open(IPProto ipv, const SocketOptions& options, i32* err)
+	bool BSDSocket::open( IPProto ipv, const SocketOptions& options, i32* err )
 	{
 		if ( err ) *err = 0;
 
@@ -289,13 +289,13 @@ namespace MiepMiep
 		m_Open = false;
 		m_IpProto = ipv;
 
-		m_Socket = socket( (ipv == IPProto::Ipv4 ? AF_INET : AF_INET6), SOCK_DGRAM, IPPROTO_UDP) ;
-		if (m_Socket == INVALID_SOCKET)
+		m_Socket = socket( (ipv == IPProto::Ipv4 ? AF_INET : AF_INET6), SOCK_DGRAM, IPPROTO_UDP );
+		if ( m_Socket == INVALID_SOCKET )
 		{
 		#if MM_PLATFORM_WINDOWS
 			if ( err ) *err = GetLastError();
 		#endif
-		return false;
+			return false;
 		}
 
 		// reuse addr
@@ -310,7 +310,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	bool BSDSocket::bind(u16 port, i32* err)
+	bool BSDSocket::bind( u16 port, i32* err )
 	{
 		if ( err ) *err = 0;
 
@@ -324,7 +324,7 @@ namespace MiepMiep
 		addrinfo hints;
 		addrinfo *addrInfo = nullptr;
 
-		memset(&hints, 0, sizeof(hints));
+		memset( &hints, 0, sizeof( hints ) );
 
 		hints.ai_family = m_IpProto == IPProto::Ipv4 ? PF_INET : PF_INET6;
 		hints.ai_socktype = SOCK_DGRAM;
@@ -332,31 +332,31 @@ namespace MiepMiep
 		hints.ai_flags = AI_PASSIVE; // <-- means that we intend to bind the socket
 
 		char portBuff[32];
-		Platform::formatPrint(portBuff, 32, "%d", port);
-		if (0 != getaddrinfo(nullptr, portBuff, &hints, &addrInfo))
+		Platform::formatPrint( portBuff, 32, "%d", port );
+		if ( 0 != getaddrinfo( nullptr, portBuff, &hints, &addrInfo ) )
 		{
-			#if MM_PLATFORM_WINDOWS
-				if ( err ) *err = GetLastError();
-			#endif
-			freeaddrinfo(addrInfo);
+		#if MM_PLATFORM_WINDOWS
+			if ( err ) *err = GetLastError();
+		#endif
+			freeaddrinfo( addrInfo );
 			return false;
 		}
 
 		// try binding on the found host addresses
-		for (addrinfo* inf = addrInfo; inf != nullptr; inf = inf->ai_next)
+		for ( addrinfo* inf = addrInfo; inf != nullptr; inf = inf->ai_next )
 		{
-			if (0 == ::bind(m_Socket, inf->ai_addr, (i32)inf->ai_addrlen))
+			if ( 0 == ::bind( m_Socket, inf->ai_addr, (i32)inf->ai_addrlen ) )
 			{
-				freeaddrinfo(addrInfo);
+				freeaddrinfo( addrInfo );
 				// succesful bind
 				m_Bound = true;
 				return true;
 			}
 		}
 
-		#if MM_PLATFORM_WINDOWS
-			if ( err ) *err = GetLastError();
-		#endif
+	#if MM_PLATFORM_WINDOWS
+		if ( err ) *err = GetLastError();
+	#endif
 		return false;
 	}
 
@@ -364,53 +364,53 @@ namespace MiepMiep
 	{
 		if ( m_Socket != INVALID_SOCKET )
 		{
-			#if MM_PLATFORM_WINDOWS
-				closesocket( m_Socket );
-			#else	
-				close( m_Socket );
-			#endif
+		#if MM_PLATFORM_WINDOWS
+			closesocket( m_Socket );
+		#else	
+			close( m_Socket );
+		#endif
 			m_Socket = INVALID_SOCKET;
 		}
-		m_Open  = false;
+		m_Open = false;
 		m_Bound = false;
 	}
 
-	bool BSDSocket::less(const ISocket& other) const
+	bool BSDSocket::less( const ISocket& other ) const
 	{
-		const BSDSocket& b = sc<const BSDSocket&>(other);
+		const BSDSocket& b = sc<const BSDSocket&>( other );
 		return (id() < b.id());// && !(this->m_Socket == INVALID_SOCKET || b.m_Socket == INVALID_SOCKET);
 	}
 
-	bool BSDSocket::equal(const ISocket& other) const
+	bool BSDSocket::equal( const ISocket& other ) const
 	{
-		const BSDSocket& b = sc<const BSDSocket&>(other);
+		const BSDSocket& b = sc<const BSDSocket&>( other );
 		return (id() == b.id());// && (this->m_Socket != INVALID_SOCKET);
 	}
 
-	ESendResult BSDSocket::send(const Endpoint& endPoint, const byte* data, u32 len, i32* err) const
+	ESendResult BSDSocket::send( const Endpoint& endPoint, const byte* data, u32 len, i32* err ) const
 	{
 		if ( err ) *err = 0;
 
 		if ( m_Socket == INVALID_SOCKET )
 			return ESendResult::SocketClosed;
 
-		const byte* addr	= endPoint.getLowLevelAddr();
-		u32 addrSize		= endPoint.getLowLevelAddrSize();
+		const byte* addr = endPoint.getLowLevelAddr();
+		u32 addrSize = endPoint.getLowLevelAddrSize();
 
-		if ( SOCKET_ERROR == sendto( m_Socket, ( const char* ) data, len, 0, (const sockaddr*)addr, addrSize ) )
+		if ( SOCKET_ERROR == sendto( m_Socket, (const char*)data, len, 0, (const sockaddr*)addr, addrSize ) )
 		{
-			#if MM_PLATFORM_WINDOWS
-				if ( err ) *err = GetLastError();
-			#endif
+		#if MM_PLATFORM_WINDOWS
+			if ( err ) *err = GetLastError();
+		#endif
 			return ESendResult::Error;
 		}
 
 		return ESendResult::Succes;
 	}
 
-	ERecvResult BSDSocket::recv(byte* buff, u32& rawSize, Endpoint& endPoint, i32* err) const
+	ERecvResult BSDSocket::recv( byte* buff, u32& rawSize, Endpoint& endPoint, i32* err ) const
 	{
-		if (err) *err = 0;
+		if ( err ) *err = 0;
 
 		if ( m_Socket == INVALID_SOCKET )
 		{
@@ -418,15 +418,15 @@ namespace MiepMiep
 			return ERecvResult::SocketClosed;
 		}
 
-		i32 addrSize  = (i32) endPoint.getLowLevelAddrSize();
-		i32 recvBytes = recvfrom(m_Socket, (char*) buff, rawSize, 0, (sockaddr*)endPoint.getLowLevelAddr(), (int*) &addrSize);
+		i32 addrSize = (i32)endPoint.getLowLevelAddrSize();
+		i32 recvBytes = recvfrom( m_Socket, (char*)buff, rawSize, 0, (sockaddr*)endPoint.getLowLevelAddr(), (int*)&addrSize );
 
 		if ( recvBytes < 0 )
 		{
 			rawSize = 0;
-			#if MM_PLATFORM_WINDOWS
-				if ( err ) *err = GetLastError();
-			#endif
+		#if MM_PLATFORM_WINDOWS
+			if ( err ) *err = GetLastError();
+		#endif
 			return ERecvResult::Error;
 		}
 
