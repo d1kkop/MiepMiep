@@ -74,6 +74,7 @@ namespace MiepMiep
 			}
 		}
 		m_Links.emplace_back( link );
+        link->setSession( *this );
 		return true;
 	}
 

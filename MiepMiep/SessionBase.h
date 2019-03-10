@@ -48,6 +48,8 @@ namespace MiepMiep
 		MM_TS bool hasLink( const Link& link ) const;
 		MM_TS void forLink( const Link* exclude, const std::function<void( Link& )>& cb );
 
+        u32 id() const { return m_Id; }
+
 		MM_TO_PTR( SessionBase )
 
 	protected:

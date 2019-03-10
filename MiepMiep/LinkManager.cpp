@@ -130,11 +130,7 @@ namespace MiepMiep
 			assert(false);
 			return nullptr;
 		}
-		if ( session && addToSession )
-		{
-			// session->addLink( link );
-			link->setSession( *session );
-		}
+
 		m_LinksAsArray.emplace_back( link );
 		m_Links[sap] = link;
 		return link;

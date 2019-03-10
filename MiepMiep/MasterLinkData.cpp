@@ -75,10 +75,9 @@ namespace MiepMiep
 		sptr<MasterSession> mSession = nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data );
 		if ( mSession )
 		{
-			l.setSession( *mSession );
 			mSession->addLink( l.to_ptr() );
 			l.callRpc<masterLinkRpcRegisterResult, bool>(true, false, false, MM_RPC_CHANNEL, nullptr);
-			LOG("New master session with name %s.", mSession->name());
+			LOG("New master session with id %d created.", mSession->id());
 		}
 		else
 		{
@@ -115,7 +114,6 @@ namespace MiepMiep
 		sptr<MasterSession> mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
 		if ( mSession )
 		{
-			l.setSession( *mSession );
 			mSession->addLink( l.to_ptr() );
 			mSession->sendConnectRequests( l );
 			l.callRpc<masterLinkRpcJoinResult, bool>( true, false, false, MM_RPC_CHANNEL, nullptr );

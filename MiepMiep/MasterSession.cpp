@@ -55,9 +55,10 @@ namespace MiepMiep
 	{
 		RPC_BEGIN();
 		u32 linkId = get<0>( tp );
-		LOG( "Connecting with Id %d.", linkId );
 		const sptr<IAddress>& toAddr = get<1>( tp );
-		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->getOrAdd ( &s, SocketAddrPair( l.socket(), *toAddr ), linkId, false /*addHandler*/, true /* addToSession */, true, nullptr );
+		LOG( "Connecting to %s.", toAddr->toIpAndPort() );
+		sptr<Link> newLink = nw.getOrAdd<LinkManager>()->getOrAdd ( &s, SocketAddrPair( l.socket(), *toAddr ), linkId, 
+                                                                   false /*addHandler*/, true /* addToSession */, true, nullptr );
 		if ( newLink )
 		{
 			assert( s.hasLink( *newLink ) );
