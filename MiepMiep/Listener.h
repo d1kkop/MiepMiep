@@ -1,29 +1,30 @@
 #pragma once
 
 #include "Component.h"
-#include "PacketHandler.h"
+#include "ParentNetwork.h"
+#include "Memory.h"
 
 
 namespace MiepMiep
 {
 	class ISocket;
+    class Network;
 
 
-	class Listener: public IComponent, public IPacketHandler
+	class Listener: public ParentNetwork, public IComponent, public ITraceable
 	{
 	public:
-		/* Use Start Listen instead of constructor !! */
 		Listener( Network& network );
 		~Listener() override;
 
-		MM_TS static sptr<Listener> startListen( Network& network, u16 port );
-		MM_TS static EComponentType compType() { return EComponentType::Listener; }
+		static sptr<Listener> startListen( Network& network, u16 port );
+		static EComponentType compType() { return EComponentType::Listener; }
 
-		MM_TSC const ISocket&  socket() const { return *m_Socket; }
-		MM_TSC const IAddress& source() const { return *m_Source; }
-		MM_TSC u16 port() const;
+		const ISocket&  socket() const { return *m_Socket; }
+		const IAddress& source() const { return *m_Source; }
+		u16 port() const;
 
-		MM_TS void stopListen();
+		void stopListen();
 
 		MM_TO_PTR( Listener )
 

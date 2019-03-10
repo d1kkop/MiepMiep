@@ -6,7 +6,6 @@
 #include "Endpoint.h"
 #include "Socket.h"
 #include "LinkState.h"
-#include "PacketHandler.h"
 #include "ReliableRecv.h"
 #include "UnreliableRecv.h"
 #include "ReliableNewRecv.h"
@@ -37,51 +36,31 @@ namespace MiepMiep
 	// -------- Link ----------------------------------------------------------------------------------------------------
 
 	Link::Link(Network& network):
-		IPacketHandler(network),
-		m_SocketWasAddedToHandler(false)
+		ParentNetwork(network)
 	{
 	}
 
 	Link::~Link()
 	{
-		if ( m_SocketWasAddedToHandler )
+		sptr<SocketSetManager> ss = m_Network.get<SocketSetManager>();
+		if ( ss )
 		{
-			sptr<SocketSetManager> ss = m_Network.get<SocketSetManager>();
-			if ( ss )
-			{
-				ss->removeSocket( m_SockAddrPair.m_Socket );
-			}
+			ss->removeSocket( m_SockAddrPair.m_Socket );
 		}
 		LOG( "Link %s destroyed.", info() );
 	}
 
-	MM_TSC void Link::setSession( SessionBase& session )
-	{
-		assert( !m_Session );
-		m_Session = session.to_ptr();
-	}
-
-	MM_TSC bool Link::operator<( const Link& o ) const
+	bool Link::operator<( const Link& o ) const
 	{
 		return getSocketAddrPair() < o.getSocketAddrPair();
 	}
 
-	MM_TSC bool Link::operator==( const Link& o ) const
+	bool Link::operator==( const Link& o ) const
 	{
 		return getSocketAddrPair() == o.getSocketAddrPair();
 	}
 
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, bool addHandler, bool addToSession )
-	{
-		return create( network, session, sap, Util::rand(), addHandler, addToSession );
-	}
-
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase& session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession )
-	{
-		return create( network, &session, sap, id, addHandler, addToSession );
-	}
-
-	MM_TS sptr<Link> Link::create( Network& network, SessionBase* session, const SocketAddrPair& sap, u32 id, bool addHandler, bool addToSession )
+	sptr<Link> Link::create( Network& network, SessionBase* session, const SocketAddrPair& sap )
 	{
 		sptr<Link> link = reserve_sp<Link, Network&>( MM_FL, network );
 
@@ -93,82 +72,83 @@ namespace MiepMiep
 			return nullptr;
 		}
 
-		if ( addHandler )
-		{
-			link->m_Network.getOrAdd<SocketSetManager>()->addSocket( sap.m_Socket, link->ptr<IPacketHandler>() );
-			link->m_SocketWasAddedToHandler = true;
-		}
-
-		link->m_Id = id;
 		link->m_SockAddrPair = sap;
-		if ( session && addToSession )
+		if ( session )
 		{
 			if ( !session->addLink( link ) )
 			{
 				return nullptr;
 			}
 		}
-
-		LOG( "Created new link to %s.", link->info() );
+        else
+        {
+            // Only log if created without session otherwise double messages for creating and adding a new link.
+		    LOG( "Created new link to %s.", link->info() );
+        }
 		return link;
 	}
 
-	MM_TSC INetwork& Link::network() const
+	INetwork& Link::network() const
 	{
 		return m_Network;
 	}
 
-	MM_TSC ISession& Link::session() const
+	ISession& Link::session() const
 	{
 		return *m_Session;
 	}
 
-	MM_TS bool Link::isConnected() const
+	bool Link::isConnected() const
 	{
 		auto ls = get<LinkState>();
 		return ls && ls->state() == ELinkState::Connected;
 	}
 
-	MM_TSC SessionBase* Link::getSession() const
+	SessionBase* Link::getSession() const
 	{
 		return m_Session.get();
 	}
 
-	MM_TSC const char* Link::ipAndPort() const
+	const char* Link::ipAndPort() const
 	{
 		assert(m_SockAddrPair.m_Address);
 		return m_SockAddrPair.m_Address->toIpAndPort();
 	}
 
-	MM_TSC const char* Link::info() const
+	const char* Link::info() const
 	{
 		static thread_local char buff[128];
-		Platform::formatPrint(buff, sizeof(buff), "%s (src_port: %d, link: %d, socket: %d)", ipAndPort(), source().port(), m_Id, socket().id());
+		Platform::formatPrint(buff, sizeof(buff), "%s (src_port: %d, socket: %d)", ipAndPort(), source().port(), socket().id());
 		return buff;
 	}
 
-	MM_TSC const SocketAddrPair& Link::getSocketAddrPair() const
+	const SocketAddrPair& Link::getSocketAddrPair() const
 	{
 		return m_SockAddrPair;
 	}
 
-	MM_TSC Session& Link::normalSession() const
+	void Link::setSession( SessionBase& session )
+	{
+		assert( !m_Session );
+		m_Session = session.to_ptr();
+	}
+
+	Session& Link::normalSession() const
 	{
 		return sc<Session&>( session() );
 	}
 
-	MM_TSC MasterSession& Link::masterSession() const
+	MasterSession& Link::masterSession() const
 	{
 		return sc<MasterSession&>( session() );
 	}
 
-	MM_TS void Link::updateCustomMatchmakingMd( const MetaData& md )
+	void Link::updateCustomMatchmakingMd( const MetaData& md )
 	{
-		scoped_spinlock lk( m_MatchmakingDataMutex);
 		m_CustomMatchmakingMd = md;
 	}
 
-	MM_TS bool Link::disconnect(bool isKick, bool isReceive, bool removeLink)
+	bool Link::disconnect(bool isKick, bool isReceive, bool removeLink)
 	{
 		auto ls = get<LinkState>();
 		if ( ls )
@@ -182,19 +162,19 @@ namespace MiepMiep
 		return false;
 	}
 
-	MM_TS void Link::createGroup( const string& typeName, const BinSerializer& initData )
+	void Link::createGroup( const string& typeName, const BinSerializer& initData )
 	{
 		auto& varVec = PerThreadDataProvider::getConstructedVariables();
 		getOrAdd<GroupCollectionLink>()->addNewPendingGroup( sc<Session&>(session()), varVec, typeName, initData, nullptr ); // makes copy
 		varVec.clear();
 	}
 
-	MM_TS void Link::destroyGroup(u32 id)
+	void Link::destroyGroup(u32 id)
 	{
-		
+		// TODO
 	}
 
-	MM_TS void Link::receive(BinSerializer& bs)
+	void Link::receive(BinSerializer& bs)
 	{
 		byte compType;
 		PacketInfo pi;
@@ -237,7 +217,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS void Link::send(const byte* data, u32 length)
+	void Link::send(const byte* data, u32 length)
 	{
 		if ( !m_SockAddrPair.m_Socket )
 		{

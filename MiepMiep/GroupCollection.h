@@ -16,14 +16,14 @@ namespace MiepMiep
 	class NetVariable;
 
 
-	class GroupCollection: public IComponent, public ITraceable
+	class GroupCollection : public IComponent, public ITraceable
 	{
 	public:
 		GroupCollection();
 
-		MM_TS void addNewPendingGroup(const Session& session, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, IDeliveryTrace* trace);
-		MM_TS void tryProcessPendingGroups();
-		MM_TS sptr<Group> findGroup( u32 netId ) const;
+		void addNewPendingGroup( const Session& session, vector<NetVariable*>& vars, const string& typeName, const BinSerializer& initData, IDeliveryTrace* trace );
+		void tryProcessPendingGroups();
+		sptr<Group> findGroup( u32 netId ) const;
 
 		virtual Link* link() const = 0;
 		virtual Network& network() const = 0;
@@ -31,17 +31,16 @@ namespace MiepMiep
 
 	protected:
 		vector<u32>	  m_IdPool;
-		mutable mutex m_GroupLock;
-		deque<sptr<Group>>			m_PendingGroups;
-		map<u32, sptr<Group>>		m_Groups;
+		deque<sptr<Group>>		m_PendingGroups;
+		map<u32, sptr<Group>>	m_Groups;
 	};
 
 
-	class GroupCollectionLink: public ParentLink, public GroupCollection
+	class GroupCollectionLink : public ParentLink, public GroupCollection
 	{
 	public:
-		GroupCollectionLink(Link& link):
-			ParentLink(link) { }
+		GroupCollectionLink( Link& link ) :
+			ParentLink( link ) { }
 
 		static EComponentType compType() { return EComponentType::GroupCollectionLink; }
 
@@ -51,11 +50,11 @@ namespace MiepMiep
 	};
 
 
-	class GroupCollectionNetwork: public ParentNetwork, public GroupCollection
+	class GroupCollectionNetwork : public ParentNetwork, public GroupCollection
 	{
 	public:
-		GroupCollectionNetwork(Network& network):
-			ParentNetwork(network) { }
+		GroupCollectionNetwork( Network& network ) :
+			ParentNetwork( network ) { }
 
 		static EComponentType compType() { return EComponentType::GroupCollectionNetwork; }
 

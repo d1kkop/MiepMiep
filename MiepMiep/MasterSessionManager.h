@@ -44,30 +44,28 @@ namespace MiepMiep
 	{
 	public:
 		~MasterSessionList() override;
-		MM_TS sptr<MasterSession> addSession( const sptr<Link>& host, const MasterSessionData& initialData );
-		MM_TS void removeSession( MsListCIt whereIt );
-		MM_TS u64 num() const;
-		MM_TS sptr<MasterSession> findFromFilter( const SearchFilter& sf );
+		sptr<MasterSession> addSession( const sptr<Link>& host, const MasterSessionData& initialData );
+		void removeSession( MsListCIt whereIt );
+		u64 num() const;
+		sptr<MasterSession> findFromFilter( const SearchFilter& sf );
 
 	private:
-		mutable mutex m_SessionsMutex;
 		list<sptr<MasterSession>> m_MasterSessions;
 	};
 
 
-	class MasterServer: public ParentNetwork, public IComponent, public ITraceable
+	class MasterSessionManager: public ParentNetwork, public IComponent, public ITraceable
 	{
 	public:
-		MasterServer(Network& network);
-		~MasterServer() override;
+		MasterSessionManager(Network& network);
+		~MasterSessionManager() override;
 		static EComponentType compType() { return EComponentType::MasterServer; }
 
-		MM_TS sptr<MasterSession> registerSession( const sptr<Link>& link, const MasterSessionData& data );
-		MM_TS void removeSession( MasterSession& session );
-		MM_TS sptr<MasterSession> findServerFromFilter( const SearchFilter& sf );
+		sptr<MasterSession> registerSession( const sptr<Link>& link, const MasterSessionData& data );
+		void removeSession( MasterSession& session );
+		sptr<MasterSession> findServerFromFilter( const SearchFilter& sf );
 
 	private:
-		mutex m_ServerListMutex;
 		vector<sptr<MasterSessionList>> m_SessionLists;
 	};
 }

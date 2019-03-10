@@ -24,7 +24,7 @@ using namespace std;
 #define MM_MAX_FRAGMENTSIZE 1900
 #define MM_MAX_RECVSIZE 4096
 #define MM_MAX_SENDSIZE MM_MAX_RECVSIZE
-#define MM_MIN_HDR_SIZE 10				/* linkId(4) + seq(4) + compId(1) + channelAndFlags(1) + <dataId(1)> ->  (dataI is optional) */
+#define MM_MIN_HDR_SIZE 6				/* seq(4) + compId(1) + channelAndFlags(1) + <dataId(1)> ->  (dataI is optional) */
 #define MM_CHANNEL_MASK 7
 #define MM_RELAY_BIT 4
 #define MM_FRAGMENT_FIRST_BIT 8
@@ -105,6 +105,6 @@ namespace MiepMiep
 	constexpr bool Is_Receive = true;
 	constexpr bool No_Receive = false;
 	constexpr bool Remove_Link = true;
-	constexpr bool No_Remove_link = false;
+	constexpr bool No_Remove_Link = false;
 
 }

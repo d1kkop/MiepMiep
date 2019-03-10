@@ -1,6 +1,6 @@
 #include "Game.h"
 #include "BinSerializer.h"
-#include "MasterServer.h" 
+#include "MasterSessionManager.h" 
 #include "Apple.h"
 #include "Tree.h"
 #include <iostream>

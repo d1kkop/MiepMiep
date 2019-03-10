@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Link">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{76ecb1f3-0dac-411e-8e9b-8092407329b7}</UniqueIdentifier>
     </Filter>
@@ -26,12 +22,6 @@
     <Filter Include="Core\Network">
       <UniqueIdentifier>{4d7ab0ff-5d13-4c08-a2ab-364956559e4f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Link\Components">
-      <UniqueIdentifier>{45e18428-71ff-4488-ae1e-b4111c367e66}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Link\Components\Link">
-      <UniqueIdentifier>{37cfb5f5-66cd-4338-96e5-d87a01baef76}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\HighLevelTypes">
       <UniqueIdentifier>{2b2dfa8a-a6fe-4016-b627-7ca46a56a573}</UniqueIdentifier>
     </Filter>
@@ -42,20 +32,27 @@
     <Filter Include="Variables\Group">
       <UniqueIdentifier>{a7acfbf0-6a33-4b28-8d3f-5db78feca40e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Session">
+      <UniqueIdentifier>{7e7b0619-83a3-45b9-9cea-8e21d7ec2a8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Link">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Link\Components">
+      <UniqueIdentifier>{45e18428-71ff-4488-ae1e-b4111c367e66}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Link\Components\Acks">
       <UniqueIdentifier>{0eaf1ec1-38f2-4f3c-8337-7a7ff7aaa3b7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Link\Components\Link\Master">
-      <UniqueIdentifier>{ed232246-9597-4c9a-b887-d81017135be9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="MSession">
-      <UniqueIdentifier>{7e7b0619-83a3-45b9-9cea-8e21d7ec2a8a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Link\Components\Send">
       <UniqueIdentifier>{a296cafe-d74d-4b28-9af4-2fe8d18b546a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Link\Components\Recv">
       <UniqueIdentifier>{f45cb4b6-ff45-4c0a-9e02-18047e8e9d37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Link\Components\Other">
+      <UniqueIdentifier>{37cfb5f5-66cd-4338-96e5-d87a01baef76}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -81,13 +78,13 @@
       <Filter>Link\Components\Send</Filter>
     </ClCompile>
     <ClCompile Include="RemoteServerInfo.cpp">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClCompile>
     <ClCompile Include="LinkState.cpp">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClCompile>
     <ClCompile Include="GroupCollection.cpp">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClCompile>
     <ClCompile Include="NetVariable.cpp">
       <Filter>Variables</Filter>
@@ -99,9 +96,6 @@
       <Filter>Core\Common</Filter>
     </ClCompile>
     <ClCompile Include="Socket.cpp">
-      <Filter>Core\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="SocketSet.cpp">
       <Filter>Core\Network</Filter>
     </ClCompile>
     <ClCompile Include="Endpoint.cpp">
@@ -122,9 +116,6 @@
     <ClCompile Include="SocketSetManager.cpp">
       <Filter>Network\Components</Filter>
     </ClCompile>
-    <ClCompile Include="PacketHandler.cpp">
-      <Filter>Core\HighLevelTypes</Filter>
-    </ClCompile>
     <ClCompile Include="Group.cpp">
       <Filter>Variables\Group</Filter>
     </ClCompile>
@@ -144,19 +135,13 @@
       <Filter>Network\Components</Filter>
     </ClCompile>
     <ClCompile Include="LinkStats.cpp">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClCompile>
     <ClCompile Include="ParentNetwork.cpp">
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="ParentLink.cpp">
       <Filter>Link</Filter>
-    </ClCompile>
-    <ClCompile Include="MasterServer.cpp">
-      <Filter>Network\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="MasterLinkData.cpp">
-      <Filter>Link\Components\Link\Master</Filter>
     </ClCompile>
     <ClCompile Include="ListenerManager.cpp">
       <Filter>Network\Components</Filter>
@@ -165,13 +150,13 @@
       <Filter>Network\Components</Filter>
     </ClCompile>
     <ClCompile Include="Session.cpp">
-      <Filter>MSession</Filter>
+      <Filter>Session</Filter>
     </ClCompile>
     <ClCompile Include="SessionBase.cpp">
-      <Filter>MSession</Filter>
+      <Filter>Session</Filter>
     </ClCompile>
     <ClCompile Include="MasterSession.cpp">
-      <Filter>MSession</Filter>
+      <Filter>Session</Filter>
     </ClCompile>
     <ClCompile Include="ReliableNewRecv.cpp">
       <Filter>Link\Components\Recv</Filter>
@@ -181,6 +166,18 @@
     </ClCompile>
     <ClCompile Include="UnreliableRecv.cpp">
       <Filter>Link\Components\Recv</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHelper.cpp">
+      <Filter>Core\HighLevelTypes</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkActions.cpp">
+      <Filter>Network\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="MatchMakerData.cpp">
+      <Filter>Link\Components\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="MasterSessionManager.cpp">
+      <Filter>Network\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -212,13 +209,13 @@
       <Filter>Link\Components\Send</Filter>
     </ClInclude>
     <ClInclude Include="RemoteServerInfo.h">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClInclude>
     <ClInclude Include="LinkState.h">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClInclude>
     <ClInclude Include="GroupCollection.h">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClInclude>
     <ClInclude Include="NetVariable.h">
       <Filter>Variables</Filter>
@@ -230,9 +227,6 @@
       <Filter>Core\Common</Filter>
     </ClInclude>
     <ClInclude Include="Socket.h">
-      <Filter>Core\Network</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketSet.h">
       <Filter>Core\Network</Filter>
     </ClInclude>
     <ClInclude Include="Memory.h">
@@ -271,9 +265,6 @@
     <ClInclude Include="SocketSetManager.h">
       <Filter>Network\Components</Filter>
     </ClInclude>
-    <ClInclude Include="PacketHandler.h">
-      <Filter>Core\HighLevelTypes</Filter>
-    </ClInclude>
     <ClInclude Include="Group.h">
       <Filter>Variables\Group</Filter>
     </ClInclude>
@@ -293,19 +284,13 @@
       <Filter>Network\Components</Filter>
     </ClInclude>
     <ClInclude Include="LinkStats.h">
-      <Filter>Link\Components\Link</Filter>
+      <Filter>Link\Components\Other</Filter>
     </ClInclude>
     <ClInclude Include="ParentNetwork.h">
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="ParentLink.h">
       <Filter>Link</Filter>
-    </ClInclude>
-    <ClInclude Include="MasterServer.h">
-      <Filter>Network\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="MasterLinkData.h">
-      <Filter>Link\Components\Link\Master</Filter>
     </ClInclude>
     <ClInclude Include="ListenerManager.h">
       <Filter>Network\Components</Filter>
@@ -314,16 +299,16 @@
       <Filter>Network\Components</Filter>
     </ClInclude>
     <ClInclude Include="Session.h">
-      <Filter>MSession</Filter>
+      <Filter>Session</Filter>
     </ClInclude>
     <ClInclude Include="SessionBase.h">
-      <Filter>MSession</Filter>
+      <Filter>Session</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Link</Filter>
     </ClInclude>
     <ClInclude Include="MasterSession.h">
-      <Filter>MSession</Filter>
+      <Filter>Session</Filter>
     </ClInclude>
     <ClInclude Include="ReliableNewRecv.h">
       <Filter>Link\Components\Recv</Filter>
@@ -333,6 +318,18 @@
     </ClInclude>
     <ClInclude Include="UnreliableRecv.h">
       <Filter>Link\Components\Recv</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHelper.h">
+      <Filter>Core\HighLevelTypes</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkActions.h">
+      <Filter>Network\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="MatchMakerData.h">
+      <Filter>Link\Components\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="MasterSessionManager.h">
+      <Filter>Network\Components</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -345,5 +342,10 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MiepMiep.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\ThreadingModel">
+      <Filter>Core</Filter>
+    </Text>
   </ItemGroup>
 </Project>

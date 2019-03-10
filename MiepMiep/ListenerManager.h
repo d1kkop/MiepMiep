@@ -18,12 +18,11 @@ namespace MiepMiep
 		~ListenerManager() override;
 		static EComponentType compType() { return EComponentType::ListenerManager; }
 
-		MM_TS EListenCallResult startListen( u16 port );
-		MM_TS void stopListen( u16 port );
-		MM_TS sptr<Listener> findListener( u16 port );
+		EListenCallResult startListen( u16 port );
+		void stopListen( u16 port );
+		sptr<Listener> findListener( u16 port );
 
 	private:
-		mutable mutex m_ListenersMutex;
 		map<u16, sptr<Listener>> m_Listeners;
 	};
 }

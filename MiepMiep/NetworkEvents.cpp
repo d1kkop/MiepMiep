@@ -11,7 +11,7 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS void NetworkEvents::pushEvent(sptr<IEvent>& event)
+	void NetworkEvents::pushEvent(sptr<IEvent>& event)
 	{
 		// In this case, immediately async call callback, otherwise push in list and have some other thread
 		// consume the events.
@@ -26,7 +26,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS void NetworkEvents::processQueuedEvents()
+	void NetworkEvents::processQueuedEvents()
 	{
 		rscoped_lock lk(m_EventsMutex);
 		// Doing it this way, new events can be pushed while iterating over.

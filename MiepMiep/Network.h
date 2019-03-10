@@ -71,6 +71,7 @@ namespace MiepMiep
 
 		MM_TS void simulatePacketLoss( u32 percentage ) override;
 		MM_TS u32  packetLossPercentage() const;
+        MM_TS u32  nextSessionId();
 
 
 		MM_TS static void printMemoryLeaks();
@@ -95,7 +96,8 @@ namespace MiepMiep
 										byte channel=0, IDeliveryTrace* trace=nullptr );
 
 	private:
-		atomic<u32> m_PacketLossPercentage;
+		atomic_uint m_PacketLossPercentage;
+        atomic_uint m_NextSessionId;
 	};
 
 

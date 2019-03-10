@@ -24,11 +24,12 @@
     <ClCompile Include="LinkStats.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="ListenerManager.cpp" />
-    <ClCompile Include="MasterLinkData.cpp" />
-    <ClCompile Include="MasterServer.cpp" />
+    <ClCompile Include="MatchMakerData.cpp" />
+    <ClCompile Include="MasterSessionManager.cpp" />
     <ClCompile Include="MasterSession.cpp" />
+    <ClCompile Include="NetworkActions.cpp" />
     <ClCompile Include="NetworkEvents.cpp" />
-    <ClCompile Include="PacketHandler.cpp" />
+    <ClCompile Include="PacketHelper.cpp" />
     <ClCompile Include="ParentLink.cpp" />
     <ClCompile Include="ParentNetwork.cpp" />
     <ClCompile Include="PerThreadDataProvider.cpp" />
@@ -54,7 +55,6 @@
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="SessionBase.cpp" />
     <ClCompile Include="Socket.cpp" />
-    <ClCompile Include="SocketSet.cpp" />
     <ClCompile Include="SocketSetManager.cpp" />
     <ClCompile Include="UnreliableRecv.cpp" />
     <ClCompile Include="UnreliableSend.cpp" />
@@ -68,11 +68,12 @@
     <ClInclude Include="LinkStats.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="ListenerManager.h" />
-    <ClInclude Include="MasterLinkData.h" />
-    <ClInclude Include="MasterServer.h" />
+    <ClInclude Include="MatchMakerData.h" />
+    <ClInclude Include="MasterSessionManager.h" />
     <ClInclude Include="MasterSession.h" />
+    <ClInclude Include="NetworkActions.h" />
     <ClInclude Include="NetworkEvents.h" />
-    <ClInclude Include="PacketHandler.h" />
+    <ClInclude Include="PacketHelper.h" />
     <ClInclude Include="ParentLink.h" />
     <ClInclude Include="ParentNetwork.h" />
     <ClInclude Include="PerThreadDataProvider.h" />
@@ -105,7 +106,6 @@
     <ClInclude Include="ReliableSend.h" />
     <ClInclude Include="RemoteServerInfo.h" />
     <ClInclude Include="Socket.h" />
-    <ClInclude Include="SocketSet.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="UnreliableRecv.h" />
     <ClInclude Include="UnreliableSend.h" />
@@ -119,6 +119,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MiepMiep.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\ThreadingModel" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

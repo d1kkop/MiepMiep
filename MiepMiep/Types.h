@@ -74,6 +74,8 @@ namespace MiepMiep
 	constexpr bool Do_SysBit = true;
 
 	constexpr auto No_Trace = nullptr;
+    constexpr bool Is_Succes = true;
+    constexpr bool Is_Fail = false;
 
 
 

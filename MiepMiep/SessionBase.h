@@ -16,7 +16,6 @@ namespace MiepMiep
 
 	// ----- MasterSession client/server shared per link data  ------------------------------------------------------------------
 
-	// TODO change for variable group instead!
 	struct MasterSessionData
 	{
 		bool  m_IsP2p;
@@ -28,6 +27,7 @@ namespace MiepMiep
 		std::string m_Name;
 		std::string m_Type;
 		std::string m_Password;
+		MetaData m_MetaData;
 	};
 
 
@@ -35,26 +35,25 @@ namespace MiepMiep
 	{
 	public:
 		SessionBase(Network& network);
-		MM_TSC INetwork& network() const override;
-		MM_TSC rmutex& dataMutex() { return m_DataMutex; }
-		MM_TSC const MasterSessionData& msd() const; // TODO retrieving members of this is not TS 
+		INetwork& network() const override;
+		u32 id() const;
+		const MasterSessionData& msd() const;
 
-		MM_TS bool start();
-		MM_TS const char* name() const override;
+		bool start();
+		const char* name() const override;
 
-		MM_TS void bufferMsg( const vector<sptr<const NormalSendPacket>>& data, byte channel );
-		MM_TS virtual bool addLink( const sptr<Link>& link);
-		MM_TS virtual void removeLink( Link& link ) = 0;
-		MM_TS bool hasLink( const Link& link ) const;
-		MM_TS void forLink( const Link* exclude, const std::function<void( Link& )>& cb );
+		void bufferMsg( const vector<sptr<const NormalSendPacket>>& data, byte channel );
+		virtual bool addLink( const sptr<Link>& link );
+		virtual void removeLink( Link& link ) = 0;
+		bool hasLink( const Link& link ) const;
+		void forLink( const Link* exclude, const std::function<void( Link& )>& cb );
 
         u32 id() const { return m_Id; }
 
 		MM_TO_PTR( SessionBase )
 
 	protected:
-		mutable rmutex m_DataMutex;
-		u32  m_Id; // <-- Only used for debugging sessions
+		u32  m_Id;
 		bool m_Started;
 		MasterSessionData m_MasterData;
 		vector<wptr<Link>> m_Links;
