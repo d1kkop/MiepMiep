@@ -1,5 +1,5 @@
 #include "MasterSession.h"
-#include "MasterServer.h"
+#include "MasterSessionManager.h"
 #include "LinkStats.h"
 #include "LinkState.h"
 #include "Util.h"
@@ -89,16 +89,14 @@ namespace MiepMiep
 		m_MasterData = data;
 	}
 
-	MM_TS sptr<const IAddress> MasterSession::host() const
+	sptr<const IAddress> MasterSession::host() const
 	{
-		rscoped_lock lk(m_DataMutex);
 		auto shost = m_Host.lock();
 		return shost ? shost->destination().to_ptr() : nullptr;
 	}
 
-	MM_TS bool MasterSession::addLink( const sptr<Link>& newLink )
+	bool MasterSession::addLink( const sptr<Link>& newLink )
 	{
-		rscoped_lock lk( m_DataMutex );
 		if ( !canJoin() )
 			return false;
 		SessionBase::addLink( newLink );
@@ -116,9 +114,8 @@ namespace MiepMiep
 		return true;
 	}
 
-	MM_TS void MasterSession::removeLink( Link& link )
+	void MasterSession::removeLink( Link& link )
 	{
-		rscoped_lock lk( m_DataMutex );
 		auto lIt = std::find_if( begin( m_Links ), end( m_Links ), [&] ( auto& l ) { return *l.lock()==link; } );
 		if ( lIt == m_Links.end() )
 		{
@@ -171,15 +168,13 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS void MasterSession::updateHost( const sptr<Link>& link )
+	void MasterSession::updateHost( const sptr<Link>& link )
 	{
-		rscoped_lock lk( m_DataMutex );
 		m_Host = link;
 	}
 
-	MM_TS void MasterSession::removeSelf()
+	void MasterSession::removeSelf()
 	{
-		rscoped_lock lk( m_DataMutex );
 		// First clean links
 		for ( auto it = m_Links.begin(); it != m_Links.end(); )
 		{
@@ -199,9 +194,8 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS bool MasterSession::operator==( const SearchFilter& sf ) const
+	bool MasterSession::operator==( const SearchFilter& sf ) const
 	{
-		rscoped_lock lk( m_DataMutex );
 		auto& d = m_MasterData;
 		return
 			canJoin() &&
@@ -213,21 +207,18 @@ namespace MiepMiep
 			(d.m_Rating >= sf.m_MinRating && d.m_Rating <= sf.m_MaxRating);
 	}
 
-	MM_TS bool MasterSession::canJoin() const
+	bool MasterSession::canJoin() const
 	{
-		rscoped_lock lk( m_DataMutex );
 		return (!m_MasterData.m_IsP2p || !m_SomeoneLeftTheSession) && (!m_Started || m_MasterData.m_CanJoinAfterStart);
 	}
 
-
-	MM_TS sptr<ILink> MasterSession::matchMaker() const
+	 sptr<ILink> MasterSession::matchMaker() const
 	{
 		return nullptr;
 	}
 
-	MM_TS void MasterSession::sendConnectRequests( Link& newLink )
+	void MasterSession::sendConnectRequests( Link& newLink )
 	{
-		rscoped_lock lk(m_DataMutex);
 		if ( m_MasterData.m_IsP2p )
 		{
 			// Have all existing links connect to new link and new link connect to all existing links.

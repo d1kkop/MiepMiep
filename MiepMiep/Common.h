@@ -105,6 +105,6 @@ namespace MiepMiep
 	constexpr bool Is_Receive = true;
 	constexpr bool No_Receive = false;
 	constexpr bool Remove_Link = true;
-	constexpr bool No_Remove_link = false;
+	constexpr bool No_Remove_Link = false;
 
 }

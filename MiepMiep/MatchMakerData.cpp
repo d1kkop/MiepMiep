@@ -1,6 +1,6 @@
-#include "MasterLink.h"
+#include "MatchMakerData.h"
 #include "NetworkEvents.h"
-#include "MasterServer.h"
+#include "MasterSessionManager.h"
 #include "MasterSession.h"
 
 
@@ -10,7 +10,7 @@ namespace MiepMiep
 
 	struct EventRegisterResult : IEvent
 	{
-		EventRegisterResult( const sptr<Link>& link, const sptr<MasterLink>& mj, bool succes ):
+		EventRegisterResult( const sptr<Link>& link, const sptr<MatchMakerData>& mj, bool succes ):
 			IEvent( link, false ),
 			m_Mj( mj ),
 			m_Succes( succes )
@@ -22,13 +22,13 @@ namespace MiepMiep
 			m_Mj->getRegisterCb()(m_Link->session(), m_Succes);
 		}
 
-		sptr<const MasterLink> m_Mj;
+		sptr<const MatchMakerData> m_Mj;
 		bool m_Succes;
 	};
 
 	struct EventJoinResult : IEvent
 	{
-		EventJoinResult( const sptr<Link>& link, const sptr<MasterLink>& mj, bool joinRes  ):
+		EventJoinResult( const sptr<Link>& link, const sptr<MatchMakerData>& mj, bool joinRes  ):
 			IEvent( link, false ),
 			m_Mj( mj ),
 			m_JoinRes( joinRes )
@@ -40,7 +40,7 @@ namespace MiepMiep
 			m_Mj->getJoinCb()(m_Link->session(), m_JoinRes);
 		}
 
-		sptr<const MasterLink> m_Mj;
+		sptr<const MatchMakerData> m_Mj;
 		bool m_JoinRes;
 	};
 
@@ -54,7 +54,7 @@ namespace MiepMiep
 		RPC_BEGIN();
         assert(s.matchMaker()==link->to_ptr());
 		bool succes = get<0>(tp);
-		sptr<MasterLink> mj = l.get<MasterLink>();
+		sptr<MatchMakerData> mj = l.get<MatchMakerData>();
 		assert(mj);
         if ( mj )
         {
@@ -74,7 +74,7 @@ namespace MiepMiep
 		const MetaData& registerMd = get<1>(tp);
 		l.updateCustomMatchmakingMd( registerMd );
         // L.ptr() (link) becomes host of this master session immediately. A master session always has a host.
-		sptr<MasterSession> mSession = nw.getOrAdd<MasterServer>()->registerSession( l.to_ptr(), data );
+		sptr<MasterSession> mSession = nw.getOrAdd<MasterSessionManager>()->registerSession( l.to_ptr(), data );
 		if ( mSession )
 		{
 			mSession->addLink( l.to_ptr() );
@@ -95,7 +95,7 @@ namespace MiepMiep
 		RPC_BEGIN();
         assert(s.matchMaker()==link->to_ptr());
 		bool bSucces = get<0>( tp );
-		sptr<MasterLink> mj = l.get<MasterLink>(); 
+		sptr<MatchMakerData> mj = l.get<MatchMakerData>(); 
 		assert(mj);
         if ( mj )
         {
@@ -114,7 +114,7 @@ namespace MiepMiep
 		const SearchFilter& sf = get<0>(tp);
 		const MetaData& joinMatchmakingMd = get<1>(tp);
 		l.updateCustomMatchmakingMd( joinMatchmakingMd ); // TODO change for var group perhaps
-		sptr<MasterSession> mSession = nw.getOrAdd<MasterServer>()->findServerFromFilter( sf );
+		sptr<MasterSession> mSession = nw.getOrAdd<MasterSessionManager>()->findServerFromFilter( sf );
 		if ( mSession )
 		{
 			mSession->addLink( l.to_ptr() );
@@ -143,16 +143,16 @@ namespace MiepMiep
 
 	// ---------- MasterJoinData -------------------------------------------------------------------------------
 
-	MasterLink::MasterLink(Link& link):
+	MatchMakerData::MatchMakerData(Link& link):
 		ParentLink(link)
 	{
 	}
 
-	MasterLink::~MasterLink()
+	MatchMakerData::~MatchMakerData()
 	{
 	}
 
-	bool MasterLink::registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data,
+	bool MatchMakerData::registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data,
 										 const MetaData& customMatchmakingMd )
 	{
         if (m_RegisterCb)
@@ -165,7 +165,7 @@ namespace MiepMiep
         return true;
 	}
 
-	bool MasterLink::joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf,
+	bool MatchMakerData::joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf,
 									 const MetaData& customMatchmakingMd )
 	{
         if (m_JoinCb)

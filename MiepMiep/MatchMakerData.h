@@ -11,12 +11,12 @@ namespace MiepMiep
 	struct MasterSessionData;
 	struct SearchFilter;
 
-	class MasterLink: public ParentLink, public IComponent, public ITraceable
+	class MatchMakerData: public ParentLink, public IComponent, public ITraceable
 	{
 	public:
-		MasterLink(Link& link);
-		~MasterLink() override;
-		static EComponentType compType() { return EComponentType::MasterLinkData; }
+		MatchMakerData(Link& link);
+		~MatchMakerData() override;
+		static EComponentType compType() { return EComponentType::MatchMakerData; }
 
 		bool registerServer( const function<void( ISession&, bool )>& cb, const MasterSessionData& data, const MetaData& customMatchmakingMd );
 		bool joinServer( const function<void( ISession&, bool )>& cb, const SearchFilter& sf, const MetaData& customMatchmakingMd );

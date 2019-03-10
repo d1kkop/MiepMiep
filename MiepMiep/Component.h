@@ -13,7 +13,7 @@ namespace MiepMiep
 		LinkState,
 		LinkMasterState,
 		LinkStats,
-		MasterLinkData,
+		MatchMakerData,
 		RemoteServerInfo,
 		Listener,
 		LinkManager,

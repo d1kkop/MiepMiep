@@ -45,7 +45,6 @@ namespace MiepMiep
 		MM_TS void forEachLink( const std::function<void (Link&)>& cb, u32 clusterSize=0 );
 
 	private:
-		mutable mutex m_LinksMapMutex;
 		vector<sptr<Link>> m_LinksAsArray;
 		map<SocketAddrPair, sptr<Link>> m_Links;
 	};

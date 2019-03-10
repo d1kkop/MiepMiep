@@ -10,7 +10,7 @@
 #include "LinkManager.h"
 #include "Network.h"
 #include "MiepMiep.h"
-#include "MasterServer.h"
+#include "MasterSessionManager.h"
 #include "SocketSetManager.h"
 #include "Common.h"
 #include <thread>

@@ -6,13 +6,13 @@
 #include "ReliableSend.h"
 #include "JobSystem.h"
 #include "NetworkEvents.h"
-#include "MasterLink.h"
+#include "MatchMakerData.h"
 #include "SendThread.h"
 #include "SocketSetManager.h"
 #include "ListenerManager.h"
 #include "Listener.h"
 #include "Socket.h"
-#include "MasterServer.h"
+#include "MasterSessionManager.h"
 #include "Util.h"
 
 
@@ -108,7 +108,7 @@ namespace MiepMiep
         data.m_MaxClients = maxClients;
         data.m_UsedMatchmaker = true;
         data.m_CanJoinAfterStart = canJoinAfterStart;
-        bool bStartedRegister = link->getOrAdd<MasterLink>()->registerServer(callback, data, customMatchmakingMd);
+        bool bStartedRegister = link->getOrAdd<MatchMakerData>()->registerServer(callback, data, customMatchmakingMd);
         assert(bStartedRegister);
 		return s;
 	}
@@ -142,7 +142,7 @@ namespace MiepMiep
         sf.m_FindPrivate = false;
         sf.m_FindP2p = findP2p;
         sf.m_FindClientServer = findClientServer;
-        bool bStartedJoin = link->getOrAdd<MasterLink>()->joinServer(callback, sf, customMatchmakingMd);
+        bool bStartedJoin = link->getOrAdd<MatchMakerData>()->joinServer(callback, sf, customMatchmakingMd);
         assert(bStartedJoin);
 		return s;
 	}
@@ -191,7 +191,6 @@ namespace MiepMiep
 
 	MM_TS void Network::destroyGroup( u32 groupId )
 	{
-
 	}
 
 	MM_TS void Network::createRemoteGroup( const string& typeName, u32 netId, const BinSerializer& initData, const IAddress& etp )
@@ -232,7 +231,6 @@ namespace MiepMiep
 		{
 			// Make buffering and sending an atomic operation to avoid discrepanties between adding new links and messages
 			// and sending existing messages to new links.
-			rscoped_lock lk( ses->dataMutex() );
 			if ( buffer )
 			{
 				ses->bufferMsg( data, channel );
@@ -251,7 +249,7 @@ namespace MiepMiep
 		}
 		if ( !somethingWasQueued )
 		{
-			LOG( "Nothing was sent, though a reliable call was made. Either 'session' or 'exlOrSpecific' must not be NULL." );
+			LOG( "Nothing was sent, though a reliable call was made. Either 'session' or 'exlOrSpecific' must NOT be a nullptr." );
 		}
 		return (somethingWasQueued ? ESendCallResult::Fine : ESendCallResult::NotSent );
 	}

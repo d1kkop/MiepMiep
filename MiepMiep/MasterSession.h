@@ -24,7 +24,7 @@ namespace MiepMiep
 		MasterSession( const sptr<Link>& host, const MasterSessionData& data, const MasterSessionList& sessionList );
 
 		// ISession
-		MM_TS sptr<const IAddress> host() const override;
+		sptr<const IAddress> host() const override;
 
 		// SessionBase
 		MM_TS bool addLink( const sptr<Link>& link ) override;

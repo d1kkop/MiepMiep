@@ -27,12 +27,10 @@ namespace MiepMiep
 			if ( !m_Group->wasUngrouped() )
 			{
 				// It is the user's responsibility that the obtained ptr is still valid.
-				m_Group->lockVariablesMutex();
 				NetVar* userVar = m_Group->getUserVar( m_VarBit );
 				if ( !userVar )
 				{
 					LOG( "Could not process variable owner change event as variable was no longer available." );
-					m_Group->unlockVariablesMutex();
 					return;
 				}
 
@@ -41,8 +39,6 @@ namespace MiepMiep
 				{
 					l->onOwnerChanged( m_Link->session(), *userVar, m_NewOwner.get() );
 				});
-
-				m_Group->unlockVariablesMutex();
 			}
 			else
 			{
@@ -97,32 +93,32 @@ namespace MiepMiep
 		delete p;
 	}
 
-	MM_TS sptr<const IAddress> NetVar::getOwner() const
+	sptr<const IAddress> NetVar::getOwner() const
 	{
 		return p->getOwner();
 	}
 
-	MM_TS EChangeOwnerCallResult NetVar::changeOwner(const IAddress& etp)
+	EChangeOwnerCallResult NetVar::changeOwner(const IAddress& etp)
 	{
 		return p->changeOwner( etp );
 	}
 
-	MM_TS EVarControl NetVar::varControl() const
+	EVarControl NetVar::varControl() const
 	{
 		return p->getVarControl();
 	}
 
-	MM_TS u32 NetVar::groupId() const
+	u32 NetVar::groupId() const
 	{
 		return p->groupId();
 	}
 
-	MM_TS void NetVar::markChanged()
+	void NetVar::markChanged()
 	{
 		p->markChanged();
 	}
 
-	MM_TS void NetVar::addUpdateCallback( const function<void(NetVar&, const byte*, const byte*)>& cb )
+	void NetVar::addUpdateCallback( const function<void(NetVar&, const byte*, const byte*)>& cb )
 	{
 		p->addUpdateCallback( cb );
 	}
@@ -176,7 +172,7 @@ namespace MiepMiep
 		m_VarControl = initVarControl;
 	}
 
-	MM_TS void NetVariable::unGroup()
+	void NetVariable::unGroup()
 	{
 		scoped_spinlock lk(m_GroupMutex);
 		if ( m_Group )
@@ -186,7 +182,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TS u32 NetVariable::groupId() const
+	u32 NetVariable::groupId() const
 	{
 		scoped_spinlock lk(m_GroupMutex);
 		if ( !m_Group )
@@ -194,18 +190,18 @@ namespace MiepMiep
 		return m_Group->id();
 	}
 
-	MM_TS sptr<const IAddress> NetVariable::getOwner() const
+	sptr<const IAddress> NetVariable::getOwner() const
 	{
 		scoped_spinlock lk(m_OwnershipMutex);
 		return m_Owner;
 	}
 
-	MM_TS enum class EVarControl NetVariable::getVarControl() const
+	enum class EVarControl NetVariable::getVarControl() const
 	{
 		return m_VarControl;
 	}
 
-	MM_TS void NetVariable::markChanged()
+	void NetVariable::markChanged()
 	{
 		// If any var changes, group changes too.
 		{
@@ -219,19 +215,19 @@ namespace MiepMiep
 		m_Changed = true;
 	}
 
-	MM_TS bool NetVariable::isChanged() const
+	bool NetVariable::isChanged() const
 	{
 		scoped_spinlock lk(m_ChangeMutex);
 		return m_Changed;
 	}
 
-	MM_TS void NetVariable::markUnchanged()
+	void NetVariable::markUnchanged()
 	{
 		scoped_spinlock lk(m_ChangeMutex);
 		m_Changed = false;
 	}
 
-	MM_TS EChangeOwnerCallResult NetVariable::changeOwner(const IAddress& etp)
+	EChangeOwnerCallResult NetVariable::changeOwner(const IAddress& etp)
 	{
 		// Cannot change if we are the NOT owner.
 		if ( getOwner() ) return EChangeOwnerCallResult::NotOwned;
@@ -252,7 +248,7 @@ namespace MiepMiep
 		return ( sendRes == ESendCallResult::Fine ? EChangeOwnerCallResult::Fine : EChangeOwnerCallResult::Fail );
 	}
 
-	MM_TS void NetVariable::setNewOwner(const IAddress* etp)
+	void NetVariable::setNewOwner(const IAddress* etp)
 	{
 		scoped_spinlock lk(m_OwnershipMutex);
 		if ( !etp )
@@ -266,7 +262,7 @@ namespace MiepMiep
 		m_VarControl = EVarControl::Remote;
 	}
 
-	MM_TS bool NetVariable::readOrWrite(BinSerializer& bs, bool write)
+	bool NetVariable::readOrWrite(BinSerializer& bs, bool write)
 	{
 		byte prevData[MM_MAX_FRAGMENTSIZE];
 
@@ -291,7 +287,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	MM_TS void NetVariable::addUpdateCallback(const std::function<void(NetVar&, const byte*, const byte*)>& callback)
+	void NetVariable::addUpdateCallback(const std::function<void(NetVar&, const byte*, const byte*)>& callback)
 	{
 		scoped_lock lk(m_UpdateCallbackMutex);
 		m_UpdateCallbacks.emplace_back(callback);

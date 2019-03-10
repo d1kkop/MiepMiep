@@ -19,7 +19,7 @@ namespace MiepMiep
 		stopListen();
 	}
 
-	MM_TS sptr<Listener> Listener::startListen( Network& network, u16 port )
+	sptr<Listener> Listener::startListen( Network& network, u16 port )
 	{
 		sptr<Listener> listener = reserve_sp<Listener, Network&>( MM_FL, network );
 		if ( listener->startListenIntern( port ) )
@@ -27,7 +27,7 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	MM_TS void Listener::stopListen()
+	void Listener::stopListen()
 	{
 		LOG( "Stop listen was called. Old listen port was %d. ", m_Source?m_Source->port() : 0 );
 		scoped_lock lk(m_ListeningMutex);
@@ -43,7 +43,7 @@ namespace MiepMiep
 		}
 	}
 
-	MM_TSC bool Listener::startListenIntern( u16 port )
+	bool Listener::startListenIntern( u16 port )
 	{
 		assert( !m_Source && !m_Listening );
 
@@ -81,7 +81,7 @@ namespace MiepMiep
 		return true;
 	}
 
-	MM_TS u16 Listener::port() const
+	u16 Listener::port() const
 	{
 		return m_Source? m_Source->port() : 0;
 	}

@@ -20,32 +20,32 @@ namespace MiepMiep
 	public:
 		NetVariable(NetVar& userVar, byte* data, u32 size);
 		~NetVariable();
-		MM_TS void initialize(Group* g, const IAddress* owner, EVarControl initVarControl, byte bit);
+		void initialize(Group* g, const IAddress* owner, EVarControl initVarControl, byte bit);
 
 		// Set on initialization (through constructor, no locks required).
 		byte* data()			{ return m_Data; }	
 		u32 size() const		{ return m_Size; }
 		byte bit() const		{ return m_Bit; }
 
-		MM_TS void unGroup();
+		void unGroup();
 
-		MM_TS u32 groupId() const;
-		MM_TS sptr<const IAddress> getOwner() const;
-		MM_TS enum class EVarControl getVarControl() const;
+		u32 groupId() const;
+		sptr<const IAddress> getOwner() const;
+		enum class EVarControl getVarControl() const;
 
 		// Requires VariablesMutex to be thread safe and to call user callback code!
 		NetVar& getUserVar() const { return m_UserVar; }
 		
 		// State changers.
-		MM_TS void markChanged();
-		MM_TS bool isChanged() const;
-		MM_TS void markUnchanged();
+		void markChanged();
+		bool isChanged() const;
+		void markUnchanged();
 
-		MM_TS EChangeOwnerCallResult changeOwner( const IAddress& etp );
-		MM_TS void setNewOwner( const IAddress* etp );
+		EChangeOwnerCallResult changeOwner( const IAddress& etp );
+		void setNewOwner( const IAddress* etp );
 
-		MM_TS bool readOrWrite( class BinSerializer& bs, bool write );
-		MM_TS void addUpdateCallback( const std::function<void (NetVar&, const byte*, const byte*)>& callback );
+		bool readOrWrite( class BinSerializer& bs, bool write );
+		void addUpdateCallback( const std::function<void (NetVar&, const byte*, const byte*)>& callback );
 
 
 	private:

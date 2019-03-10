@@ -13,21 +13,21 @@ namespace MiepMiep
 	{
 	public:
 		Session(Network& network, const MetaData& md=MetaData());
-		MM_TSC void setMasterLink( const sptr<Link>& link );
+		void setMasterLink( const sptr<Link>& link );
 
 		// ISession
-		MM_TS sptr<const IAddress> host() const override;
-		MM_TS sptr<ILink> matchMaker() const override;
+		sptr<const IAddress> host() const override;
+		sptr<ILink> matchMaker() const override;
 
 		// SessionBase
-		MM_TS void removeLink( Link& link ) override;
+		void removeLink( Link& link ) override;
 
-		MM_TS void updateHost( const sptr<const IAddress>& hostAddr );
-		MM_TS void removeLink( const sptr<const Link>& link );
-		MM_TS bool disconnect();
+		void updateHost( const sptr<const IAddress>& hostAddr );
+		void removeLink( const sptr<const Link>& link );
+		bool disconnect();
 
 		// TODO change for variable group
-		MM_TSC const MetaData& metaData() const { return m_MetaData; }
+		const MetaData& metaData() const { return m_MetaData; }
 
 		MM_TO_PTR( Session )
 

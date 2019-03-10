@@ -17,19 +17,19 @@ namespace MiepMiep
 	template <typename T>
 	struct EventListener
 	{
-		MM_TS void addListener( T* listener )
+		void addListener( T* listener )
 		{
 			rscoped_lock lk(m_ListenerMutex);
 			m_Listeners.emplace_back( listener );
 		}
 
-		MM_TS void removeListener( const T* listener )
+		void removeListener( const T* listener )
 		{
 			rscoped_lock lk( m_ListenerMutex );
 			std::remove( m_Listeners.begin(), m_Listeners.end(), listener );
 		}
 
-		MM_TS void forListeners( const std::function<void (T*)>& cb )
+		void forListeners( const std::function<void (T*)>& cb )
 		{
 			rscoped_lock lk( m_ListenerMutex );
 			for ( auto l : m_Listeners )
@@ -52,8 +52,8 @@ namespace MiepMiep
 		NetworkEvents(Network& network, bool allowAsyncCallbacks);
 		static EComponentType compType() { return EComponentType::NetworkEvents; }
 
-		MM_TS void pushEvent( sptr<IEvent>& event );
-		MM_TS void processQueuedEvents();
+		void pushEvent( sptr<IEvent>& event );
+		void processQueuedEvents();
 		
 	private:
 		rmutex m_EventsMutex; // Recursive, otherwise not possible to push new events while iterating through events.

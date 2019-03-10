@@ -196,12 +196,6 @@ namespace MiepMiep
 	class MM_DECLSPEC INetwork
 	{
 	public:
-		/*	If asyncCallbacks == true, all network events may be called from different threads
-			and may be in a different order than that they were sent!
-			Suppose A and B are sent reliable ordered. B is received first, then A.
-			When A arrives, both A and B are processed as a seperate job across possibly different threads.
-			B may therefore be processed before A, eventhough it was sent reliable orderderd!
-			The default is false. When false, 'processEvents' must be called to handle network events. */
 		MM_TS static  sptr<INetwork> create( bool allowAsyncCallbacks=false, u32 numWorkerThreads=4 );
 
 		MM_TS virtual void processEvents()=0;

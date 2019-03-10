@@ -24,8 +24,8 @@
     <ClCompile Include="LinkStats.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="ListenerManager.cpp" />
-    <ClCompile Include="MasterLink.cpp" />
-    <ClCompile Include="MasterServer.cpp" />
+    <ClCompile Include="MatchMakerData.cpp" />
+    <ClCompile Include="MasterSessionManager.cpp" />
     <ClCompile Include="MasterSession.cpp" />
     <ClCompile Include="NetworkActions.cpp" />
     <ClCompile Include="NetworkEvents.cpp" />
@@ -68,8 +68,8 @@
     <ClInclude Include="LinkStats.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="ListenerManager.h" />
-    <ClInclude Include="MasterLink.h" />
-    <ClInclude Include="MasterServer.h" />
+    <ClInclude Include="MatchMakerData.h" />
+    <ClInclude Include="MasterSessionManager.h" />
     <ClInclude Include="MasterSession.h" />
     <ClInclude Include="NetworkActions.h" />
     <ClInclude Include="NetworkEvents.h" />
@@ -119,6 +119,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MiepMiep.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\ThreadingModel" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

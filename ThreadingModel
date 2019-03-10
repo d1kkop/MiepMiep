@@ -1,0 +1,12 @@
+
+
+MainThread
+-> creates Actions (to be executed on NetworkTHread)
+
+NetworkThread
+-> listens for actions and exectes them
+-> can create sockets to listen on, these are thread safe calls as ReceptionThread listens on these sockets
+
+ReceptionThread
+-> listens for data on sockets and creates actions
+

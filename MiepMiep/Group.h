@@ -35,15 +35,11 @@ namespace MiepMiep
 
 		// Flag dirty when any of the variables inside the group get written/changed.
 		void markChanged();
-		MM_TS void unGroup();
-		MM_TS void setNewOwnership( byte varIdx, const IAddress* owner  ); 
-		MM_TS bool wasUngrouped() const;
+		void unGroup();
+		void setNewOwnership( byte varIdx, const IAddress* owner );
+		bool wasUngrouped() const;
 
-		// Within lock/unlock varMutex, other threads that are about to destuct variables will block as the destructor of the variable
-		// will acquire the same variable mutex. So within this lock/unlock, we can call any function on the variable if it did not return null.
-		MM_TS void lockVariablesMutex() const;
-		MM_TS NetVar* getUserVar( byte idx ) const;
-		MM_TS void unlockVariablesMutex() const;
+		NetVar* getUserVar( byte idx ) const;
 
 		Network& network() const;
 		const Session& session() const;
@@ -57,7 +53,6 @@ namespace MiepMiep
 		bool m_WasUngrouped;
 		volatile bool m_Changed;
 		bool m_RemotelyCreated;
-		mutable mutex m_VariablesMutex;
 		vector<NetVariable*> m_Variables;
 		BinSerializer m_InitData;
 		sptr<const Session> m_Session;

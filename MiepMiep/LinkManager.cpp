@@ -36,12 +36,12 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TSC SocketAddrPair::operator bool() const
+	SocketAddrPair::operator bool() const
 	{
 		return m_Socket && m_Address;
 	}
 
-	MM_TSC bool SocketAddrPair::operator<( const SocketAddrPair& other ) const
+	bool SocketAddrPair::operator<( const SocketAddrPair& other ) const
 	{
 		if ( *m_Address == *other.m_Address )
 			return *m_Socket < *other.m_Socket;
@@ -49,14 +49,14 @@ namespace MiepMiep
 	}
 
 
-	MM_TSC const char* SocketAddrPair::info() const
+	const char* SocketAddrPair::info() const
 	{
 		static thread_local char buff[80];
 		Platform::formatPrint( buff, 80, "s: %d a: %s", m_Socket?m_Socket->id():-1, m_Address?m_Address->toIpAndPort():"" );
 		return buff;
 	}
 
-	MM_TSC bool SocketAddrPair::operator==( const SocketAddrPair& other ) const
+	bool SocketAddrPair::operator==( const SocketAddrPair& other ) const
 	{
 		return  (*m_Address == *other.m_Address) &&
 				(*m_Socket == *other.m_Socket);
@@ -70,11 +70,10 @@ namespace MiepMiep
 	{
 	}
 
-	MM_TS sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap )
+	sptr<Link> LinkManager::add( SessionBase& session, const SocketAddrPair& sap )
 	{
 		sptr<Link> link = Link::create( m_Network, &session, sap );
 		if ( !link ) return nullptr;
-		scoped_lock lk( m_LinksMapMutex );
 		if ( m_Links.count( sap ) != 0 )
 		{
 			LOGW( "Tried to create a link that does already exist, creation discarded." );
@@ -86,10 +85,8 @@ namespace MiepMiep
 		return link;
 	}
 
-	MM_TS sptr<Link> LinkManager::getOrAdd( SessionBase* session, const SocketAddrPair& sap, bool* wasNew )
+	sptr<Link> LinkManager::getOrAdd( SessionBase* session, const SocketAddrPair& sap, bool* wasNew )
 	{
-		scoped_lock lk( m_LinksMapMutex );
-
 		auto lIt  = m_Links.find( sap );
 		if ( lIt != m_Links.end() )
 		{
@@ -111,10 +108,8 @@ namespace MiepMiep
 		return link;
 	}
 
-	MM_TS sptr<Link> LinkManager::get( const SocketAddrPair& sap )
+	sptr<Link> LinkManager::get( const SocketAddrPair& sap )
 	{
-		scoped_lock lk(m_LinksMapMutex);
-
 		//LOG("List links...");
 		//for ( auto& kvp : m_Links )
 		//{
@@ -132,21 +127,19 @@ namespace MiepMiep
 		return nullptr;
 	}
 
-	MM_TS bool LinkManager::has( const SocketAddrPair& sap ) const
+	bool LinkManager::has( const SocketAddrPair& sap ) const
 	{
-		scoped_lock lk( m_LinksMapMutex );
 		return m_Links.count( sap ) != 0;
 	}
 
 	// TODO make actually parallel
-	MM_TS void LinkManager::forEachLink( const std::function<void( Link& )>& cb, u32 clusterSize )
+	void LinkManager::forEachLink( const std::function<void( Link& )>& cb, u32 clusterSize )
 	{
 		// Only obtain lock for extracting link from list. Do not hold it.
 		for ( u32 i=0; i < UINT_MAX; i++ )
 		{
 			sptr<Link> link;
 			{
-				scoped_lock lk( m_LinksMapMutex );
 				if ( i >= m_LinksAsArray.size() )
 					break;
 				link = m_LinksAsArray[i];
